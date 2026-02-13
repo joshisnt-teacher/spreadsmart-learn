@@ -1,23 +1,13 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import type { SheetState } from '@/types/lesson';
+import { parseCellRef, cellRefFromCoords } from './spreadsheet/utils';
+import { useAutofill } from './spreadsheet/useAutofill';
 
 interface SpreadsheetWorkspaceProps {
   initialState: SheetState;
   editableCells: string[];
   onDataChange?: (celldata: any[]) => void;
   resetKey?: number;
-}
-
-function parseCellRef(ref: string): { row: number; col: number } {
-  const match = ref.match(/^([A-Z]+)(\d+)$/i);
-  if (!match) return { row: -1, col: -1 };
-  const colStr = match[1].toUpperCase();
-  const row = parseInt(match[2], 10) - 1;
-  let col = 0;
-  for (let i = 0; i < colStr.length; i++) {
-    col = col * 26 + (colStr.charCodeAt(i) - 64);
-  }
-  return { row, col: col - 1 };
 }
 
 const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
@@ -30,6 +20,7 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
   const [editingCell, setEditingCell] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const rows = initialState.row || 10;
   const cols = initialState.column || 6;
@@ -114,30 +105,30 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
       });
 
       // Build values and ops arrays
-      const values: number[] = [];
+      const numValues: number[] = [];
       const ops: string[] = [];
       for (let i = 0; i < resolved.length; i++) {
         if (i % 2 === 0) {
           if (typeof resolved[i] !== 'number' || isNaN(resolved[i] as number)) return '#ERROR';
-          values.push(resolved[i] as number);
+          numValues.push(resolved[i] as number);
         } else {
           if (typeof resolved[i] !== 'string' || !/^[\+\-\*\/]$/.test(resolved[i] as string)) return '#ERROR';
           ops.push(resolved[i] as string);
         }
       }
 
-      if (values.length === 0 || values.length !== ops.length + 1) return '#ERROR';
+      if (numValues.length === 0 || numValues.length !== ops.length + 1) return '#ERROR';
 
       // Apply * and / first (operator precedence)
-      const addValues: number[] = [values[0]];
+      const addValues: number[] = [numValues[0]];
       const addOps: string[] = [];
       for (let i = 0; i < ops.length; i++) {
         if (ops[i] === '*' || ops[i] === '/') {
           const left = addValues.pop()!;
-          if (ops[i] === '/' && values[i + 1] === 0) return '#DIV/0!';
-          addValues.push(ops[i] === '*' ? left * values[i + 1] : left / values[i + 1]);
+          if (ops[i] === '/' && numValues[i + 1] === 0) return '#DIV/0!';
+          addValues.push(ops[i] === '*' ? left * numValues[i + 1] : left / numValues[i + 1]);
         } else {
-          addValues.push(values[i + 1]);
+          addValues.push(numValues[i + 1]);
           addOps.push(ops[i]);
         }
       }
@@ -164,8 +155,43 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
     return val;
   }, [cellValues, evaluateFormula]);
 
+  const fireDataChange = useCallback((values: Record<string, string>) => {
+    if (!onDataChange) return;
+    const celldata = Object.entries(values).map(([ref, val]) => {
+      const { row, col } = parseCellRef(ref);
+      const isFormula = typeof val === 'string' && val.startsWith('=');
+      return {
+        r: row,
+        c: col,
+        v: {
+          v: isFormula ? evaluateFormula(val) : (isNaN(Number(val)) ? val : Number(val)),
+          m: String(isFormula ? evaluateFormula(val) : val),
+          f: isFormula ? val : undefined,
+        },
+      };
+    });
+    onDataChange(celldata);
+  }, [onDataChange, evaluateFormula]);
+
+  // Autofill hook
+  const { isDragging, dragRange, filledCells, handleFillHandleMouseDown } = useAutofill({
+    selectedCell,
+    cellValues,
+    editableCells,
+    rows,
+    onFill: (newValues) => {
+      const updated = { ...cellValues, ...newValues };
+      setCellValues(updated);
+      fireDataChange(updated);
+    },
+  });
+
   const handleCellClick = (ref: string) => {
     setSelectedCell(ref);
+    setEditingCell(null);
+  };
+
+  const handleCellDoubleClick = (ref: string) => {
     if (isEditable(ref)) {
       setEditingCell(ref);
       setTimeout(() => inputRef.current?.focus(), 0);
@@ -173,27 +199,12 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
   };
 
   const handleCellChange = (ref: string, value: string) => {
-    const newValues = { ...cellValues, [ref]: value };
-    setCellValues(newValues);
+    setCellValues((prev) => ({ ...prev, [ref]: value }));
   };
 
   const handleCellBlur = () => {
-    if (editingCell && onDataChange) {
-      // Convert to celldata format for marking engine
-      const celldata = Object.entries(cellValues).map(([ref, val]) => {
-        const { row, col } = parseCellRef(ref);
-        const isFormula = typeof val === 'string' && val.startsWith('=');
-        return {
-          r: row,
-          c: col,
-          v: {
-            v: isFormula ? evaluateFormula(val) : (isNaN(Number(val)) ? val : Number(val)),
-            m: String(isFormula ? evaluateFormula(val) : val),
-            f: isFormula ? val : undefined,
-          },
-        };
-      });
-      onDataChange(celldata);
+    if (editingCell) {
+      fireDataChange(cellValues);
     }
     setEditingCell(null);
   };
@@ -201,28 +212,86 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent, ref: string) => {
     if (e.key === 'Enter') {
       handleCellBlur();
-      // Move to next row
       const { row, col } = parseCellRef(ref);
-      const nextRef = `${String.fromCharCode(65 + col)}${row + 2}`;
-      setSelectedCell(nextRef);
-      if (isEditable(nextRef)) {
-        setEditingCell(nextRef);
-        setTimeout(() => inputRef.current?.focus(), 0);
-      }
+      const nextRef = cellRefFromCoords(row + 1, col);
+      if (row + 1 < rows) setSelectedCell(nextRef);
     } else if (e.key === 'Tab') {
       e.preventDefault();
       handleCellBlur();
       const { row, col } = parseCellRef(ref);
-      const nextRef = `${String.fromCharCode(65 + col + 1)}${row + 1}`;
-      setSelectedCell(nextRef);
-      if (isEditable(nextRef)) {
-        setEditingCell(nextRef);
-        setTimeout(() => inputRef.current?.focus(), 0);
+      if (col + 1 < cols) {
+        const nextRef = cellRefFromCoords(row, col + 1);
+        setSelectedCell(nextRef);
       }
     } else if (e.key === 'Escape') {
       setEditingCell(null);
     }
   };
+
+  // Grid-level keyboard navigation
+  const handleGridKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (editingCell) return; // let input handle keys
+    if (!selectedCell) return;
+
+    const { row, col } = parseCellRef(selectedCell);
+
+    switch (e.key) {
+      case 'ArrowUp':
+        e.preventDefault();
+        if (row > 0) setSelectedCell(cellRefFromCoords(row - 1, col));
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        if (row < rows - 1) setSelectedCell(cellRefFromCoords(row + 1, col));
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        if (col > 0) setSelectedCell(cellRefFromCoords(row, col - 1));
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        if (col < cols - 1) setSelectedCell(cellRefFromCoords(row, col + 1));
+        break;
+      case 'F2':
+        e.preventDefault();
+        if (isEditable(selectedCell)) {
+          setEditingCell(selectedCell);
+          setTimeout(() => inputRef.current?.focus(), 0);
+        }
+        break;
+      case 'Delete':
+      case 'Backspace':
+        e.preventDefault();
+        if (isEditable(selectedCell)) {
+          const updated = { ...cellValues, [selectedCell]: '' };
+          setCellValues(updated);
+          fireDataChange(updated);
+        }
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (isEditable(selectedCell)) {
+          setEditingCell(selectedCell);
+          setTimeout(() => inputRef.current?.focus(), 0);
+        }
+        break;
+      default:
+        // Start typing into editable cell
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && isEditable(selectedCell)) {
+          setEditingCell(selectedCell);
+          setCellValues((prev) => ({ ...prev, [selectedCell]: e.key }));
+          setTimeout(() => inputRef.current?.focus(), 0);
+        }
+        break;
+    }
+  }, [editingCell, selectedCell, rows, cols, isEditable, cellValues, fireDataChange]);
+
+  // Focus grid when a cell is selected (so keyboard events work)
+  useEffect(() => {
+    if (selectedCell && !editingCell) {
+      gridRef.current?.focus();
+    }
+  }, [selectedCell, editingCell]);
 
   return (
     <div className="flex flex-col h-full">
@@ -238,8 +307,13 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
       </div>
 
       {/* Grid */}
-      <div className="flex-1 overflow-auto">
-        <table className="w-full border-collapse text-sm">
+      <div
+        ref={gridRef}
+        className="flex-1 overflow-auto outline-none"
+        tabIndex={0}
+        onKeyDown={handleGridKeyDown}
+      >
+        <table className="w-full border-collapse text-sm select-none">
           <thead>
             <tr>
               <th className="w-10 bg-muted/60 border border-border text-xs text-muted-foreground font-normal p-0 h-7"></th>
@@ -265,23 +339,31 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
                   const header = isHeader(ref);
                   const isSelected = selectedCell === ref;
                   const isEditing = editingCell === ref;
+                  const isDragTarget = dragRange.includes(ref);
+                  const isJustFilled = filledCells.includes(ref);
                   const displayVal = getDisplayValue(ref);
 
                   return (
                     <td
                       key={ref}
+                      data-cell-ref={ref}
                       className={`border border-border p-0 h-7 relative cursor-default transition-colors ${
                         isSelected
                           ? 'ring-2 ring-primary ring-inset z-10'
                           : ''
                       } ${
-                        editable
+                        isDragTarget
+                          ? 'bg-primary/20 ring-1 ring-primary/40 ring-inset'
+                          : editable
                           ? 'bg-primary/5 hover:bg-primary/10'
                           : header
                           ? 'bg-muted/30 font-semibold'
                           : 'bg-background'
+                      } ${
+                        isJustFilled ? 'animate-pulse' : ''
                       }`}
                       onClick={() => handleCellClick(ref)}
+                      onDoubleClick={() => handleCellDoubleClick(ref)}
                     >
                       {isEditing ? (
                         <input
@@ -298,6 +380,13 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
                         } ${header ? 'font-semibold' : ''}`}>
                           {displayVal}
                         </div>
+                      )}
+                      {/* Fill handle */}
+                      {isSelected && editable && !isEditing && (
+                        <div
+                          className="absolute -bottom-[3px] -right-[3px] w-[7px] h-[7px] bg-primary border border-background cursor-crosshair z-20"
+                          onMouseDown={handleFillHandleMouseDown}
+                        />
                       )}
                     </td>
                   );
