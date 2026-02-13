@@ -1,0 +1,311 @@
+import React, { useState, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, HelpCircle, RotateCcw, ChevronRight, ChevronLeft, Trophy, Star, Lightbulb, BookOpen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import SpreadsheetWorkspace from '@/components/SpreadsheetWorkspace';
+import { checkTask, getHint } from '@/lib/marking-engine';
+import type { Lesson, Step, CheckResult, LessonProgress } from '@/types/lesson';
+
+interface LessonPlayerProps {
+  lesson: Lesson;
+  onComplete?: (xpEarned: number) => void;
+  onBack?: () => void;
+}
+
+const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack }) => {
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [progress, setProgress] = useState<LessonProgress>({
+    lessonId: lesson.id,
+    completedStepIds: [],
+    currentStepId: lesson.steps[0]?.id || '',
+    totalXp: 0,
+    attempts: {},
+  });
+  const [feedback, setFeedback] = useState<CheckResult | null>(null);
+  const [showHint, setShowHint] = useState(false);
+  const [currentHint, setCurrentHint] = useState<string | null>(null);
+  const [resetKey, setResetKey] = useState(0);
+  const [currentCellData, setCurrentCellData] = useState<any[]>([]);
+
+  const currentStep = lesson.steps[currentStepIndex];
+  const isStepComplete = progress.completedStepIds.includes(currentStep?.id || '');
+  const isLastStep = currentStepIndex === lesson.steps.length - 1;
+  const isLessonComplete = progress.completedStepIds.length === lesson.steps.length;
+  const attemptCount = progress.attempts[currentStep?.id || ''] || 0;
+  const progressPercent = (progress.completedStepIds.length / lesson.steps.length) * 100;
+
+  const handleDataChange = useCallback((celldata: any[]) => {
+    setCurrentCellData(celldata);
+  }, []);
+
+  const handleCheck = useCallback(() => {
+    if (!currentStep) return;
+
+    const newAttempts = {
+      ...progress.attempts,
+      [currentStep.id]: attemptCount + 1,
+    };
+
+    const result = checkTask(currentCellData, currentStep.task, attemptCount + 1);
+    setFeedback(result);
+
+    if (result.type === 'correct') {
+      const isFirstAttempt = attemptCount === 0;
+      const xp = currentStep.task.xpValue + (isFirstAttempt ? (currentStep.task.bonusXp || 0) : 0);
+
+      setProgress((prev) => ({
+        ...prev,
+        completedStepIds: [...new Set([...prev.completedStepIds, currentStep.id])],
+        totalXp: prev.totalXp + xp,
+        attempts: newAttempts,
+      }));
+    } else {
+      setProgress((prev) => ({
+        ...prev,
+        attempts: newAttempts,
+      }));
+
+      // Auto-show hint after 2+ failures
+      const hint = getHint(currentStep.task, attemptCount + 1);
+      if (hint) {
+        setCurrentHint(hint);
+        setShowHint(true);
+      }
+    }
+  }, [currentStep, currentCellData, attemptCount, progress]);
+
+  const handleNext = useCallback(() => {
+    if (isLastStep) {
+      onComplete?.(progress.totalXp);
+      return;
+    }
+    const nextIdx = currentStepIndex + 1;
+    setCurrentStepIndex(nextIdx);
+    setFeedback(null);
+    setShowHint(false);
+    setCurrentHint(null);
+    setResetKey((k) => k + 1);
+    setProgress((prev) => ({
+      ...prev,
+      currentStepId: lesson.steps[nextIdx]?.id || '',
+    }));
+  }, [currentStepIndex, isLastStep, lesson.steps, onComplete, progress.totalXp]);
+
+  const handleReset = useCallback(() => {
+    setResetKey((k) => k + 1);
+    setFeedback(null);
+    setShowHint(false);
+  }, []);
+
+  const handleHint = useCallback(() => {
+    if (!currentStep) return;
+    const hint = getHint(currentStep.task, Math.max(attemptCount, 2));
+    if (hint) {
+      setCurrentHint(hint);
+      setShowHint(true);
+    } else if (currentStep.task.hints.length > 0) {
+      setCurrentHint(currentStep.task.hints[0]);
+      setShowHint(true);
+    }
+  }, [currentStep, attemptCount]);
+
+  if (!currentStep) return null;
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-background">
+      {/* Left sidebar — Step list */}
+      <aside className="w-64 border-r bg-card flex flex-col shrink-0">
+        <div className="p-4 border-b">
+          {onBack && (
+            <Button variant="ghost" size="sm" onClick={onBack} className="mb-2 -ml-2 text-muted-foreground">
+              <ChevronLeft className="h-4 w-4 mr-1" /> Back
+            </Button>
+          )}
+          <h2 className="font-semibold text-lg leading-tight">{lesson.title}</h2>
+          <p className="text-xs text-muted-foreground mt-1">{lesson.description}</p>
+          <div className="mt-3">
+            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+              <span>Progress</span>
+              <span>{Math.round(progressPercent)}%</span>
+            </div>
+            <Progress value={progressPercent} className="h-2" />
+          </div>
+        </div>
+
+        <ScrollArea className="flex-1">
+          <div className="p-2">
+            {lesson.steps.map((step, idx) => {
+              const isComplete = progress.completedStepIds.includes(step.id);
+              const isCurrent = idx === currentStepIndex;
+              const isLocked = idx > currentStepIndex && !progress.completedStepIds.includes(lesson.steps[idx - 1]?.id);
+
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => {
+                    if (!isLocked) {
+                      setCurrentStepIndex(idx);
+                      setFeedback(null);
+                      setShowHint(false);
+                      setResetKey((k) => k + 1);
+                    }
+                  }}
+                  disabled={isLocked}
+                  className={`w-full text-left px-3 py-2.5 rounded-lg mb-1 text-sm transition-colors flex items-center gap-2 ${
+                    isCurrent
+                      ? 'bg-primary/10 text-primary font-medium'
+                      : isComplete
+                      ? 'text-muted-foreground hover:bg-muted/50'
+                      : isLocked
+                      ? 'text-muted-foreground/40 cursor-not-allowed'
+                      : 'text-foreground hover:bg-muted/50'
+                  }`}
+                >
+                  <span className={`flex items-center justify-center w-5 h-5 rounded-full text-xs shrink-0 ${
+                    isComplete
+                      ? 'bg-accent text-accent-foreground'
+                      : isCurrent
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground'
+                  }`}>
+                    {isComplete ? <Check className="w-3 h-3" /> : idx + 1}
+                  </span>
+                  <span className="truncate">{step.title}</span>
+                </button>
+              );
+            })}
+          </div>
+        </ScrollArea>
+
+        {/* XP counter */}
+        <div className="p-4 border-t bg-muted/30">
+          <div className="flex items-center gap-2">
+            <Star className="w-4 h-4 text-warning" />
+            <span className="text-sm font-medium">{progress.totalXp} XP</span>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Instruction panel */}
+        <div className="p-6 border-b bg-card">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Step {currentStepIndex + 1} of {lesson.steps.length}</span>
+            </div>
+            <h3 className="text-xl font-semibold mb-3">{currentStep.title}</h3>
+            <div className="prose prose-sm max-w-none text-foreground/90">
+              {currentStep.instruction.split('\n').map((line, i) => {
+                // Handle bold with **
+                const parts = line.split(/\*\*(.*?)\*\*/g);
+                return (
+                  <p key={i} className="mb-1.5 last:mb-0">
+                    {parts.map((part, j) =>
+                      j % 2 === 1 ? (
+                        <code key={j} className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono text-xs">{part}</code>
+                      ) : (
+                        <span key={j}>{part}</span>
+                      )
+                    )}
+                  </p>
+                );
+              })}
+            </div>
+
+            {currentStep.whyItMatters && (
+              <div className="mt-3 flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
+                <Lightbulb className="w-3.5 h-3.5 mt-0.5 shrink-0 text-warning" />
+                <span>{currentStep.whyItMatters}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Spreadsheet */}
+        <div className="flex-1 p-4 min-h-0">
+          <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm">
+            <SpreadsheetWorkspace
+              initialState={currentStep.initialSheetState}
+              editableCells={currentStep.task.editableCells}
+              onDataChange={handleDataChange}
+              resetKey={resetKey}
+            />
+          </div>
+        </div>
+
+        {/* Feedback & Controls */}
+        <div className="p-4 border-t bg-card">
+          <div className="flex items-center gap-3 max-w-4xl">
+            <AnimatePresence mode="wait">
+              {feedback && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className={`flex-1 flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm ${
+                    feedback.type === 'correct'
+                      ? 'bg-accent/10 text-accent'
+                      : feedback.type === 'almost'
+                      ? 'bg-warning/10 text-warning'
+                      : 'bg-destructive/10 text-destructive'
+                  }`}
+                >
+                  {feedback.type === 'correct' ? (
+                    <Trophy className="w-4 h-4 shrink-0" />
+                  ) : (
+                    <HelpCircle className="w-4 h-4 shrink-0" />
+                  )}
+                  <span>{feedback.message}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {showHint && currentHint && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm bg-primary/5 text-primary border border-primary/20"
+              >
+                <Lightbulb className="w-4 h-4 shrink-0" />
+                <span>{currentHint}</span>
+              </motion.div>
+            )}
+
+            <div className="flex items-center gap-2 ml-auto shrink-0">
+              <Button variant="outline" size="sm" onClick={handleHint}>
+                <HelpCircle className="w-4 h-4 mr-1" /> Hint
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleReset}>
+                <RotateCcw className="w-4 h-4 mr-1" /> Reset
+              </Button>
+              {!isStepComplete ? (
+                <Button size="sm" onClick={handleCheck}>
+                  <Check className="w-4 h-4 mr-1" /> Check
+                </Button>
+              ) : (
+                <Button size="sm" onClick={handleNext} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                  {isLastStep ? (
+                    <>
+                      <Trophy className="w-4 h-4 mr-1" /> Complete
+                    </>
+                  ) : (
+                    <>
+                      Continue <ChevronRight className="w-4 h-4 ml-1" />
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default LessonPlayer;
