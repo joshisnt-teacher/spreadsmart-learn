@@ -17,14 +17,14 @@ const Auth: React.FC = () => {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user, loading: authLoading, signIn, signUp } = useAuth();
+  const { user, loading: authLoading, role, signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!authLoading && user) {
-      navigate('/dashboard');
+    if (!authLoading && user && role) {
+      navigate(role === 'teacher' ? '/dashboard' : '/');
     }
-  }, [authLoading, user, navigate]);
+  }, [authLoading, user, role, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
