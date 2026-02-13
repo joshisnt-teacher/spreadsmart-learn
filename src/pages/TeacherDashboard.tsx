@@ -261,7 +261,7 @@ const TeacherDashboard: React.FC = () => {
             <Tabs defaultValue="students" className="w-full">
               <TabsList>
                 <TabsTrigger value="students">Students</TabsTrigger>
-                <TabsTrigger value="assignments">Assignments</TabsTrigger>
+                <TabsTrigger value="assignments">Modules</TabsTrigger>
               </TabsList>
               <TabsContent value="students">
                 <StudentProgressView

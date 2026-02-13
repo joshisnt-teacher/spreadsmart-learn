@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { format, isPast, isFuture } from 'date-fns';
-import { Plus, Trash2, CalendarIcon, Clock, BookOpen, Users, User } from 'lucide-react';
+import { Trash2, CalendarIcon, Clock, BookOpen, Users, User, ChevronDown, ChevronRight, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { excelBasicsModule } from '@/data/excel-basics-module';
 import { useClassAssignments, type Assignment } from '@/hooks/useAssignments';
@@ -27,41 +29,64 @@ interface Props {
 
 const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
   const { assignments, loading, createAssignment, deleteAssignment } = useClassAssignments(classId);
-  const [showCreate, setShowCreate] = useState(false);
-  const [scope, setScope] = useState<'module' | 'lesson'>('module');
-  const [selectedLessonId, setSelectedLessonId] = useState<string>('');
+  const module = excelBasicsModule;
+
+  // Module card state
+  const [expanded, setExpanded] = useState(false);
+  const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
+
+  // Dialog state
+  const [showAssign, setShowAssign] = useState(false);
   const [target, setTarget] = useState<'class' | 'student'>('class');
-  const [selectedStudentId, setSelectedStudentId] = useState<string>('');
+  const [selectedStudentId, setSelectedStudentId] = useState('');
   const [liveDate, setLiveDate] = useState<Date>(new Date());
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [creating, setCreating] = useState(false);
 
-  const module = excelBasicsModule;
+  const toggleLesson = (lessonId: string) => {
+    setSelectedLessons((prev) => {
+      const next = new Set(prev);
+      if (next.has(lessonId)) next.delete(lessonId);
+      else next.add(lessonId);
+      return next;
+    });
+  };
 
-  const resetForm = () => {
-    setScope('module');
-    setSelectedLessonId('');
+  const openAssignDialog = () => {
     setTarget('class');
     setSelectedStudentId('');
     setLiveDate(new Date());
     setDueDate(undefined);
+    setShowAssign(true);
   };
 
   const handleCreate = async () => {
     setCreating(true);
-    const ok = await createAssignment({
+    const base = {
       class_id: classId,
       student_user_id: target === 'student' ? selectedStudentId : null,
       module_id: module.id,
-      lesson_id: scope === 'lesson' ? selectedLessonId : null,
       step_id: null,
       live_date: liveDate.toISOString(),
       due_date: dueDate ? dueDate.toISOString() : null,
-    });
-    if (ok) {
+    };
+
+    let success = true;
+    if (selectedLessons.size === 0) {
+      // Assign entire module
+      success = await createAssignment({ ...base, lesson_id: null });
+    } else {
+      // Assign each selected lesson
+      for (const lessonId of selectedLessons) {
+        const ok = await createAssignment({ ...base, lesson_id: lessonId });
+        if (!ok) success = false;
+      }
+    }
+
+    if (success) {
       toast({ title: 'Assignment created' });
-      setShowCreate(false);
-      resetForm();
+      setShowAssign(false);
+      setSelectedLessons(new Set());
     } else {
       toast({ title: 'Error creating assignment', variant: 'destructive' });
     }
@@ -93,104 +118,135 @@ const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
     return { label: 'Live', variant: 'default' };
   };
 
-  const canCreate = scope === 'module' || (scope === 'lesson' && selectedLessonId);
-  const canCreateFinal = canCreate && (target === 'class' || (target === 'student' && selectedStudentId));
+  const scopeSummary = selectedLessons.size === 0
+    ? 'All lessons'
+    : `${selectedLessons.size} of ${module.lessons.length} lessons selected`;
+
+  const canCreate = target === 'class' || (target === 'student' && selectedStudentId);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{assignments.length} assignment(s)</p>
-        <Button onClick={() => { resetForm(); setShowCreate(true); }}>
-          <Plus className="w-4 h-4 mr-2" /> New Assignment
-        </Button>
+    <div className="space-y-6">
+      {/* Module Card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="text-lg">{module.title}</CardTitle>
+              <CardDescription className="mt-1">
+                {module.description}
+              </CardDescription>
+              <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                <span>{module.lessons.length} lessons</span>
+                <span>~{module.estimatedMinutes} min</span>
+              </div>
+            </div>
+            <Button onClick={openAssignDialog}>
+              <Send className="w-4 h-4 mr-2" /> Assign to Class
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <Collapsible open={expanded} onOpenChange={setExpanded}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-1.5 px-2 text-muted-foreground">
+                {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                {expanded ? 'Hide lessons' : 'Show lessons'}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 space-y-1">
+              {module.lessons.map((lesson) => (
+                <label
+                  key={lesson.id}
+                  className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                >
+                  <Checkbox
+                    checked={selectedLessons.has(lesson.id)}
+                    onCheckedChange={() => toggleLesson(lesson.id)}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{lesson.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{lesson.description}</p>
+                  </div>
+                  <Badge variant="outline" className="text-xs shrink-0">{lesson.steps.length} steps</Badge>
+                </label>
+              ))}
+              {selectedLessons.size > 0 && (
+                <div className="flex items-center gap-2 pt-2 px-3">
+                  <p className="text-xs text-muted-foreground flex-1">{scopeSummary}</p>
+                  <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => setSelectedLessons(new Set())}>
+                    Clear selection
+                  </Button>
+                </div>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
+        </CardContent>
+      </Card>
+
+      {/* Existing Assignments */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium text-muted-foreground">{assignments.length} assignment(s)</h3>
+        {loading ? (
+          <Card><CardContent className="py-8 text-center text-muted-foreground">Loading…</CardContent></Card>
+        ) : assignments.length === 0 ? (
+          <Card>
+            <CardContent className="py-10 text-center">
+              <BookOpen className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+              <p className="text-muted-foreground text-sm">No assignments yet. Assign a module above to get started.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="border border-border rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/50 border-b border-border">
+                  <th className="text-left py-2 px-4 font-medium">Scope</th>
+                  <th className="text-left py-2 px-4 font-medium">Target</th>
+                  <th className="text-left py-2 px-4 font-medium">Live Date</th>
+                  <th className="text-left py-2 px-4 font-medium">Due Date</th>
+                  <th className="text-center py-2 px-4 font-medium">Status</th>
+                  <th className="text-right py-2 px-4 font-medium w-12"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {assignments.map((a) => {
+                  const status = getStatus(a);
+                  return (
+                    <tr key={a.id} className="border-b border-border last:border-0">
+                      <td className="py-2 px-4">{getAssignmentLabel(a)}</td>
+                      <td className="py-2 px-4">
+                        <span className="flex items-center gap-1.5">
+                          {a.student_user_id ? <User className="w-3 h-3" /> : <Users className="w-3 h-3" />}
+                          {getTargetLabel(a)}
+                        </span>
+                      </td>
+                      <td className="py-2 px-4 text-xs">{format(new Date(a.live_date), 'dd MMM yyyy')}</td>
+                      <td className="py-2 px-4 text-xs">{a.due_date ? format(new Date(a.due_date), 'dd MMM yyyy') : '—'}</td>
+                      <td className="py-2 px-4 text-center">
+                        <Badge variant={status.variant} className="text-xs">{status.label}</Badge>
+                      </td>
+                      <td className="py-2 px-4 text-right">
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(a.id)}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {loading ? (
-        <Card><CardContent className="py-8 text-center text-muted-foreground">Loading…</CardContent></Card>
-      ) : assignments.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <BookOpen className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">No assignments yet. Create one to assign work to your students.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="border border-border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-muted/50 border-b border-border">
-                <th className="text-left py-2 px-4 font-medium">Scope</th>
-                <th className="text-left py-2 px-4 font-medium">Target</th>
-                <th className="text-left py-2 px-4 font-medium">Live Date</th>
-                <th className="text-left py-2 px-4 font-medium">Due Date</th>
-                <th className="text-center py-2 px-4 font-medium">Status</th>
-                <th className="text-right py-2 px-4 font-medium w-12"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {assignments.map((a) => {
-                const status = getStatus(a);
-                return (
-                  <tr key={a.id} className="border-b border-border last:border-0">
-                    <td className="py-2 px-4">{getAssignmentLabel(a)}</td>
-                    <td className="py-2 px-4">
-                      <span className="flex items-center gap-1.5">
-                        {a.student_user_id ? <User className="w-3 h-3" /> : <Users className="w-3 h-3" />}
-                        {getTargetLabel(a)}
-                      </span>
-                    </td>
-                    <td className="py-2 px-4 text-xs">{format(new Date(a.live_date), 'dd MMM yyyy')}</td>
-                    <td className="py-2 px-4 text-xs">{a.due_date ? format(new Date(a.due_date), 'dd MMM yyyy') : '—'}</td>
-                    <td className="py-2 px-4 text-center">
-                      <Badge variant={status.variant} className="text-xs">{status.label}</Badge>
-                    </td>
-                    <td className="py-2 px-4 text-right">
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(a.id)}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Create Assignment Dialog */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+      {/* Assign Dialog */}
+      <Dialog open={showAssign} onOpenChange={setShowAssign}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>New Assignment</DialogTitle>
-            <DialogDescription>Assign work to your class or individual students.</DialogDescription>
+            <DialogTitle>Assign to Class</DialogTitle>
+            <DialogDescription>{module.title} — {scopeSummary}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Scope */}
-            <div className="space-y-2">
-              <Label>Scope</Label>
-              <Select value={scope} onValueChange={(v) => { setScope(v as 'module' | 'lesson'); setSelectedLessonId(''); }}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="module">Entire Module</SelectItem>
-                  <SelectItem value="lesson">Specific Lesson</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {scope === 'lesson' && (
-              <div className="space-y-2">
-                <Label>Lesson</Label>
-                <Select value={selectedLessonId} onValueChange={setSelectedLessonId}>
-                  <SelectTrigger><SelectValue placeholder="Select a lesson" /></SelectTrigger>
-                  <SelectContent>
-                    {module.lessons.map((l) => (
-                      <SelectItem key={l.id} value={l.id}>{l.title}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
             {/* Target */}
             <div className="space-y-2">
               <Label>Target</Label>
@@ -255,8 +311,8 @@ const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={creating || !canCreateFinal}>
+            <Button variant="outline" onClick={() => setShowAssign(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={creating || !canCreate}>
               {creating ? 'Creating…' : 'Create Assignment'}
             </Button>
           </DialogFooter>
