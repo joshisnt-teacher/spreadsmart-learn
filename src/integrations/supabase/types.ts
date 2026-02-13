@@ -38,6 +38,65 @@ export type Database = {
         }
         Relationships: []
       }
+      class_students: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          student_user_id: string
+          username: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          id?: string
+          student_user_id: string
+          username: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          student_user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_students_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classes: {
+        Row: {
+          created_at: string
+          id: string
+          join_code: string
+          name: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          join_code?: string
+          name: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          join_code?: string
+          name?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lesson_progress: {
         Row: {
           attempts: Json

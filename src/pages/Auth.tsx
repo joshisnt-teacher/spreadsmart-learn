@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Mail, Lock, User, ArrowRight, ArrowLeft, GraduationCap, Users } from 'lucide-react';
+import { BookOpen, Mail, Lock, User, ArrowRight, ArrowLeft, GraduationCap, Users, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
@@ -59,23 +60,54 @@ const Auth: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>Welcome Back</CardTitle>
-              <CardDescription>Sign in to continue learning</CardDescription>
+              <CardDescription>Sign in to continue</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required className="pl-10" />
-                </div>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="pl-10" />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Please wait...' : 'Sign In'}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </form>
+              <Tabs defaultValue="student" className="w-full">
+                <TabsList className="w-full mb-4">
+                  <TabsTrigger value="student" className="flex-1">Student</TabsTrigger>
+                  <TabsTrigger value="teacher" className="flex-1">Teacher</TabsTrigger>
+                </TabsList>
+                <TabsContent value="student">
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    setLoading(true);
+                    const fakeEmail = `${email.trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '')}@student.excelpath.local`;
+                    const { error } = await signIn(fakeEmail, password);
+                    if (error) toast({ title: 'Sign in failed', description: 'Invalid username or PIN', variant: 'destructive' });
+                    setLoading(false);
+                  }} className="space-y-4">
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input placeholder="Username" value={email} onChange={(e) => setEmail(e.target.value)} required className="pl-10" />
+                    </div>
+                    <div className="relative">
+                      <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input type="password" placeholder="PIN" value={password} onChange={(e) => setPassword(e.target.value)} required className="pl-10" inputMode="numeric" />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? 'Please wait...' : 'Sign In'}
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </form>
+                </TabsContent>
+                <TabsContent value="teacher">
+                  <form onSubmit={handleSignIn} className="space-y-4">
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required className="pl-10" />
+                    </div>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="pl-10" />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? 'Please wait...' : 'Sign In'}
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </form>
+                </TabsContent>
+              </Tabs>
               <div className="mt-6 text-center">
                 <button type="button" onClick={() => setView('role-select')} className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Don't have an account? Sign up
