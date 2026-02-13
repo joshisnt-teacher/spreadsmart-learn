@@ -1,67 +1,61 @@
 
 
-# Add Excel-Like Keyboard Shortcuts and Drag-to-Autofill
+# Fix Cell Edit Click Bug and Add Excel Shortcuts
 
-## Overview
-Enhance the custom spreadsheet with real Excel behaviours so students build transferable skills. This adds arrow key navigation, common keyboard shortcuts, and a drag-to-autofill handle on the selected cell.
+## Bug Fix: Clicking inside an editing cell closes it
 
-## Features to Add
+**Root cause:** The `<td>` element has an `onClick` handler that always calls `handleCellClick(ref)`, which sets `editingCell = null`. When you click inside the `<input>` to reposition your cursor, the click event bubbles up to the `<td>` and kills the edit.
 
-### 1. Arrow Key Navigation
-When a cell is selected (but not being edited), arrow keys move the selection:
-- Up/Down/Left/Right to move one cell in that direction
-- Stays within grid bounds
-- If the newly selected cell is editable, it gets selected but does NOT auto-enter edit mode (matching Excel behaviour)
+**Fix:** In `handleCellClick`, check if the clicked cell is already being edited. If so, do nothing -- let the click pass through to the input naturally.
 
-### 2. Keyboard Shortcuts
-- **F2** -- Enter edit mode on the selected cell (like Excel)
-- **Delete / Backspace** -- Clear the selected cell's value (if editable)
-- **Double-click** -- Enter edit mode (already partially works via single click; make it more precise)
-- **Arrow keys while editing** -- Allow normal cursor movement inside the input; only navigate cells when NOT editing
+```
+const handleCellClick = (ref: string) => {
+  if (editingCell === ref) return; // Don't close if already editing this cell
+  setSelectedCell(ref);
+  setEditingCell(null);
+};
+```
 
-### 3. Drag-to-Autofill Handle
-- When a cell is selected, show a small blue square at the bottom-right corner of the cell (the "fill handle")
-- Dragging this handle downward auto-fills cells below with:
-  - **Numbers**: Increment pattern (e.g., 1, 2, 3 or 10, 20, 30 if two source cells detected)
-  - **Formulas**: Adjust row references (e.g., `=A1*B1` becomes `=A2*B2`, `=A3*B3`, etc.)
-  - **Text**: Copy the value as-is
-- Only fills into editable cells; skips locked cells
-- Visual feedback: highlight the range being filled while dragging
+## New Excel Shortcuts
 
-### 4. Visual Polish
-- Show a subtle cursor change (`crosshair`) when hovering the fill handle
-- Brief highlight animation on cells that were just auto-filled
+### 1. Click-to-select cell references while editing formulas
+When typing a formula (value starts with `=`) and the user clicks another cell, instead of closing the editor, insert that cell reference at the cursor position. Dragging across multiple cells inserts a range like `A1:B3`.
+
+- Detect "formula editing mode" when the input value starts with `=`
+- Clicking a different cell while in formula mode appends/inserts the clicked cell's reference (e.g., `A2`) into the formula input
+- Shift+Click or click-and-drag selects a range and inserts `A1:A5` style references
+- Clicking a cell when NOT in formula mode behaves normally (selects that cell, exits edit)
+
+### 2. Escape to cancel editing
+Already partially handled in `handleKeyDown`, but will ensure it reverts the cell value to what it was before editing started (true cancel, not just exit).
+
+- Store the original value when entering edit mode
+- On Escape, restore the original value and exit edit mode without firing `onDataChange`
+
+### 3. Tab to move right
+Already implemented -- Tab moves to the next column. No changes needed.
 
 ## Technical Details
 
 ### File: `src/components/SpreadsheetWorkspace.tsx`
 
-**Arrow key + shortcut navigation:**
-- Add a `handleGridKeyDown` function attached to the table container (via `tabIndex={0}` and `onKeyDown`)
-- When not editing: arrow keys change `selectedCell`, F2 enters edit mode, Delete clears value
-- When editing: keys go to the input as normal (already handled by `handleKeyDown`)
+**State additions:**
+- `editingOriginalValue: string | null` -- stores the value before editing began, for Escape to revert
+- `formulaEditMode: boolean` -- derived from whether the current input starts with `=`
 
-**Fill handle rendering:**
-- When `selectedCell` is set and the cell is editable, render a small `<div>` positioned at the bottom-right corner of the selected `<td>`
-- Attach `onMouseDown` to begin a drag operation
-- Track drag via `mousemove` / `mouseup` on the document (cleaned up on unmount)
-- Calculate which cells the drag covers (only vertical for simplicity)
+**`handleCellClick` changes:**
+- If `editingCell === ref`, return early (fixes the bug)
+- If currently editing a formula (value starts with `=`), insert the clicked cell reference into the formula input instead of closing the editor
 
-**Autofill logic (new helper function `autoFillCells`):**
-- Detect the source cell's value type:
-  - If numeric: increment by 1 for each row (or detect pattern from adjacent cells)
-  - If formula: parse cell references and adjust row numbers (e.g., `=A1*B1` shifted down becomes `=A2*B2`)
-  - If text: copy as-is
-- Apply values only to cells in `editableCells`
-- Trigger `onDataChange` after fill completes
+**`handleCellDoubleClick` / edit mode entry changes:**
+- When entering edit mode, save the current cell value as `editingOriginalValue`
 
-**Double-click vs single-click:**
-- Change current `onClick` to select the cell without entering edit mode
-- Add `onDoubleClick` to enter edit mode (or keep single-click-to-edit for editable cells since it's more intuitive for students -- this can be a design choice)
+**`handleKeyDown` changes:**
+- Escape: restore `editingOriginalValue` to `cellValues`, clear `editingCell`, do NOT fire `onDataChange`
 
-### New state variables
-- `isDragging: boolean` -- whether a fill drag is in progress
-- `dragRange: string[]` -- cells being dragged over (for visual highlight)
+**Click-to-reference in formula mode:**
+- When a cell is clicked while editing a formula, append the cell reference to the input value
+- Visual: briefly highlight the referenced cell with a colored border
 
 ### Files modified
 - `src/components/SpreadsheetWorkspace.tsx` -- all changes in this single file
