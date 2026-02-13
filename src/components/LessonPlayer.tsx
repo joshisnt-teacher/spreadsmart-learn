@@ -67,6 +67,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
   }, [progress.completedStepIds, progress.totalXp, progress.attempts]);
 
   const currentStep = lesson.steps[currentStepIndex];
+  const isInstructionStep = currentStep?.type === 'instruction' || !currentStep?.task;
   const isStepComplete = progress.completedStepIds.includes(currentStep?.id || '');
   const isLastStep = currentStepIndex === lesson.steps.length - 1;
   const isLessonComplete = progress.completedStepIds.length === lesson.steps.length;
@@ -112,6 +113,33 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
       }
     }
   }, [currentStep, currentCellData, attemptCount, progress]);
+
+  const handleInstructionContinue = useCallback(() => {
+    if (!currentStep) return;
+    const xp = currentStep.task?.xpValue ?? 5;
+    setProgress((prev) => ({
+      ...prev,
+      completedStepIds: [...new Set([...prev.completedStepIds, currentStep.id])],
+      totalXp: prev.totalXp + xp,
+    }));
+    // Auto-advance after marking complete
+    setTimeout(() => {
+      if (isLastStep) {
+        onComplete?.(progress.totalXp + xp);
+        return;
+      }
+      const nextIdx = currentStepIndex + 1;
+      setCurrentStepIndex(nextIdx);
+      setFeedback(null);
+      setShowHint(false);
+      setCurrentHint(null);
+      setResetKey((k) => k + 1);
+      setProgress((prev) => ({
+        ...prev,
+        currentStepId: lesson.steps[nextIdx]?.id || '',
+      }));
+    }, 0);
+  }, [currentStep, currentStepIndex, isLastStep, lesson.steps, onComplete, progress.totalXp]);
 
   const handleNext = useCallback(() => {
     if (isLastStep) {
@@ -262,17 +290,36 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
           </div>
         </div>
 
-        {/* Spreadsheet */}
-        <div className="flex-1 p-4 min-h-0">
-          <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm">
-            <SpreadsheetWorkspace
-              initialState={currentStep.initialSheetState}
-              editableCells={currentStep.task.editableCells}
-              onDataChange={handleDataChange}
-              resetKey={resetKey}
-            />
+        {/* Spreadsheet — only for task steps or instruction steps with a sheet */}
+        {isInstructionStep ? (
+          currentStep.initialSheetState ? (
+            <div className="flex-1 p-4 min-h-0">
+              <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm opacity-80">
+                <SpreadsheetWorkspace
+                  initialState={currentStep.initialSheetState}
+                  editableCells={[]}
+                  onDataChange={() => {}}
+                  resetKey={resetKey}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1" />
+          )
+        ) : currentStep.initialSheetState && currentStep.task ? (
+          <div className="flex-1 p-4 min-h-0">
+            <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm">
+              <SpreadsheetWorkspace
+                initialState={currentStep.initialSheetState}
+                editableCells={currentStep.task.editableCells}
+                onDataChange={handleDataChange}
+                resetKey={resetKey}
+              />
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex-1" />
+        )}
 
         {/* Feedback & Controls */}
         <div className="p-4 border-t bg-card">
@@ -313,28 +360,42 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
             )}
 
             <div className="flex items-center gap-2 ml-auto shrink-0">
-              <Button variant="outline" size="sm" onClick={handleHint}>
-                <HelpCircle className="w-4 h-4 mr-1" /> Hint
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleReset}>
-                <RotateCcw className="w-4 h-4 mr-1" /> Reset
-              </Button>
-              {!isStepComplete ? (
-                <Button size="sm" onClick={handleCheck}>
-                  <Check className="w-4 h-4 mr-1" /> Check
-                </Button>
+              {isInstructionStep ? (
+                !isStepComplete ? (
+                  <Button size="sm" onClick={handleInstructionContinue} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                    Got it <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                ) : (
+                  <Button size="sm" onClick={handleNext} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                    {isLastStep ? (
+                      <><Trophy className="w-4 h-4 mr-1" /> Complete</>
+                    ) : (
+                      <>Continue <ChevronRight className="w-4 h-4 ml-1" /></>
+                    )}
+                  </Button>
+                )
               ) : (
-                <Button size="sm" onClick={handleNext} className="bg-accent hover:bg-accent/90 text-accent-foreground">
-                  {isLastStep ? (
-                    <>
-                      <Trophy className="w-4 h-4 mr-1" /> Complete
-                    </>
+                <>
+                  <Button variant="outline" size="sm" onClick={handleHint}>
+                    <HelpCircle className="w-4 h-4 mr-1" /> Hint
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleReset}>
+                    <RotateCcw className="w-4 h-4 mr-1" /> Reset
+                  </Button>
+                  {!isStepComplete ? (
+                    <Button size="sm" onClick={handleCheck}>
+                      <Check className="w-4 h-4 mr-1" /> Check
+                    </Button>
                   ) : (
-                    <>
-                      Continue <ChevronRight className="w-4 h-4 ml-1" />
-                    </>
+                    <Button size="sm" onClick={handleNext} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                      {isLastStep ? (
+                        <><Trophy className="w-4 h-4 mr-1" /> Complete</>
+                      ) : (
+                        <>Continue <ChevronRight className="w-4 h-4 ml-1" /></>
+                      )}
+                    </Button>
                   )}
-                </Button>
+                </>
               )}
             </div>
           </div>

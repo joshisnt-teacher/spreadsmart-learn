@@ -46,10 +46,11 @@ export interface Step {
   order: number;
   title: string;
   instruction: string;
+  type?: 'instruction' | 'task';
   whyItMatters?: string;
   mediaUrl?: string;
-  initialSheetState: SheetState;
-  task: TaskDefinition;
+  initialSheetState?: SheetState;
+  task?: TaskDefinition;
 }
 
 export interface Lesson {
