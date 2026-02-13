@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, HelpCircle, RotateCcw, ChevronRight, ChevronLeft, Trophy, Star, Lightbulb, BookOpen } from 'lucide-react';
+import { Check, HelpCircle, RotateCcw, ChevronRight, ChevronLeft, Trophy, Star, Lightbulb, BookOpen, Award } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -67,7 +68,8 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
   }, [progress.completedStepIds, progress.totalXp, progress.attempts]);
 
   const currentStep = lesson.steps[currentStepIndex];
-  const isInstructionStep = currentStep?.type === 'instruction' || !currentStep?.task;
+  const isChallengeStep = currentStep?.type === 'challenge';
+  const isInstructionStep = currentStep?.type === 'instruction' || (!currentStep?.task && !isChallengeStep);
   const isStepComplete = progress.completedStepIds.includes(currentStep?.id || '');
   const isLastStep = currentStepIndex === lesson.steps.length - 1;
   const isLessonComplete = progress.completedStepIds.length === lesson.steps.length;
@@ -232,10 +234,10 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
                     isComplete
                       ? 'bg-accent text-accent-foreground'
                       : isCurrent
-                      ? 'bg-primary text-primary-foreground'
+                      ? step.type === 'challenge' ? 'bg-warning text-warning-foreground' : 'bg-primary text-primary-foreground'
                       : 'bg-muted text-muted-foreground'
                   }`}>
-                    {isComplete ? <Check className="w-3 h-3" /> : idx + 1}
+                    {isComplete ? <Check className="w-3 h-3" /> : step.type === 'challenge' ? <Trophy className="w-3 h-3" /> : idx + 1}
                   </span>
                   <span className="truncate">{step.title}</span>
                 </button>
@@ -256,11 +258,16 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Instruction panel */}
-        <div className="p-6 border-b bg-card">
+        <div className={`p-6 border-b ${isChallengeStep ? 'bg-gradient-to-r from-warning/10 via-accent/10 to-primary/10' : 'bg-card'}`}>
           <div className="max-w-2xl">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-              <BookOpen className="w-3.5 h-3.5" />
+              {isChallengeStep ? <Award className="w-3.5 h-3.5 text-warning" /> : <BookOpen className="w-3.5 h-3.5" />}
               <span>Step {currentStepIndex + 1} of {lesson.steps.length}</span>
+              {isChallengeStep && (
+                <Badge className="bg-warning text-warning-foreground ml-1 text-[10px] px-1.5 py-0">
+                  <Trophy className="w-3 h-3 mr-0.5" /> Challenge
+                </Badge>
+              )}
             </div>
             <h3 className="text-xl font-semibold mb-3">{currentStep.title}</h3>
             <div className="prose prose-sm max-w-none text-foreground/90">
@@ -290,8 +297,8 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
           </div>
         </div>
 
-        {/* Spreadsheet — only for task steps or instruction steps with a sheet */}
-        {isInstructionStep ? (
+        {/* Spreadsheet — only for task/challenge steps or instruction steps with a sheet */}
+        {isInstructionStep && !isChallengeStep ? (
           currentStep.initialSheetState ? (
             <div className="flex-1 p-4 min-h-0">
               <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm opacity-80">
@@ -306,7 +313,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
           ) : (
             <div className="flex-1" />
           )
-        ) : currentStep.initialSheetState && currentStep.task ? (
+        ) : (currentStep.initialSheetState && currentStep.task) || isChallengeStep ? (
           <div className="flex-1 p-4 min-h-0">
             <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm">
               <SpreadsheetWorkspace

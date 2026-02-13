@@ -46,7 +46,7 @@ export interface Step {
   order: number;
   title: string;
   instruction: string;
-  type?: 'instruction' | 'task';
+  type?: 'instruction' | 'task' | 'challenge';
   whyItMatters?: string;
   mediaUrl?: string;
   initialSheetState?: SheetState;

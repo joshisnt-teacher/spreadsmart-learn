@@ -64,6 +64,9 @@ function checkExpectation(
 
   if (exp.expectedValue !== undefined) {
     valueOk = valuesMatch(value, exp.expectedValue, exp.tolerancePercent);
+  } else if (!exp.checkFormula) {
+    // No expected value and no formula check — just verify cell is not empty
+    valueOk = value !== undefined && value !== null && String(value).trim() !== '';
   }
 
   if (exp.checkFormula && exp.expectedFormula) {
