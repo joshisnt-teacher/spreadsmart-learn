@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      assignments: {
+        Row: {
+          class_id: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          lesson_id: string | null
+          live_date: string
+          module_id: string
+          step_id: string | null
+          student_user_id: string | null
+          teacher_id: string
+        }
+        Insert: {
+          class_id?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          lesson_id?: string | null
+          live_date?: string
+          module_id: string
+          step_id?: string | null
+          student_user_id?: string | null
+          teacher_id: string
+        }
+        Update: {
+          class_id?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          lesson_id?: string | null
+          live_date?: string
+          module_id?: string
+          step_id?: string | null
+          student_user_id?: string | null
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           badge_id: string
