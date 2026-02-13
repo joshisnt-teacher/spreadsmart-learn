@@ -1,74 +1,58 @@
 
 
-# Switch from Custom Spreadsheet to FortuneSheet
+# Rework Module: Introduction to Excel (Year 8)
 
-## Why
+## Overview
 
-The custom-built React spreadsheet can't replicate all of Excel's keyboard shortcuts, formula editing, drag-to-autofill, cell references, and other interactions reliably. FortuneSheet (`@fortune-sheet/react`) is already installed in the project and provides all of this out of the box -- it's a full Excel clone built specifically for React.
+Rewrite `src/data/excel-basics-module.ts` to match the expanded 3-lesson curriculum. The module title, description, and all lesson/step content will be replaced. No other files need to change -- the types, marking engine, and LessonPlayer all remain the same.
 
-## What Changes
+## Important Note on Lesson 3 (Sorting and Filtering)
 
-### Replace `SpreadsheetWorkspace` with a FortuneSheet `Workbook` wrapper
+Sorting and filtering are **interactive UI actions** (right-click menus, toolbar buttons) rather than cell edits. The current marking engine can only check cell **values and formulas** -- it cannot verify whether a student clicked "Sort" or applied a filter. Two options:
 
-Create a new version of `SpreadsheetWorkspace` that renders FortuneSheet's `<Workbook>` component instead of the custom HTML table. This wrapper will:
+- **Option A (recommended):** Make the sorting/filtering lesson instructional-only with read-only demo sheets, plus a final activity where students manually reorder data into cells (proving they understand the concept). This works with the existing system today.
+- **Option B:** Skip sorting/filtering for now and add it later when we build a more advanced interaction-tracking system.
 
-1. **Convert lesson data to FortuneSheet format** -- the existing `SheetState` / `CellData` types already match FortuneSheet's `celldata` format (same `r`, `c`, `v` structure), so conversion is minimal.
+The plan below uses **Option A** -- sorting steps are instructional with a hands-on "manually sort the data" activity to verify understanding.
 
-2. **Lock non-editable cells** -- use FortuneSheet's built-in sheet protection (`config.authority`) to lock the entire sheet, then mark only the `editableCells` as unlocked (by setting `v.lo = 0` on those cells). This gives students a real Excel-like experience where they can only edit the cells the lesson allows.
+## Structure
 
-3. **Capture changes via `onChange`** -- FortuneSheet emits an `onChange` callback with updated sheet data. The wrapper will extract cell values from this and pass them to the existing `onDataChange` prop so the marking engine continues to work unchanged.
+### Lesson 1: Navigating a Spreadsheet (6 steps)
+1. **Instruction** -- What Is a Spreadsheet? (grid structure, cell addresses, example table with Name/Maths/English)
+2. **Task** -- Identifying Cells (edit B2 to 80, C3 to 77)
+3. **Instruction** -- How Excel Calculates (formulas start with =, operators)
+4. **Task** -- Your First Formula (Qty x Price dataset, write =B2*C2 for D2, D3, D4)
+5. **Instruction** -- Using the Fill Handle (drag-to-copy explanation)
+6. **Task** -- Use Fill Down (delete D3/D4, drag D2 down, check all totals correct)
 
-4. **Hide unnecessary UI** -- disable the toolbar, sheet tabs, and formula bar (or keep the formula bar for educational value) since students shouldn't be adding sheets or changing formatting.
+### Lesson 2: Built-in Functions (5 steps)
+1. **Instruction** -- SUM and AVERAGE (syntax, colon ranges)
+2. **Task** -- Total Sales (Monday-Thursday sales, B6=SUM, B7=AVERAGE)
+3. **Instruction** -- MIN, MAX and COUNT (syntax, examples)
+4. **Task** -- Find the Extremes (B8=MAX, B9=MIN, B10=COUNT on same sales data)
+5. **Challenge** -- School Canteen Analysis (Burger/Wrap/Juice/Chips dataset with Sold/Price/Revenue columns; calculate revenue per item, total revenue, most sold item via MAX, average sold via AVERAGE)
 
-5. **Reset on step change** -- use the `resetKey` prop to force a fresh FortuneSheet instance when stepping between lesson steps.
-
-## What Students Get for Free
-
-- Full arrow key navigation
-- F2 to edit, Escape to cancel, Enter/Tab to confirm
-- Formula bar with live formula display
-- Click-to-reference cells while typing formulas (with colored highlights)
-- Drag-to-autofill handle with smart increment and formula adjustment
-- Copy/paste (Ctrl+C, Ctrl+V)
-- Undo/redo (Ctrl+Z, Ctrl+Y)
-- All 400+ Excel functions (SUM, AVERAGE, VLOOKUP, IF, etc.)
-- Cell selection with Shift+Click and Shift+Arrow
-- Double-click to edit
-- Right-aligned numbers, left-aligned text
-- Proper cursor positioning inside cell editors
-
-## What Stays the Same
-
-- The `marking-engine.ts` -- no changes needed, it already reads the `{ r, c, v: { v, f } }` format
-- The `LessonPlayer.tsx` -- same props interface (`initialState`, `editableCells`, `onDataChange`, `resetKey`)
-- The lesson data in `excel-basics-module.ts` -- same `SheetState` format
-- All XP, confetti, hints, and progress logic
+### Lesson 3: Sorting and Filtering (4 steps)
+1. **Instruction** -- Sorting Data (concept explanation, visual before/after example)
+2. **Task** -- Sort the Data (students manually enter Ava/Liam/Noah/Zoe scores in descending order into a results table to prove they understand sorting)
+3. **Instruction** -- Filtering Data (concept explanation, criteria-based example)
+4. **Task** -- Apply a Filter (students enter only the names/scores above 75 into a filtered results table)
 
 ## Technical Details
 
-### Files to modify
+### File to modify
+- `src/data/excel-basics-module.ts` -- complete rewrite of the module data with all new lessons, steps, cell data, and task expectations
 
-**`src/components/SpreadsheetWorkspace.tsx`** -- rewrite to wrap FortuneSheet
-
-Key implementation:
-- Import `Workbook` from `@fortune-sheet/react` and its CSS
-- Convert `initialState.celldata` to mark locked/unlocked cells based on `editableCells`
-- Configure sheet with `authority: { sheet: 1, selectLockedCells: 1, selectunLockedCells: 1 }` to enable protection
-- Set `showToolbar: false`, `showSheetTabs: false` to hide UI chrome
-- Use `onChange` to extract cell data and call `onDataChange`
-- Use `key={resetKey}` on the Workbook to force remount on step changes
-
-**`src/index.css`** -- update FortuneSheet CSS overrides if needed for theme consistency
-
-### Files to remove (optional cleanup)
-
-- `src/components/spreadsheet/useAutofill.ts` -- no longer needed (FortuneSheet handles autofill)
-- `src/components/spreadsheet/utils.ts` -- keep `parseCellRef` and `cellRefFromCoords` since `marking-engine.ts` uses the same logic via its own copy
+### Key data design decisions
+- Module title changes to "Introduction to Excel"
+- All cell data uses the existing `CellData` format (r, c, v with v/m/f/bl/bg properties)
+- Fill Down task (Step 6) checks D3 and D4 have correct values and formulas (=B3*C3, =B4*C4) -- FortuneSheet's autofill will handle the formula adjustment
+- Canteen challenge uses a 4-item dataset matching the user's spec (Burger 25x6, Wrap 18x7, Juice 40x3, Chips 32x4)
+- Sorting/filtering tasks use a "manual entry" approach where students type sorted/filtered results into a separate output area, verified by the marking engine
 
 ### No changes to
-
-- `src/lib/marking-engine.ts`
 - `src/types/lesson.ts`
-- `src/data/excel-basics-module.ts`
+- `src/lib/marking-engine.ts`
 - `src/components/LessonPlayer.tsx`
+- `src/components/SpreadsheetWorkspace.tsx`
 
