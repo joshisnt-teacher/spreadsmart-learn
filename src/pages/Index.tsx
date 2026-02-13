@@ -67,7 +67,7 @@ const Index: React.FC = () => {
   return (
     <div className="relative">
       <div className="absolute top-4 right-4 z-10">
-        <Button variant="ghost" size="sm" onClick={signOut}>
+        <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate('/auth'); }}>
           <LogOut className="w-4 h-4 mr-1" /> Sign Out
         </Button>
       </div>
