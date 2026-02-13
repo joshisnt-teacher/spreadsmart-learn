@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Users, Copy, Check, ArrowLeft, Trash2, UserPlus, Upload, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, Users, Copy, Check, ArrowLeft, UserPlus, Upload, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -110,17 +110,6 @@ const TeacherDashboard: React.FC = () => {
       fetchStudents(selectedClass.id);
     }
     setLoading(false);
-  };
-
-  const handleDeleteStudent = async (student: StudentData) => {
-    // We can only remove from class_students; actual user deletion would need admin
-    const { error } = await supabase.from('class_students').delete().eq('id', student.id);
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Student removed from class' });
-      if (selectedClass) fetchStudents(selectedClass.id);
-    }
   };
 
   const parseBulkText = (text: string): { username: string; pin: string }[] => {
@@ -261,41 +250,11 @@ const TeacherDashboard: React.FC = () => {
               </div>
             </div>
 
-            {students.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <UserPlus className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground">No students yet. Add students to this class.</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="border border-border rounded-lg overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-muted/50 border-b border-border">
-                      <th className="text-left py-2 px-4 font-medium">Username</th>
-                      <th className="text-left py-2 px-4 font-medium">Added</th>
-                      <th className="text-right py-2 px-4 font-medium">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {students.map((s) => (
-                      <tr key={s.id} className="border-b border-border last:border-0">
-                        <td className="py-2 px-4 font-mono">{s.username}</td>
-                        <td className="py-2 px-4 text-muted-foreground">{new Date(s.created_at).toLocaleDateString()}</td>
-                        <td className="py-2 px-4 text-right">
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDeleteStudent(s)}>
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            <StudentProgressView classId={selectedClass.id} students={students} />
+            <StudentProgressView
+              classId={selectedClass.id}
+              students={students}
+              onStudentDeleted={() => fetchStudents(selectedClass.id)}
+            />
           </motion.div>
         )}
       </main>
