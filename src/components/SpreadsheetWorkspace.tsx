@@ -19,6 +19,8 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
   const [cellValues, setCellValues] = useState<Record<string, string>>({});
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
   const [editingCell, setEditingCell] = useState<string | null>(null);
+  const [editingOriginalValue, setEditingOriginalValue] = useState<string | null>(null);
+  const [referencedCells, setReferencedCells] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -186,13 +188,40 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
     },
   });
 
+  const isFormulaEditing = editingCell && cellValues[editingCell]?.startsWith('=');
+
   const handleCellClick = (ref: string) => {
+    // Don't close if clicking inside the cell already being edited
+    if (editingCell === ref) return;
+
+    // If editing a formula, insert clicked cell reference instead of closing
+    if (editingCell && isFormulaEditing) {
+      const input = inputRef.current;
+      const currentVal = cellValues[editingCell] || '';
+      if (input) {
+        const pos = input.selectionStart ?? currentVal.length;
+        const newVal = currentVal.slice(0, pos) + ref + currentVal.slice(pos);
+        setCellValues((prev) => ({ ...prev, [editingCell]: newVal }));
+        setReferencedCells((prev) => [...prev, ref]);
+        setTimeout(() => {
+          input.focus();
+          const newPos = pos + ref.length;
+          input.setSelectionRange(newPos, newPos);
+        }, 0);
+        // Clear highlight after a moment
+        setTimeout(() => setReferencedCells((prev) => prev.filter((c) => c !== ref)), 600);
+      }
+      return;
+    }
+
     setSelectedCell(ref);
     setEditingCell(null);
+    setEditingOriginalValue(null);
   };
 
   const handleCellDoubleClick = (ref: string) => {
     if (isEditable(ref)) {
+      setEditingOriginalValue(cellValues[ref] || '');
       setEditingCell(ref);
       setTimeout(() => inputRef.current?.focus(), 0);
     }
@@ -224,7 +253,12 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
         setSelectedCell(nextRef);
       }
     } else if (e.key === 'Escape') {
+      // Revert to original value
+      if (editingCell && editingOriginalValue !== null) {
+        setCellValues((prev) => ({ ...prev, [editingCell]: editingOriginalValue }));
+      }
       setEditingCell(null);
+      setEditingOriginalValue(null);
     }
   };
 
@@ -255,6 +289,7 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
       case 'F2':
         e.preventDefault();
         if (isEditable(selectedCell)) {
+          setEditingOriginalValue(cellValues[selectedCell] || '');
           setEditingCell(selectedCell);
           setTimeout(() => inputRef.current?.focus(), 0);
         }
@@ -271,6 +306,7 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
       case 'Enter':
         e.preventDefault();
         if (isEditable(selectedCell)) {
+          setEditingOriginalValue(cellValues[selectedCell] || '');
           setEditingCell(selectedCell);
           setTimeout(() => inputRef.current?.focus(), 0);
         }
@@ -278,6 +314,7 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
       default:
         // Start typing into editable cell
         if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && isEditable(selectedCell)) {
+          setEditingOriginalValue(cellValues[selectedCell] || '');
           setEditingCell(selectedCell);
           setCellValues((prev) => ({ ...prev, [selectedCell]: e.key }));
           setTimeout(() => inputRef.current?.focus(), 0);
@@ -341,6 +378,7 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
                   const isEditing = editingCell === ref;
                   const isDragTarget = dragRange.includes(ref);
                   const isJustFilled = filledCells.includes(ref);
+                  const isReferenced = referencedCells.includes(ref);
                   const displayVal = getDisplayValue(ref);
 
                   return (
@@ -352,7 +390,9 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
                           ? 'ring-2 ring-primary ring-inset z-10'
                           : ''
                       } ${
-                        isDragTarget
+                        isReferenced
+                          ? 'ring-2 ring-accent ring-inset bg-accent/20 z-10'
+                          : isDragTarget
                           ? 'bg-primary/20 ring-1 ring-primary/40 ring-inset'
                           : editable
                           ? 'bg-primary/5 hover:bg-primary/10'
