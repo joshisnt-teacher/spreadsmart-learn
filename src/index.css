@@ -123,3 +123,8 @@
   overflow: hidden;
   border: 1px solid hsl(var(--border));
 }
+
+.fortune-sheet-container .luckysheet-add-row-area,
+.fortune-sheet-container .luckysheet-bottom-controll-row {
+  display: none !important;
+}
