@@ -1,1 +1,7 @@
 project_id = "ctfxhxqhvszadozamqkg"
+
+[functions.create-student]
+verify_jwt = false
+
+[functions.bulk-create-students]
+verify_jwt = false
