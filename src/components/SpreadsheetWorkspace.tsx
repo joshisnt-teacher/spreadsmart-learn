@@ -23,6 +23,7 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
   const [referencedCells, setReferencedCells] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const suppressBlurRef = useRef(false);
 
   const rows = initialState.row || 10;
   const cols = initialState.column || 6;
@@ -196,6 +197,7 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
 
     // If editing a formula, insert clicked cell reference instead of closing
     if (editingCell && isFormulaEditing) {
+      suppressBlurRef.current = true;
       const input = inputRef.current;
       const currentVal = cellValues[editingCell] || '';
       if (input) {
@@ -207,6 +209,7 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
           input.focus();
           const newPos = pos + ref.length;
           input.setSelectionRange(newPos, newPos);
+          suppressBlurRef.current = false;
         }, 0);
         // Clear highlight after a moment
         setTimeout(() => setReferencedCells((prev) => prev.filter((c) => c !== ref)), 600);
@@ -232,6 +235,7 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
   };
 
   const handleCellBlur = () => {
+    if (suppressBlurRef.current) return;
     if (editingCell) {
       fireDataChange(cellValues);
     }
@@ -402,6 +406,11 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
                       } ${
                         isJustFilled ? 'animate-pulse' : ''
                       }`}
+                      onMouseDown={() => {
+                        if (editingCell && editingCell !== ref && isFormulaEditing) {
+                          suppressBlurRef.current = true;
+                        }
+                      }}
                       onClick={() => handleCellClick(ref)}
                       onDoubleClick={() => handleCellDoubleClick(ref)}
                     >
