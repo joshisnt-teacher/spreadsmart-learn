@@ -24,6 +24,9 @@ const Index: React.FC = () => {
     if (!authLoading && user && role === 'teacher') {
       navigate('/dashboard');
     }
+    if (!authLoading && user && role === 'student') {
+      navigate('/student');
+    }
   }, [authLoading, user, role, navigate]);
 
   const activeLesson = activeLessonId

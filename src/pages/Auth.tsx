@@ -22,7 +22,7 @@ const Auth: React.FC = () => {
 
   useEffect(() => {
     if (!authLoading && user && role) {
-      navigate(role === 'teacher' ? '/dashboard' : '/');
+      navigate(role === 'teacher' ? '/dashboard' : '/student');
     }
   }, [authLoading, user, role, navigate]);
 
