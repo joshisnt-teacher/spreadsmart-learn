@@ -1,32 +1,68 @@
 
 
-# Fix Multi-Operand Formula Evaluation
+# Add Excel-Like Keyboard Shortcuts and Drag-to-Autofill
 
-## Problem
-The spreadsheet's formula engine only handles simple two-cell arithmetic (e.g., `=A2+B2`). Any formula with three or more terms like `=C2+C3+C4` returns `#ERROR` because the regex pattern `^([A-Z]+\d+)([\+\-\*\/])([A-Z]+\d+)$` requires exactly two cell references with one operator.
+## Overview
+Enhance the custom spreadsheet with real Excel behaviours so students build transferable skills. This adds arrow key navigation, common keyboard shortcuts, and a drag-to-autofill handle on the selected cell.
 
-## Solution
-Replace the rigid two-operand regex with a general-purpose arithmetic evaluator that supports any number of cell references and operators chained together (e.g., `=A1+B1+C1-D1*E1`).
+## Features to Add
+
+### 1. Arrow Key Navigation
+When a cell is selected (but not being edited), arrow keys move the selection:
+- Up/Down/Left/Right to move one cell in that direction
+- Stays within grid bounds
+- If the newly selected cell is editable, it gets selected but does NOT auto-enter edit mode (matching Excel behaviour)
+
+### 2. Keyboard Shortcuts
+- **F2** -- Enter edit mode on the selected cell (like Excel)
+- **Delete / Backspace** -- Clear the selected cell's value (if editable)
+- **Double-click** -- Enter edit mode (already partially works via single click; make it more precise)
+- **Arrow keys while editing** -- Allow normal cursor movement inside the input; only navigate cells when NOT editing
+
+### 3. Drag-to-Autofill Handle
+- When a cell is selected, show a small blue square at the bottom-right corner of the cell (the "fill handle")
+- Dragging this handle downward auto-fills cells below with:
+  - **Numbers**: Increment pattern (e.g., 1, 2, 3 or 10, 20, 30 if two source cells detected)
+  - **Formulas**: Adjust row references (e.g., `=A1*B1` becomes `=A2*B2`, `=A3*B3`, etc.)
+  - **Text**: Copy the value as-is
+- Only fills into editable cells; skips locked cells
+- Visual feedback: highlight the range being filled while dragging
+
+### 4. Visual Polish
+- Show a subtle cursor change (`crosshair`) when hovering the fill handle
+- Brief highlight animation on cells that were just auto-filled
 
 ## Technical Details
 
 ### File: `src/components/SpreadsheetWorkspace.tsx`
 
-**Replace the arithmetic handling block** (around lines 101-114) with a general parser that:
+**Arrow key + shortcut navigation:**
+- Add a `handleGridKeyDown` function attached to the table container (via `tabIndex={0}` and `onKeyDown`)
+- When not editing: arrow keys change `selectedCell`, F2 enters edit mode, Delete clears value
+- When editing: keys go to the input as normal (already handled by `handleKeyDown`)
 
-1. Tokenizes the expression into cell references, numbers, and operators using a regex like `/([A-Z]+\d+|\d+\.?\d*|[\+\-\*\/])/g`
-2. Iterates through tokens, resolving cell references via `getDisplayValue`
-3. Evaluates left-to-right (with standard operator precedence: `*` and `/` before `+` and `-`)
-4. Returns `#ERROR` only if the expression is truly malformed
+**Fill handle rendering:**
+- When `selectedCell` is set and the cell is editable, render a small `<div>` positioned at the bottom-right corner of the selected `<td>`
+- Attach `onMouseDown` to begin a drag operation
+- Track drag via `mousemove` / `mouseup` on the document (cleaned up on unmount)
+- Calculate which cells the drag covers (only vertical for simplicity)
 
-This will support formulas like:
-- `=C2+C3+C4` (the one currently failing)
-- `=A2*B2+C2` (mixed operators)
-- `=A1+10` (cell + literal number)
-- `=MAX(A1:A5)-MIN(A1:A5)` -- still handled by the function matcher above, with the subtraction of results being a future enhancement
+**Autofill logic (new helper function `autoFillCells`):**
+- Detect the source cell's value type:
+  - If numeric: increment by 1 for each row (or detect pattern from adjacent cells)
+  - If formula: parse cell references and adjust row numbers (e.g., `=A1*B1` shifted down becomes `=A2*B2`)
+  - If text: copy as-is
+- Apply values only to cells in `editableCells`
+- Trigger `onDataChange` after fill completes
 
-### Scope
-- One file changed: `src/components/SpreadsheetWorkspace.tsx`
-- Only the `evaluateFormula` function is modified
-- No changes to the marking engine, types, or module data
+**Double-click vs single-click:**
+- Change current `onClick` to select the cell without entering edit mode
+- Add `onDoubleClick` to enter edit mode (or keep single-click-to-edit for editable cells since it's more intuitive for students -- this can be a design choice)
+
+### New state variables
+- `isDragging: boolean` -- whether a fill drag is in progress
+- `dragRange: string[]` -- cells being dragged over (for visual highlight)
+
+### Files modified
+- `src/components/SpreadsheetWorkspace.tsx` -- all changes in this single file
 
