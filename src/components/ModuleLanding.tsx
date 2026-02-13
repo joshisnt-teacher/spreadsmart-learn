@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Clock, ChevronRight, Star, Zap } from 'lucide-react';
+import { BookOpen, Clock, ChevronRight, Star, Zap, Lock, CalendarClock } from 'lucide-react';
+import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -11,6 +12,9 @@ interface ModuleLandingProps {
   completedLessonIds?: string[];
   totalXp?: number;
   onStartLesson: (lessonId: string) => void;
+  hasAssignments?: boolean;
+  isLessonAssigned?: (lessonId: string) => boolean;
+  getDueDate?: (lessonId: string) => string | null;
 }
 
 const ModuleLanding: React.FC<ModuleLandingProps> = ({
@@ -18,6 +22,9 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
   completedLessonIds = [],
   totalXp = 0,
   onStartLesson,
+  hasAssignments = false,
+  isLessonAssigned = () => true,
+  getDueDate = () => null,
 }) => {
   const totalLessons = module.lessons.length;
   const completedCount = completedLessonIds.length;
@@ -88,6 +95,9 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
             const isComplete = completedLessonIds.includes(lesson.id);
             const isCurrent = lesson.id === nextLesson.id;
             const isLocked = idx > 0 && !completedLessonIds.includes(module.lessons[idx - 1].id) && !isCurrent;
+            const assigned = isLessonAssigned(lesson.id);
+            const dueDate = getDueDate(lesson.id);
+            const isHidden = hasAssignments && !assigned;
 
             return (
               <motion.div
@@ -97,16 +107,18 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
                 transition={{ delay: idx * 0.05, duration: 0.3 }}
               >
                 <Card
-                  className={`transition-all cursor-pointer ${
-                    isCurrent
-                      ? 'border-primary/40 shadow-md'
+                  className={`transition-all ${
+                    isHidden
+                      ? 'opacity-30 cursor-not-allowed'
+                      : isCurrent
+                      ? 'border-primary/40 shadow-md cursor-pointer'
                       : isComplete
-                      ? 'border-accent/30 bg-accent/5'
+                      ? 'border-accent/30 bg-accent/5 cursor-pointer'
                       : isLocked
                       ? 'opacity-50 cursor-not-allowed'
-                      : 'hover:shadow-sm'
+                      : 'hover:shadow-sm cursor-pointer'
                   }`}
-                  onClick={() => !isLocked && onStartLesson(lesson.id)}
+                  onClick={() => !isLocked && !isHidden && onStartLesson(lesson.id)}
                 >
                   <CardContent className="flex items-center gap-4 p-4">
                     <div className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold shrink-0 ${
@@ -121,7 +133,20 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-sm">{lesson.title}</h3>
                       <p className="text-xs text-muted-foreground mt-0.5">{lesson.description}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{lesson.steps.length} steps</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-xs text-muted-foreground">{lesson.steps.length} steps</p>
+                        {dueDate && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <CalendarClock className="w-3 h-3" />
+                            Due {format(new Date(dueDate), 'dd MMM')}
+                          </span>
+                        )}
+                        {isHidden && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Lock className="w-3 h-3" /> Not assigned
+                          </span>
+                        )}
+                      </div>
                     </div>
                     {!isLocked && (
                       <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />

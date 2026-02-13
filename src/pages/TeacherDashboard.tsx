@@ -12,6 +12,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import StudentProgressView from '@/components/StudentProgressView';
+import AssignmentManager from '@/components/AssignmentManager';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface BulkResult {
   username: string;
@@ -256,11 +258,22 @@ const TeacherDashboard: React.FC = () => {
               </div>
             </div>
 
-            <StudentProgressView
-              classId={selectedClass.id}
-              students={students}
-              onStudentDeleted={() => fetchStudents(selectedClass.id)}
-            />
+            <Tabs defaultValue="students" className="w-full">
+              <TabsList>
+                <TabsTrigger value="students">Students</TabsTrigger>
+                <TabsTrigger value="assignments">Assignments</TabsTrigger>
+              </TabsList>
+              <TabsContent value="students">
+                <StudentProgressView
+                  classId={selectedClass.id}
+                  students={students}
+                  onStudentDeleted={() => fetchStudents(selectedClass.id)}
+                />
+              </TabsContent>
+              <TabsContent value="assignments">
+                <AssignmentManager classId={selectedClass.id} students={students} />
+              </TabsContent>
+            </Tabs>
           </motion.div>
         )}
       </main>

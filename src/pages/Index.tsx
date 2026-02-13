@@ -6,6 +6,7 @@ import { excelBasicsModule } from '@/data/excel-basics-module';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useProgress } from '@/hooks/useProgress';
+import { useStudentAssignments } from '@/hooks/useAssignments';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 
@@ -13,6 +14,7 @@ const Index: React.FC = () => {
   const { user, loading: authLoading, role, signOut } = useAuth();
   const navigate = useNavigate();
   const { completedLessonIds, totalXp, loading: progressLoading, markLessonComplete } = useProgress(excelBasicsModule.id);
+  const { hasAssignments, isLessonAssigned, getDueDate, loading: assignLoading } = useStudentAssignments(excelBasicsModule.id);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,7 +50,7 @@ const Index: React.FC = () => {
     setActiveLessonId(null);
   }, []);
 
-  if (authLoading || progressLoading) {
+  if (authLoading || progressLoading || assignLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <p className="text-muted-foreground">Loading...</p>
@@ -80,6 +82,9 @@ const Index: React.FC = () => {
         completedLessonIds={completedLessonIds}
         totalXp={totalXp}
         onStartLesson={handleStartLesson}
+        hasAssignments={hasAssignments}
+        isLessonAssigned={isLessonAssigned}
+        getDueDate={getDueDate}
       />
     </div>
   );
