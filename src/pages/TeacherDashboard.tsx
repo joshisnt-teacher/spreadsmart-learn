@@ -34,8 +34,14 @@ interface StudentData {
 }
 
 const TeacherDashboard: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { user, role, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authLoading && (!user || role === 'student')) {
+      navigate(user ? '/' : '/auth');
+    }
+  }, [authLoading, user, role, navigate]);
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
   const [students, setStudents] = useState<StudentData[]>([]);

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 
 const Index: React.FC = () => {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading, role, signOut } = useAuth();
   const navigate = useNavigate();
   const { completedLessonIds, totalXp, loading: progressLoading, markLessonComplete } = useProgress(excelBasicsModule.id);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
@@ -19,7 +19,11 @@ const Index: React.FC = () => {
     if (!authLoading && !user) {
       navigate('/auth');
     }
-  }, [authLoading, user, navigate]);
+    // If a teacher lands here, redirect to dashboard
+    if (!authLoading && user && role === 'teacher') {
+      navigate('/dashboard');
+    }
+  }, [authLoading, user, role, navigate]);
 
   const activeLesson = activeLessonId
     ? excelBasicsModule.lessons.find((l) => l.id === activeLessonId)
