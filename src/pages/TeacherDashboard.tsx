@@ -169,7 +169,7 @@ const TeacherDashboard: React.FC = () => {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => navigate('/')}>Lessons</Button>
-            <Button variant="ghost" size="sm" onClick={signOut}>Sign Out</Button>
+            <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate('/auth'); }}>Sign Out</Button>
           </div>
         </div>
       </header>
