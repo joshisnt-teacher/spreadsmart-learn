@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, HelpCircle, RotateCcw, ChevronRight, ChevronLeft, Trophy, Star, Lightbulb, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import SpreadsheetWorkspace from '@/components/SpreadsheetWorkspace';
 import { checkTask, getHint } from '@/lib/marking-engine';
+import { useLessonProgress } from '@/hooks/useProgress';
 import type { Lesson, Step, CheckResult, LessonProgress } from '@/types/lesson';
 
 interface LessonPlayerProps {
@@ -29,6 +30,41 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
   const [currentHint, setCurrentHint] = useState<string | null>(null);
   const [resetKey, setResetKey] = useState(0);
   const [currentCellData, setCurrentCellData] = useState<any[]>([]);
+  const { saveProgress, loadProgress } = useLessonProgress(lesson.id);
+
+  // Load saved progress on mount
+  useEffect(() => {
+    loadProgress().then((saved) => {
+      if (saved && !saved.completed) {
+        const attempts = (saved.attempts && typeof saved.attempts === 'object' && !Array.isArray(saved.attempts))
+          ? saved.attempts as Record<string, number>
+          : {};
+        setProgress({
+          lessonId: lesson.id,
+          completedStepIds: saved.completed_step_ids,
+          currentStepId: saved.current_step_id || lesson.steps[0]?.id || '',
+          totalXp: saved.total_xp,
+          attempts,
+        });
+        // Jump to the right step
+        const idx = lesson.steps.findIndex(s => s.id === saved.current_step_id);
+        if (idx >= 0) setCurrentStepIndex(idx);
+      }
+    });
+  }, [lesson.id]);
+
+  // Auto-save progress on changes
+  useEffect(() => {
+    if (progress.completedStepIds.length > 0 || Object.keys(progress.attempts).length > 0) {
+      saveProgress(
+        progress.completedStepIds,
+        progress.currentStepId,
+        progress.totalXp,
+        progress.attempts,
+        progress.completedStepIds.length === lesson.steps.length,
+      );
+    }
+  }, [progress.completedStepIds, progress.totalXp, progress.attempts]);
 
   const currentStep = lesson.steps[currentStepIndex];
   const isStepComplete = progress.completedStepIds.includes(currentStep?.id || '');
