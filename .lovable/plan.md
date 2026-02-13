@@ -1,96 +1,87 @@
 
-
-# Excel Training Platform MVP — "ExcelPath"
+# Enhanced Lesson Scaffolding with Instructional Steps
 
 ## Overview
-A web-based student learning platform that teaches Microsoft Excel through guided, interactive lessons with an embedded spreadsheet. The first iteration focuses on the core learning experience: an embedded spreadsheet with auto-marked tasks, progressing through the flagship "Excel Basics" module.
+Currently, every step requires a spreadsheet task. This plan adds support for **instruction-only steps** -- pure teaching moments where students read, absorb, and continue -- so we can scaffold concepts like "What are cells?", "What are columns and rows?", and "How does SUM work?" before asking students to do anything.
 
----
+## What Changes
 
-## Phase 1: Core Learning Experience (This Build)
+### 1. Update the Step type to support instruction-only steps
+- Make the `task` and `initialSheetState` fields **optional** on the `Step` interface
+- Add a `type` field: `'instruction'` or `'task'` (defaulting to `'task'` for backward compatibility)
+- Instruction steps can optionally include a read-only `initialSheetState` to show an example spreadsheet without editable cells
 
-### 1. Embedded Spreadsheet Workspace
-- Use **FortuneSheet** (React-based, canvas-rendered, strong formula support including SUM, AVERAGE, MIN, MAX, COUNT, COUNTA, relative/absolute references)
-- Wrap it in a custom component that supports:
-  - **Locked cells** (non-editable) vs **highlighted editable cells**
-  - **Progressive feature unlocking** — toolbar buttons/features hidden until the lesson enables them
-  - **Formula bar** display
-  - **Pre-loaded data** per step from the database
-  - **Reset** to restore the step's initial state
+### 2. Update the LessonPlayer to render instruction steps
+- When the current step has `type: 'instruction'`, hide the Check/Hint/Reset buttons
+- Show a simple **"Got it"** or **"Continue"** button instead
+- Clicking it marks the step complete (awards its XP) and advances
+- The spreadsheet area will either show a read-only example sheet or be hidden if no sheet state is provided
+- The instruction panel gets more vertical space for longer explanatory text
 
-### 2. Lesson Player Interface
-A guided, step-by-step lesson experience with this layout:
-- **Left sidebar**: Step list with progress indicators (completed/current/locked), lesson title
-- **Center panel**: Instruction text, optional example image/GIF, "Why this matters" callout
-- **Right/bottom panel**: Embedded spreadsheet workspace
-- **Persistent controls**: Check, Hint, Reset Step, Continue (locked until correct)
+### 3. Update the marking engine and progress logic
+- `checkTask` is never called for instruction steps, so no changes needed there
+- The progress tracking already works by step ID, so instruction steps get marked complete when the student clicks Continue
+- XP for instruction steps will typically be small (5 XP) as a participation reward
 
-### 3. Auto-Marking Engine
-When a student clicks "Check":
-- Validate **cell values** against expected outputs
-- Validate **formulas** in target cells (not just results)
-- Run a **hidden variant dataset** test to prevent hard-coded answers
-- Check **fill-down consistency** where applicable
-- Return structured feedback:
-  - ✅ Correct — success message with skill reinforcement
-  - ⚠️ Almost correct — specific improvement suggestion
-  - ❌ Incorrect — hint toward the likely issue
-- After 2+ failed attempts: unlock escalating hints
+### 4. Expand the Excel Basics module content
+The current 4 lessons (8 steps total) will be expanded to include proper scaffolding. Here is the new lesson structure:
 
-### 4. Flagship Module: "Excel Basics"
-Seeded into the database with ~8 lessons and ~40-50 steps covering:
-1. **Navigating a Spreadsheet** — selecting cells, ranges, basic movement
-2. **Entering & Editing Data** — typing, deleting, undo
-3. **Basic Formulas** — arithmetic operators (+, -, *, /)
-4. **SUM & AVERAGE** — function syntax, ranges
-5. **MIN, MAX, COUNT** — more functions, combining knowledge
-6. **Fill Down & Patterns** — dragging formulas, relative references
-7. **Absolute References** — $A$1 syntax, when and why
-8. **Review & Challenge** — mixed tasks applying all skills
+**Lesson 1: Navigating a Spreadsheet** (currently 2 steps, becomes 5)
+- NEW Step 1: "What is a Spreadsheet?" -- instruction explaining columns (A, B, C...), rows (1, 2, 3...), and cells (e.g., B2 is column B, row 2). Shows a labelled example sheet (read-only).
+- NEW Step 2: "Understanding Cell References" -- instruction explaining that every cell has a unique address like A1, B3, C5. Shows an example sheet with a few cells highlighted.
+- NEW Step 3: "Selecting and Typing" -- instruction explaining that you click a cell to select it, then type to enter data. Numbers go right-aligned, text goes left-aligned.
+- Existing Step: "Select a Cell" -- type 42 in B2 (task)
+- Existing Step: "Enter Multiple Values" -- enter 10, 20, 30 (task)
 
-Each step includes: instruction text, optional media, spreadsheet initial state, task definition, expected outputs, hints, and XP value.
+**Lesson 2: Basic Formulas** (currently 2 steps, becomes 4)
+- NEW Step 1: "What is a Formula?" -- instruction explaining formulas start with `=`, they reference other cells, and they update automatically when inputs change.
+- NEW Step 2: "Arithmetic Operators" -- instruction showing `+`, `-`, `*`, `/` with a read-only example sheet demonstrating `=A2+B2`.
+- Existing Step: "Add Two Numbers" (task)
+- Existing Step: "Subtract and Multiply" (task)
 
-### 5. Basic Gamification
-- **XP** earned per completed task (bonus for first-attempt success)
-- **Badges** for lesson completion and special achievements (e.g., "Formula Rookie", "Perfect Score")
-- Simple progress bar showing module completion percentage
+**Lesson 3: SUM and AVERAGE** (currently 2 steps, becomes 4)
+- NEW Step 1: "Why Use Functions?" -- instruction explaining that when you have lots of cells, typing `=A1+A2+A3+...` is tedious. Functions like SUM do it in one go.
+- NEW Step 2: "How Ranges Work" -- instruction explaining that `B2:B5` means "all cells from B2 down to B5". Shows a visual example.
+- Existing Step: "Your First SUM" (task)
+- Existing Step: "Calculate an Average" (task)
 
----
+**Lesson 4: MIN, MAX and COUNT** (currently 2 steps, becomes 3)
+- NEW Step 1: "Summarising Data" -- instruction explaining MIN finds the smallest, MAX finds the largest, COUNT tells you how many. Shows a table of student scores as context.
+- Existing Step: "Find the Minimum and Maximum" (task)
+- Existing Step: "Count Your Data" (task)
 
-## Phase 2: Authentication & Dashboards (Next Build)
+Total steps go from 8 to 16, giving students proper context before each hands-on task.
 
-### 6. Backend Setup (Lovable Cloud / Supabase)
-- Database tables: users, classes, enrollments, modules, lessons, steps, tasks, worksheets, attempts, points, badges, user_roles
-- Teacher accounts with email login
-- Student accounts with username + PIN (no email required, pseudonymous)
-- Role-based access (teacher vs student) stored in a separate user_roles table
+## Technical Details
 
-### 7. Teacher Dashboard
-- Create classes and generate join codes
-- Bulk-create student accounts with pseudonymous usernames
-- View student progress: module/lesson completion, attempts per task, common mistakes
-- Assign modules to classes
-- Configure: mastery requirements, attempt limits, hint availability, due dates
+### Type changes (`src/types/lesson.ts`)
+```typescript
+export interface Step {
+  id: string;
+  order: number;
+  title: string;
+  instruction: string;
+  type?: 'instruction' | 'task'; // defaults to 'task'
+  whyItMatters?: string;
+  mediaUrl?: string;
+  initialSheetState?: SheetState; // now optional
+  task?: TaskDefinition;          // now optional
+}
+```
 
-### 8. Student Dashboard
-- View assigned modules with progress bars
-- See XP total and badges earned
-- Resume lessons from where they left off
+### LessonPlayer changes (`src/components/LessonPlayer.tsx`)
+- Add a check: `const isInstructionStep = currentStep.type === 'instruction' || !currentStep.task`
+- For instruction steps: render the instruction panel with more space, optionally show a read-only spreadsheet, and show a single "Continue" button that auto-completes the step
+- For task steps: keep existing Check/Hint/Reset/Continue flow unchanged
+- Update the step completion logic so instruction steps award XP immediately on Continue
 
----
+### Module data changes (`src/data/excel-basics-module.ts`)
+- Insert new instruction steps before existing task steps in each lesson
+- Each instruction step uses `type: 'instruction'`, has no `task` or `editableCells`, and may include a read-only `initialSheetState` for visual examples
+- Re-number step orders and IDs accordingly
+- Update `estimatedMinutes` from 90 to ~120
 
-## Architecture Principles
-- **Database-driven content**: All modules, lessons, steps, and tasks stored in the database — adding new content requires no code changes
-- **Modular task/checker system**: Task definitions and marking logic are generic, supporting future task types (upload-based, mini-games) as plugins
-- **Upload-ready schema**: Database structure will accommodate future .xlsx upload tasks even though they won't be implemented yet
-- **Extensible gamification**: Points and badges system designed to support future additions (leaderboards, streaks, etc.)
-
----
-
-## Design Direction
-- Clean, academic but modern aesthetic
-- Minimal distractions — focus on the learning content
-- High contrast, clear labels, keyboard-friendly
-- The spreadsheet feels familiar but simplified
-- Mobile-responsive dashboards (lesson player optimized for desktop/tablet)
-
+### Files modified
+- `src/types/lesson.ts` -- make `task` and `initialSheetState` optional, add `type` field
+- `src/components/LessonPlayer.tsx` -- handle instruction-only steps
+- `src/data/excel-basics-module.ts` -- add scaffolding steps to all 4 lessons
