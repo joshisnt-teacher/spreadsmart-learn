@@ -98,21 +98,57 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
         }
       }
 
-      // Handle simple arithmetic like =A2+B2, =A2-B2, =A2*B2, =A2/B2
-      const arithMatch = expr.match(/^([A-Z]+\d+)([\+\-\*\/])([A-Z]+\d+)$/);
-      if (arithMatch) {
-        const [, ref1, op, ref2] = arithMatch;
-        const v1 = Number(getDisplayValue(ref1));
-        const v2 = Number(getDisplayValue(ref2));
-        switch (op) {
-          case '+': return v1 + v2;
-          case '-': return v1 - v2;
-          case '*': return v1 * v2;
-          case '/': return v2 !== 0 ? v1 / v2 : '#DIV/0!';
+      // General-purpose arithmetic: tokenize into cell refs, numbers, and operators
+      const tokens = expr.match(/([A-Z]+\d+|\d+\.?\d*|[\+\-\*\/])/g);
+      if (!tokens || tokens.length === 0) return '#ERROR';
+
+      // Resolve tokens to numbers
+      const resolved: (number | string)[] = tokens.map((t) => {
+        if (/^[A-Z]+\d+$/.test(t)) {
+          const val = getDisplayValue(t);
+          const num = Number(val);
+          return isNaN(num) ? NaN : num;
+        }
+        if (/^\d+\.?\d*$/.test(t)) return Number(t);
+        return t; // operator
+      });
+
+      // Build values and ops arrays
+      const values: number[] = [];
+      const ops: string[] = [];
+      for (let i = 0; i < resolved.length; i++) {
+        if (i % 2 === 0) {
+          if (typeof resolved[i] !== 'number' || isNaN(resolved[i] as number)) return '#ERROR';
+          values.push(resolved[i] as number);
+        } else {
+          if (typeof resolved[i] !== 'string' || !/^[\+\-\*\/]$/.test(resolved[i] as string)) return '#ERROR';
+          ops.push(resolved[i] as string);
         }
       }
 
-      return '#ERROR';
+      if (values.length === 0 || values.length !== ops.length + 1) return '#ERROR';
+
+      // Apply * and / first (operator precedence)
+      const addValues: number[] = [values[0]];
+      const addOps: string[] = [];
+      for (let i = 0; i < ops.length; i++) {
+        if (ops[i] === '*' || ops[i] === '/') {
+          const left = addValues.pop()!;
+          if (ops[i] === '/' && values[i + 1] === 0) return '#DIV/0!';
+          addValues.push(ops[i] === '*' ? left * values[i + 1] : left / values[i + 1]);
+        } else {
+          addValues.push(values[i + 1]);
+          addOps.push(ops[i]);
+        }
+      }
+
+      // Apply + and -
+      let result = addValues[0];
+      for (let i = 0; i < addOps.length; i++) {
+        result = addOps[i] === '+' ? result + addValues[i + 1] : result - addValues[i + 1];
+      }
+
+      return result;
     } catch {
       return '#ERROR';
     }
