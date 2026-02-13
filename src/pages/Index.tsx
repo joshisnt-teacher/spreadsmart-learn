@@ -21,7 +21,6 @@ const Index: React.FC = () => {
     if (!authLoading && !user) {
       navigate('/auth');
     }
-    // If a teacher lands here, redirect to dashboard
     if (!authLoading && user && role === 'teacher') {
       navigate('/dashboard');
     }
