@@ -2,655 +2,669 @@ import type { Module } from '@/types/lesson';
 
 export const excelBasicsModule: Module = {
   id: 'excel-basics',
-  title: 'Excel Basics',
-  description: 'Learn the fundamentals of working with spreadsheets — from navigating cells to writing powerful formulas.',
-  estimatedMinutes: 140,
+  title: 'Introduction to Excel',
+  description: 'Learn how spreadsheets are structured, enter and edit data, write formulas, use built-in functions, and sort and filter data.',
+  estimatedMinutes: 45,
   lessons: [
+    // ──────────────────────────────────────────────
+    // LESSON 1: Navigating a Spreadsheet (6 steps)
+    // ──────────────────────────────────────────────
     {
       id: 'lesson-1',
       order: 1,
       title: 'Navigating a Spreadsheet',
-      description: 'Learn how to move around and select cells.',
+      description: 'Learn how spreadsheets are structured, enter data, write basic formulas, and use the fill handle.',
       steps: [
+        // Step 1 — Instruction: What Is a Spreadsheet?
         {
           id: 'step-1-1',
           order: 1,
           type: 'instruction',
-          title: 'What is a Spreadsheet?',
-          instruction: 'A spreadsheet is a grid made up of **columns** and **rows**.\n\nColumns run vertically and are labelled with letters: **A**, **B**, **C**, and so on.\nRows run horizontally and are numbered: **1**, **2**, **3**, etc.\n\nThe small rectangles where a column and row meet are called **cells**. For example, the cell in column B, row 2 is called **B2**.',
+          title: 'What Is a Spreadsheet?',
+          instruction:
+            'A spreadsheet is a grid made up of **rows** and **columns**.\n\n' +
+            '- **Columns** are labelled with letters: A, B, C…\n' +
+            '- **Rows** are labelled with numbers: 1, 2, 3…\n' +
+            '- Each box is called a **cell**.\n' +
+            '- Every cell has an address (e.g. **A1**, **B3**, **C7**).\n\n' +
+            'Spreadsheets are used to **organise data**, **perform calculations**, and **analyse patterns**.\n\n' +
+            'Look at the example table below. Cell **B2** contains the value **75**.',
           whyItMatters: 'Understanding the grid is essential — every piece of data lives in a cell, and every formula references cells by their address.',
           initialSheetState: {
             name: 'Sheet1',
-            row: 6,
-            column: 5,
+            row: 5,
+            column: 4,
             celldata: [
-              { r: 0, c: 0, v: { v: 'A1', m: 'A1', bg: '#e8f0fe', fc: '#666666', fs: 10 } },
-              { r: 0, c: 1, v: { v: 'B1', m: 'B1', bg: '#e8f0fe', fc: '#666666', fs: 10 } },
-              { r: 0, c: 2, v: { v: 'C1', m: 'C1', bg: '#e8f0fe', fc: '#666666', fs: 10 } },
-              { r: 1, c: 0, v: { v: 'A2', m: 'A2', bg: '#e8f0fe', fc: '#666666', fs: 10 } },
-              { r: 1, c: 1, v: { v: 'B2', m: 'B2', bg: '#fff3cd', fc: '#333333', bl: 1, fs: 11 } },
-              { r: 1, c: 2, v: { v: 'C2', m: 'C2', bg: '#e8f0fe', fc: '#666666', fs: 10 } },
-              { r: 2, c: 0, v: { v: 'A3', m: 'A3', bg: '#e8f0fe', fc: '#666666', fs: 10 } },
-              { r: 2, c: 1, v: { v: 'B3', m: 'B3', bg: '#e8f0fe', fc: '#666666', fs: 10 } },
-              { r: 2, c: 2, v: { v: 'C3', m: 'C3', bg: '#e8f0fe', fc: '#666666', fs: 10 } },
+              // Header row
+              { r: 0, c: 0, v: { v: 'Name', m: 'Name', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Maths', m: 'Maths', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 2, v: { v: 'English', m: 'English', bl: 1, bg: '#e8f0fe' } },
+              // Data rows
+              { r: 1, c: 0, v: { v: 'Ava', m: 'Ava' } },
+              { r: 1, c: 1, v: { v: 75, m: '75' } },
+              { r: 1, c: 2, v: { v: 82, m: '82' } },
+              { r: 2, c: 0, v: { v: 'Liam', m: 'Liam' } },
+              { r: 2, c: 1, v: { v: 68, m: '68' } },
+              { r: 2, c: 2, v: { v: 74, m: '74' } },
+              { r: 3, c: 0, v: { v: 'Zoe', m: 'Zoe' } },
+              { r: 3, c: 1, v: { v: 91, m: '91' } },
+              { r: 3, c: 2, v: { v: 88, m: '88' } },
             ],
           },
-          task: { id: 'task-1-1-inst', expectations: [], editableCells: [], hints: [], successMessage: '', xpValue: 5 },
         },
+
+        // Step 2 — Task: Identifying Cells
         {
           id: 'step-1-2',
           order: 2,
-          type: 'instruction',
-          title: 'Understanding Cell References',
-          instruction: 'Every cell has a unique **address** made from its column letter and row number.\n\nFor example:\n- **A1** is the top-left cell\n- **B3** is column B, row 3\n- **C5** is column C, row 5\n\nWhen you write formulas later, you\'ll use these addresses to tell the spreadsheet which cells to work with.',
-          whyItMatters: 'Cell references are the language of spreadsheets. Formulas like =A1+B1 only work because each cell has a precise address.',
-        },
-        {
-          id: 'step-1-3',
-          order: 3,
-          type: 'instruction',
-          title: 'Selecting and Typing',
-          instruction: 'To enter data, **click on a cell** to select it, then start typing.\n\n- **Numbers** (like 42 or 3.14) align to the right automatically.\n- **Text** (like "January") aligns to the left.\n\nPress **Enter** to confirm your entry and move down, or **Tab** to move right.',
-          whyItMatters: 'Knowing how to enter data quickly will save you time when building spreadsheets.',
-        },
-        {
-          id: 'step-1-4',
-          order: 4,
-          title: 'Select a Cell',
-          instruction: 'Click on cell **B2** to select it. Then type the number **42** and press Enter.',
+          type: 'task',
+          title: 'Identifying Cells',
+          instruction:
+            'Let\'s practise selecting and editing cells.\n\n' +
+            '1. Click on cell **B2** and type **80**. Press Enter.\n' +
+            '2. Click on cell **C3** and type **77**. Press Enter.\n' +
+            '3. Click **Check**.',
           whyItMatters: 'Selecting and entering data is the foundation of everything in a spreadsheet.',
           initialSheetState: {
             name: 'Sheet1',
-            row: 10,
-            column: 6,
+            row: 5,
+            column: 4,
             celldata: [
-              { r: 0, c: 0, v: { v: 'Item', m: 'Item', bl: 1, fs: 11 } },
-              { r: 0, c: 1, v: { v: 'Value', m: 'Value', bl: 1, fs: 11 } },
-              { r: 1, c: 0, v: { v: 'Score', m: 'Score' } },
-            ],
-          },
-          task: {
-            id: 'task-1-1',
-            expectations: [{ cellRef: 'B2', expectedValue: 42 }],
-            editableCells: ['B2'],
-            hints: [
-              'Click on the cell in column B, row 2.',
-              'Type the number 42 — no equals sign needed for plain numbers.',
-            ],
-            successMessage: 'You entered your first value! Every spreadsheet starts with data.',
-            incorrectMessage: 'Make sure you typed exactly 42 in cell B2.',
-            xpValue: 10,
-            bonusXp: 5,
-          },
-        },
-        {
-          id: 'step-1-5',
-          order: 5,
-          title: 'Enter Multiple Values',
-          instruction: 'Enter the following values:\n- **B2**: 10\n- **B3**: 20\n- **B4**: 30',
-          whyItMatters: 'Working with multiple cells lets you build datasets that formulas can process.',
-          initialSheetState: {
-            name: 'Sheet1',
-            row: 10,
-            column: 6,
-            celldata: [
-              { r: 0, c: 0, v: { v: 'Item', m: 'Item', bl: 1 } },
-              { r: 0, c: 1, v: { v: 'Sales', m: 'Sales', bl: 1 } },
-              { r: 1, c: 0, v: { v: 'January', m: 'January' } },
-              { r: 2, c: 0, v: { v: 'February', m: 'February' } },
-              { r: 3, c: 0, v: { v: 'March', m: 'March' } },
+              { r: 0, c: 0, v: { v: 'Name', m: 'Name', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Maths', m: 'Maths', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 2, v: { v: 'English', m: 'English', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Ava', m: 'Ava' } },
+              { r: 1, c: 1, v: { v: 75, m: '75' } },
+              { r: 1, c: 2, v: { v: 82, m: '82' } },
+              { r: 2, c: 0, v: { v: 'Liam', m: 'Liam' } },
+              { r: 2, c: 1, v: { v: 68, m: '68' } },
+              { r: 2, c: 2, v: { v: 74, m: '74' } },
+              { r: 3, c: 0, v: { v: 'Zoe', m: 'Zoe' } },
+              { r: 3, c: 1, v: { v: 91, m: '91' } },
+              { r: 3, c: 2, v: { v: 88, m: '88' } },
             ],
           },
           task: {
             id: 'task-1-2',
             expectations: [
-              { cellRef: 'B2', expectedValue: 10 },
-              { cellRef: 'B3', expectedValue: 20 },
-              { cellRef: 'B4', expectedValue: 30 },
+              { cellRef: 'B2', expectedValue: 80 },
+              { cellRef: 'C3', expectedValue: 77 },
             ],
-            editableCells: ['B2', 'B3', 'B4'],
+            editableCells: ['B2', 'C3'],
             hints: [
-              'Click on B2, type 10, then press Enter to move to B3.',
-              'After B2, type 20 in B3 and 30 in B4.',
+              'Click on cell B2 (column B, row 2) and type 80.',
+              'Cell C3 is column C, row 3 — type 77 there.',
             ],
-            successMessage: 'Great — you can enter data in multiple cells!',
-            xpValue: 15,
+            successMessage: 'Well done! You edited two cells correctly.',
+            incorrectMessage: 'Make sure B2 contains 80 and C3 contains 77.',
+            xpValue: 10,
             bonusXp: 5,
           },
         },
+
+        // Step 3 — Instruction: How Excel Calculates
         {
-          id: 'step-1-challenge',
-          order: 6,
-          type: 'challenge',
-          title: 'Build a Mini Dataset',
-          instruction: 'Time to prove your skills! Fill in the table below with **3 rows** of data.\n\nEnter any **name** in cells **A2**, **A3**, **A4**, any **age** (number) in **B2**, **B3**, **B4**, and any **score** (number) in **C2**, **C3**, **C4**.',
-          whyItMatters: 'Building your own dataset from scratch is a core spreadsheet skill — this is how every real project starts.',
+          id: 'step-1-3',
+          order: 3,
+          type: 'instruction',
+          title: 'How Excel Calculates',
+          instruction:
+            'If you type a plain number like `42`, the spreadsheet just stores it.\n\n' +
+            'But if you start with an **equals sign** (`=`), it becomes a **formula** and the spreadsheet calculates the result automatically.\n\n' +
+            'You can use these operators:\n' +
+            '- **+** Addition\n' +
+            '- **-** Subtraction\n' +
+            '- **\\*** Multiplication\n' +
+            '- **/** Division\n\n' +
+            'Example: if A1 = 4 and B1 = 5, then **=A1+B1** shows **9**.',
+          whyItMatters: 'Formulas are what make spreadsheets powerful — they calculate results automatically and update when the data changes.',
           initialSheetState: {
             name: 'Sheet1',
-            row: 8,
+            row: 4,
             column: 4,
             celldata: [
-              { r: 0, c: 0, v: { v: 'Name', m: 'Name', bl: 1 } },
-              { r: 0, c: 1, v: { v: 'Age', m: 'Age', bl: 1 } },
-              { r: 0, c: 2, v: { v: 'Score', m: 'Score', bl: 1 } },
+              { r: 0, c: 0, v: { v: 'A', m: 'A', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'B', m: 'B', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 2, v: { v: 'Result', m: 'Result', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 4, m: '4' } },
+              { r: 1, c: 1, v: { v: 5, m: '5' } },
+              { r: 1, c: 2, v: { v: 9, m: '9', f: '=A2+B2' } },
             ],
           },
-          task: {
-            id: 'task-1-challenge',
-            expectations: [
-              { cellRef: 'A2', expectedValue: undefined },
-              { cellRef: 'B2', expectedValue: undefined },
-              { cellRef: 'C2', expectedValue: undefined },
-              { cellRef: 'A3', expectedValue: undefined },
-              { cellRef: 'B3', expectedValue: undefined },
-              { cellRef: 'C3', expectedValue: undefined },
-              { cellRef: 'A4', expectedValue: undefined },
-              { cellRef: 'B4', expectedValue: undefined },
-              { cellRef: 'C4', expectedValue: undefined },
-            ],
-            editableCells: ['A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'],
-            hints: [
-              'Click on A2 and type any name, like "Alice".',
-              'Fill in ages as numbers (e.g. 15) and scores as numbers (e.g. 88).',
-              'Make sure all 9 cells (A2:C4) have values.',
-            ],
-            successMessage: '🎉 Challenge complete! You built a dataset from scratch — great work!',
-            incorrectMessage: 'Make sure all 9 cells (A2 through C4) have values entered.',
-            xpValue: 35,
-            bonusXp: 15,
-          },
         },
-      ],
-    },
-    {
-      id: 'lesson-2',
-      order: 2,
-      title: 'Basic Formulas',
-      description: 'Write your first arithmetic formulas.',
-      steps: [
+
+        // Step 4 — Task: Your First Formula
         {
-          id: 'step-2-1',
-          order: 1,
-          type: 'instruction',
-          title: 'What is a Formula?',
-          instruction: 'A **formula** is an instruction that tells the spreadsheet to calculate something.\n\nFormulas always start with an **equals sign** (**=**). After the `=`, you write cell references and operators.\n\nFor example, **=A2+B2** means "take the value in A2, add the value in B2, and show the result."\n\nThe magic of formulas: if you change A2 or B2, the formula **automatically updates** the answer!',
-          whyItMatters: 'Formulas are what make spreadsheets powerful — they turn static data into dynamic, auto-updating calculations.',
-        },
-        {
-          id: 'step-2-2',
-          order: 2,
-          type: 'instruction',
-          title: 'Arithmetic Operators',
-          instruction: 'Spreadsheets support four basic arithmetic operators:\n\n- **+** Addition: `=A2+B2`\n- **-** Subtraction: `=A2-B2`\n- **\\*** Multiplication: `=A2*B2`\n- **/** Division: `=A2/B2`\n\nLook at the example below — cell C2 contains the formula **=A2+B2**, which adds 100 and 15 to get 115.',
-          whyItMatters: 'These four operators are the building blocks for every calculation you\'ll ever do in a spreadsheet.',
+          id: 'step-1-4',
+          order: 4,
+          type: 'task',
+          title: 'Your First Formula',
+          instruction:
+            'This table shows items with a **Qty** (quantity) and **Price**.\n\n' +
+            'Calculate the **Total** for each item by multiplying Qty × Price:\n' +
+            '1. In **D2**, type **=B2*C2** and press Enter.\n' +
+            '2. In **D3**, type **=B3*C3** and press Enter.\n' +
+            '3. In **D4**, type **=B4*C4** and press Enter.\n' +
+            '4. Click **Check**.',
+          whyItMatters: 'Writing formulas that reference other cells is a core spreadsheet skill.',
           initialSheetState: {
             name: 'Sheet1',
             row: 6,
-            column: 4,
+            column: 5,
             celldata: [
-              { r: 0, c: 0, v: { v: 'Price', m: 'Price', bl: 1 } },
-              { r: 0, c: 1, v: { v: 'Tax', m: 'Tax', bl: 1 } },
-              { r: 0, c: 2, v: { v: 'Total', m: 'Total', bl: 1 } },
-              { r: 1, c: 0, v: { v: 100, m: '100' } },
-              { r: 1, c: 1, v: { v: 15, m: '15' } },
-              { r: 1, c: 2, v: { v: 115, m: '115', f: '=A2+B2' } },
-            ],
-          },
-          task: { id: 'task-2-inst', expectations: [], editableCells: [], hints: [], successMessage: '', xpValue: 5 },
-        },
-        {
-          id: 'step-2-3',
-          order: 3,
-          title: 'Add Two Numbers',
-          instruction: 'In cell **C2**, write a formula to add the values in **A2** and **B2**.\n\nHint: formulas start with `=`',
-          whyItMatters: 'Formulas are the power of spreadsheets — they calculate results automatically.',
-          initialSheetState: {
-            name: 'Sheet1',
-            row: 10,
-            column: 6,
-            celldata: [
-              { r: 0, c: 0, v: { v: 'Price', m: 'Price', bl: 1 } },
-              { r: 0, c: 1, v: { v: 'Tax', m: 'Tax', bl: 1 } },
-              { r: 0, c: 2, v: { v: 'Total', m: 'Total', bl: 1 } },
-              { r: 1, c: 0, v: { v: 100, m: '100' } },
-              { r: 1, c: 1, v: { v: 15, m: '15' } },
+              { r: 0, c: 0, v: { v: 'Item', m: 'Item', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Qty', m: 'Qty', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 2, v: { v: 'Price', m: 'Price', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 3, v: { v: 'Total', m: 'Total', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Pens', m: 'Pens' } },
+              { r: 1, c: 1, v: { v: 4, m: '4' } },
+              { r: 1, c: 2, v: { v: 2, m: '2' } },
+              { r: 2, c: 0, v: { v: 'Books', m: 'Books' } },
+              { r: 2, c: 1, v: { v: 3, m: '3' } },
+              { r: 2, c: 2, v: { v: 5, m: '5' } },
+              { r: 3, c: 0, v: { v: 'Rulers', m: 'Rulers' } },
+              { r: 3, c: 1, v: { v: 6, m: '6' } },
+              { r: 3, c: 2, v: { v: 1, m: '1' } },
             ],
           },
           task: {
-            id: 'task-2-1',
+            id: 'task-1-4',
             expectations: [
-              { cellRef: 'C2', expectedValue: 115, expectedFormula: '=A2+B2', checkFormula: true },
+              { cellRef: 'D2', expectedValue: 8, expectedFormula: '=B2*C2', checkFormula: true },
+              { cellRef: 'D3', expectedValue: 15, expectedFormula: '=B3*C3', checkFormula: true },
+              { cellRef: 'D4', expectedValue: 6, expectedFormula: '=B4*C4', checkFormula: true },
             ],
-            editableCells: ['C2'],
+            editableCells: ['D2', 'D3', 'D4'],
             hints: [
-              'Start your formula with = sign.',
-              'Try typing =A2+B2 in cell C2.',
+              'Start each formula with = (e.g. =B2*C2).',
+              'Make sure you use the * symbol for multiplication.',
+              'D2 should be =B2*C2, D3 should be =B3*C3, D4 should be =B4*C4.',
             ],
-            successMessage: 'Your first formula! The cell now auto-calculates when the inputs change.',
-            almostCorrectMessage: 'The value is correct, but make sure you used a formula (=A2+B2) not a hardcoded number.',
-            incorrectMessage: 'Try using the formula =A2+B2 in cell C2.',
+            successMessage: 'Excellent! You wrote three formulas that calculate automatically.',
+            almostCorrectMessage: 'The values look right but make sure you used formulas, not typed numbers.',
+            incorrectMessage: 'Use =B2*C2 in D2, =B3*C3 in D3, and =B4*C4 in D4.',
             xpValue: 20,
             bonusXp: 10,
           },
         },
+
+        // Step 5 — Instruction: Using the Fill Handle
         {
-          id: 'step-2-4',
-          order: 4,
-          title: 'Subtract and Multiply',
-          instruction: 'Calculate profit and margin:\n- **C2**: `=A2-B2` (Revenue minus Cost)\n- **D2**: `=A2*B2` (just to practice multiplication)',
+          id: 'step-1-5',
+          order: 5,
+          type: 'instruction',
+          title: 'Using the Fill Handle',
+          instruction:
+            'Instead of rewriting the same formula for every row, you can **drag to copy** it.\n\n' +
+            '1. Click on a cell that already has a formula.\n' +
+            '2. Look for the small **square** in the bottom-right corner of the cell.\n' +
+            '3. **Click and drag** it down to fill the cells below.\n\n' +
+            'The spreadsheet automatically **adjusts the cell references**. For example, if D2 contains `=B2*C2`, dragging down to D3 creates `=B3*C3`.',
+          whyItMatters: 'The fill handle saves huge amounts of time — imagine a dataset with 1,000 rows!',
+        },
+
+        // Step 6 — Task: Use Fill Down
+        {
+          id: 'step-1-6',
+          order: 6,
+          type: 'task',
+          title: 'Use Fill Down',
+          instruction:
+            'Cell **D2** already has the formula `=B2*C2`.\n\n' +
+            '1. Click on **D2**.\n' +
+            '2. Grab the fill handle (small square at the bottom-right) and **drag down** to **D4**.\n' +
+            '3. Click **Check** to verify the formulas were copied correctly.',
+          whyItMatters: 'Using fill down is one of the most essential spreadsheet shortcuts.',
           initialSheetState: {
             name: 'Sheet1',
-            row: 10,
-            column: 6,
+            row: 6,
+            column: 5,
             celldata: [
-              { r: 0, c: 0, v: { v: 'Revenue', m: 'Revenue', bl: 1 } },
-              { r: 0, c: 1, v: { v: 'Cost', m: 'Cost', bl: 1 } },
-              { r: 0, c: 2, v: { v: 'Profit', m: 'Profit', bl: 1 } },
-              { r: 0, c: 3, v: { v: 'Product', m: 'Product', bl: 1 } },
-              { r: 1, c: 0, v: { v: 500, m: '500' } },
-              { r: 1, c: 1, v: { v: 200, m: '200' } },
+              { r: 0, c: 0, v: { v: 'Item', m: 'Item', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Qty', m: 'Qty', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 2, v: { v: 'Price', m: 'Price', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 3, v: { v: 'Total', m: 'Total', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Pens', m: 'Pens' } },
+              { r: 1, c: 1, v: { v: 4, m: '4' } },
+              { r: 1, c: 2, v: { v: 2, m: '2' } },
+              { r: 1, c: 3, v: { v: 8, m: '8', f: '=B2*C2' } },
+              { r: 2, c: 0, v: { v: 'Books', m: 'Books' } },
+              { r: 2, c: 1, v: { v: 3, m: '3' } },
+              { r: 2, c: 2, v: { v: 5, m: '5' } },
+              { r: 3, c: 0, v: { v: 'Rulers', m: 'Rulers' } },
+              { r: 3, c: 1, v: { v: 6, m: '6' } },
+              { r: 3, c: 2, v: { v: 1, m: '1' } },
+            ],
+          },
+          task: {
+            id: 'task-1-6',
+            expectations: [
+              { cellRef: 'D2', expectedValue: 8, expectedFormula: '=B2*C2', checkFormula: true },
+              { cellRef: 'D3', expectedValue: 15, expectedFormula: '=B3*C3', checkFormula: true },
+              { cellRef: 'D4', expectedValue: 6, expectedFormula: '=B4*C4', checkFormula: true },
+            ],
+            editableCells: ['D2', 'D3', 'D4'],
+            hints: [
+              'Click on D2 first, then look for the small square at the bottom-right corner.',
+              'Drag the fill handle down from D2 to D4.',
+              'If dragging doesn\'t work, you can type =B3*C3 in D3 and =B4*C4 in D4 manually.',
+            ],
+            successMessage: 'Great work! The fill handle copied and adjusted the formulas automatically.',
+            almostCorrectMessage: 'Values are correct but check the formulas — they should reference the correct rows.',
+            incorrectMessage: 'D3 should contain =B3*C3 (value 15) and D4 should contain =B4*C4 (value 6).',
+            xpValue: 15,
+            bonusXp: 5,
+          },
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────
+    // LESSON 2: Built-in Functions (5 steps)
+    // ──────────────────────────────────────────────
+    {
+      id: 'lesson-2',
+      order: 2,
+      title: 'Built-in Functions',
+      description: 'Use SUM, AVERAGE, MIN, MAX, and COUNT to analyse data.',
+      steps: [
+        // Step 1 — Instruction: SUM and AVERAGE
+        {
+          id: 'step-2-1',
+          order: 1,
+          type: 'instruction',
+          title: 'SUM and AVERAGE',
+          instruction:
+            'Functions are built-in shortcuts for common calculations.\n\n' +
+            '**SUM** adds up all the numbers in a range:\n' +
+            '`=SUM(B2:B5)` adds B2 + B3 + B4 + B5.\n\n' +
+            '**AVERAGE** calculates the mean:\n' +
+            '`=AVERAGE(B2:B5)` adds them up and divides by 4.\n\n' +
+            'The **colon** (`:`) means "from this cell **to** that cell".',
+          whyItMatters: 'SUM and AVERAGE are the two most-used functions in the world. They save time and reduce errors.',
+        },
+
+        // Step 2 — Task: Total Sales
+        {
+          id: 'step-2-2',
+          order: 2,
+          type: 'task',
+          title: 'Total Sales',
+          instruction:
+            'This table shows daily sales from Monday to Thursday.\n\n' +
+            '1. In **B6**, calculate the **total** sales using SUM.\n' +
+            '2. In **B7**, calculate the **average** daily sales using AVERAGE.\n' +
+            '3. Click **Check**.',
+          whyItMatters: 'Totals and averages are the foundation of data analysis.',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 9,
+            column: 3,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Day', m: 'Day', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Sales', m: 'Sales', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Monday', m: 'Monday' } },
+              { r: 1, c: 1, v: { v: 240, m: '240' } },
+              { r: 2, c: 0, v: { v: 'Tuesday', m: 'Tuesday' } },
+              { r: 2, c: 1, v: { v: 310, m: '310' } },
+              { r: 3, c: 0, v: { v: 'Wednesday', m: 'Wednesday' } },
+              { r: 3, c: 1, v: { v: 275, m: '275' } },
+              { r: 4, c: 0, v: { v: 'Thursday', m: 'Thursday' } },
+              { r: 4, c: 1, v: { v: 290, m: '290' } },
+              // Labels for answer cells
+              { r: 5, c: 0, v: { v: 'Total', m: 'Total', bl: 1, bg: '#fff3cd' } },
+              { r: 6, c: 0, v: { v: 'Average', m: 'Average', bl: 1, bg: '#fff3cd' } },
             ],
           },
           task: {
             id: 'task-2-2',
             expectations: [
-              { cellRef: 'C2', expectedValue: 300, expectedFormula: '=A2-B2', checkFormula: true },
-              { cellRef: 'D2', expectedValue: 100000, expectedFormula: '=A2*B2', checkFormula: true },
+              { cellRef: 'B6', expectedValue: 1115, expectedFormula: '=SUM(B2:B5)', checkFormula: true },
+              { cellRef: 'B7', expectedValue: 278.75, expectedFormula: '=AVERAGE(B2:B5)', checkFormula: true },
             ],
-            editableCells: ['C2', 'D2'],
+            editableCells: ['B6', 'B7'],
             hints: [
-              'For Profit, use subtraction: =A2-B2',
-              'For Product, use multiplication: =A2*B2',
+              'In B6, type =SUM(B2:B5) to add all four sales values.',
+              'In B7, type =AVERAGE(B2:B5) to calculate the mean.',
+              'Make sure you include the colon : between B2 and B5.',
             ],
-            successMessage: 'You\'ve mastered basic arithmetic operators!',
+            successMessage: 'Total is 1,115 and average is 278.75 — nice work!',
+            almostCorrectMessage: 'Values look right but check you used the SUM and AVERAGE functions.',
+            incorrectMessage: 'Use =SUM(B2:B5) in B6 and =AVERAGE(B2:B5) in B7.',
             xpValue: 20,
             bonusXp: 10,
           },
         },
+
+        // Step 3 — Instruction: MIN, MAX, and COUNT
         {
-          id: 'step-2-challenge',
-          order: 5,
-          type: 'challenge',
-          title: 'Complete the Invoice',
-          instruction: 'Complete this invoice! Write formulas to calculate:\n- **C2**: Line Total = **=A2*B2**\n- **C3**: Line Total = **=A3*B3**\n- **C4**: Line Total = **=A4*B4**\n- **D2**: Grand Total = **=C2+C3+C4**',
-          whyItMatters: 'Invoices are one of the most common uses of spreadsheets — combining multiplication and addition is a real-world skill.',
+          id: 'step-2-3',
+          order: 3,
+          type: 'instruction',
+          title: 'MIN, MAX and COUNT',
+          instruction:
+            'Three more useful functions:\n\n' +
+            '**MIN** finds the **smallest** number in a range:\n' +
+            '`=MIN(B2:B5)` → the lowest value.\n\n' +
+            '**MAX** finds the **largest** number:\n' +
+            '`=MAX(B2:B5)` → the highest value.\n\n' +
+            '**COUNT** counts how many **numbers** are in a range:\n' +
+            '`=COUNT(B2:B5)` → 4 (there are 4 numbers).',
+          whyItMatters: 'MIN, MAX, and COUNT help you quickly understand the shape of your data without scrolling through it.',
+        },
+
+        // Step 4 — Task: Find the Extremes
+        {
+          id: 'step-2-4',
+          order: 4,
+          type: 'task',
+          title: 'Find the Extremes',
+          instruction:
+            'Using the same sales data:\n\n' +
+            '1. In **B8**, find the **highest** daily sales using MAX.\n' +
+            '2. In **B9**, find the **lowest** daily sales using MIN.\n' +
+            '3. In **B10**, **count** how many days are listed using COUNT.\n' +
+            '4. Click **Check**.',
+          whyItMatters: 'Identifying highs, lows, and counts is the first step in any data analysis.',
           initialSheetState: {
             name: 'Sheet1',
-            row: 8,
-            column: 5,
+            row: 12,
+            column: 3,
             celldata: [
-              { r: 0, c: 0, v: { v: 'Quantity', m: 'Quantity', bl: 1 } },
-              { r: 0, c: 1, v: { v: 'Unit Price', m: 'Unit Price', bl: 1 } },
-              { r: 0, c: 2, v: { v: 'Line Total', m: 'Line Total', bl: 1 } },
-              { r: 0, c: 3, v: { v: 'Grand Total', m: 'Grand Total', bl: 1 } },
-              { r: 1, c: 0, v: { v: 5, m: '5' } },
-              { r: 1, c: 1, v: { v: 12, m: '12' } },
-              { r: 2, c: 0, v: { v: 3, m: '3' } },
-              { r: 2, c: 1, v: { v: 25, m: '25' } },
-              { r: 3, c: 0, v: { v: 10, m: '10' } },
-              { r: 3, c: 1, v: { v: 8, m: '8' } },
+              { r: 0, c: 0, v: { v: 'Day', m: 'Day', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Sales', m: 'Sales', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Monday', m: 'Monday' } },
+              { r: 1, c: 1, v: { v: 240, m: '240' } },
+              { r: 2, c: 0, v: { v: 'Tuesday', m: 'Tuesday' } },
+              { r: 2, c: 1, v: { v: 310, m: '310' } },
+              { r: 3, c: 0, v: { v: 'Wednesday', m: 'Wednesday' } },
+              { r: 3, c: 1, v: { v: 275, m: '275' } },
+              { r: 4, c: 0, v: { v: 'Thursday', m: 'Thursday' } },
+              { r: 4, c: 1, v: { v: 290, m: '290' } },
+              // Pre-filled results from previous task
+              { r: 5, c: 0, v: { v: 'Total', m: 'Total', bl: 1, bg: '#d4edda' } },
+              { r: 5, c: 1, v: { v: 1115, m: '1115', f: '=SUM(B2:B5)' } },
+              { r: 6, c: 0, v: { v: 'Average', m: 'Average', bl: 1, bg: '#d4edda' } },
+              { r: 6, c: 1, v: { v: 278.75, m: '278.75', f: '=AVERAGE(B2:B5)' } },
+              // Labels for new answer cells
+              { r: 7, c: 0, v: { v: 'Highest', m: 'Highest', bl: 1, bg: '#fff3cd' } },
+              { r: 8, c: 0, v: { v: 'Lowest', m: 'Lowest', bl: 1, bg: '#fff3cd' } },
+              { r: 9, c: 0, v: { v: 'Count', m: 'Count', bl: 1, bg: '#fff3cd' } },
             ],
           },
           task: {
-            id: 'task-2-challenge',
+            id: 'task-2-4',
             expectations: [
-              { cellRef: 'C2', expectedValue: 60, expectedFormula: '=A2*B2', checkFormula: true },
-              { cellRef: 'C3', expectedValue: 75, expectedFormula: '=A3*B3', checkFormula: true },
-              { cellRef: 'C4', expectedValue: 80, expectedFormula: '=A4*B4', checkFormula: true },
-              { cellRef: 'D2', expectedValue: 215, expectedFormula: '=C2+C3+C4', checkFormula: true },
+              { cellRef: 'B8', expectedValue: 310, expectedFormula: '=MAX(B2:B5)', checkFormula: true },
+              { cellRef: 'B9', expectedValue: 240, expectedFormula: '=MIN(B2:B5)', checkFormula: true },
+              { cellRef: 'B10', expectedValue: 4, expectedFormula: '=COUNT(B2:B5)', checkFormula: true },
             ],
-            editableCells: ['C2', 'C3', 'C4', 'D2'],
+            editableCells: ['B8', 'B9', 'B10'],
             hints: [
-              'Each Line Total multiplies Quantity by Unit Price: =A2*B2',
-              'The Grand Total adds all three line totals: =C2+C3+C4',
-              'Make sure you use formulas, not hardcoded numbers.',
+              'B8 should use =MAX(B2:B5) to find the highest value.',
+              'B9 should use =MIN(B2:B5) to find the lowest value.',
+              'B10 should use =COUNT(B2:B5) to count how many numbers there are.',
             ],
-            successMessage: '🎉 Invoice complete! You combined multiplication and addition like a pro!',
-            incorrectMessage: 'Check that each Line Total uses multiplication (=A2*B2) and the Grand Total adds them up (=C2+C3+C4).',
+            successMessage: 'Highest is 310, lowest is 240, and there are 4 days — well done!',
+            almostCorrectMessage: 'Values are correct but make sure you used the MAX, MIN, and COUNT functions.',
+            incorrectMessage: 'Use =MAX(B2:B5) in B8, =MIN(B2:B5) in B9, and =COUNT(B2:B5) in B10.',
+            xpValue: 20,
+            bonusXp: 10,
+          },
+        },
+
+        // Step 5 — Challenge: School Canteen Analysis
+        {
+          id: 'step-2-5',
+          order: 5,
+          type: 'challenge',
+          title: 'School Canteen Analysis',
+          instruction:
+            'The school canteen tracked sales today. Your job is to analyse the data!\n\n' +
+            '1. Calculate **Revenue** for each item (Sold × Price):\n' +
+            '   - **D2**: `=B2*C2`\n' +
+            '   - **D3**: `=B3*C3`\n' +
+            '   - **D4**: `=B4*C4`\n' +
+            '   - **D5**: `=B5*C5`\n\n' +
+            '2. In **D7**, calculate the **total revenue** using SUM.\n' +
+            '3. In **B8**, find the **most sold** item using MAX.\n' +
+            '4. In **B9**, find the **average** number sold using AVERAGE.\n\n' +
+            '💡 **Reflection:** Which item makes the most money? Is it the same as the most popular item?',
+          whyItMatters: 'Combining formulas and functions to answer real questions is what makes spreadsheets so powerful.',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 11,
+            column: 5,
+            celldata: [
+              // Headers
+              { r: 0, c: 0, v: { v: 'Item', m: 'Item', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Sold', m: 'Sold', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 2, v: { v: 'Price', m: 'Price', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 3, v: { v: 'Revenue', m: 'Revenue', bl: 1, bg: '#e8f0fe' } },
+              // Data
+              { r: 1, c: 0, v: { v: 'Burger', m: 'Burger' } },
+              { r: 1, c: 1, v: { v: 25, m: '25' } },
+              { r: 1, c: 2, v: { v: 6, m: '6' } },
+              { r: 2, c: 0, v: { v: 'Wrap', m: 'Wrap' } },
+              { r: 2, c: 1, v: { v: 18, m: '18' } },
+              { r: 2, c: 2, v: { v: 7, m: '7' } },
+              { r: 3, c: 0, v: { v: 'Juice', m: 'Juice' } },
+              { r: 3, c: 1, v: { v: 40, m: '40' } },
+              { r: 3, c: 2, v: { v: 3, m: '3' } },
+              { r: 4, c: 0, v: { v: 'Chips', m: 'Chips' } },
+              { r: 4, c: 1, v: { v: 32, m: '32' } },
+              { r: 4, c: 2, v: { v: 4, m: '4' } },
+              // Labels for summary
+              { r: 6, c: 3, v: { v: 'Total Revenue', m: 'Total Revenue', bl: 1, bg: '#fff3cd' } },
+              // Note: D7 label is on c:3 row 6, answer goes in D7 (r:6, but we label on c:2)
+              { r: 6, c: 2, v: { v: 'Total Revenue →', m: 'Total Revenue →', bl: 1, bg: '#fff3cd' } },
+              { r: 7, c: 0, v: { v: 'Most Sold', m: 'Most Sold', bl: 1, bg: '#fff3cd' } },
+              { r: 8, c: 0, v: { v: 'Avg Sold', m: 'Avg Sold', bl: 1, bg: '#fff3cd' } },
+            ],
+          },
+          task: {
+            id: 'task-2-5',
+            expectations: [
+              { cellRef: 'D2', expectedValue: 150, expectedFormula: '=B2*C2', checkFormula: true },
+              { cellRef: 'D3', expectedValue: 126, expectedFormula: '=B3*C3', checkFormula: true },
+              { cellRef: 'D4', expectedValue: 120, expectedFormula: '=B4*C4', checkFormula: true },
+              { cellRef: 'D5', expectedValue: 128, expectedFormula: '=B5*C5', checkFormula: true },
+              { cellRef: 'D7', expectedValue: 524, expectedFormula: '=SUM(D2:D5)', checkFormula: true },
+              { cellRef: 'B8', expectedValue: 40, expectedFormula: '=MAX(B2:B5)', checkFormula: true },
+              { cellRef: 'B9', expectedValue: 28.75, expectedFormula: '=AVERAGE(B2:B5)', checkFormula: true },
+            ],
+            editableCells: ['D2', 'D3', 'D4', 'D5', 'D7', 'B8', 'B9'],
+            hints: [
+              'Revenue = Sold × Price. In D2, type =B2*C2.',
+              'For total revenue, use =SUM(D2:D5) in D7.',
+              'Most sold uses =MAX(B2:B5) in B8. Average sold uses =AVERAGE(B2:B5) in B9.',
+            ],
+            successMessage: '🎉 Canteen analysis complete! Burger makes the most money (£150) but Juice is the most popular (40 sold).',
+            almostCorrectMessage: 'Values look right — double-check that you used formulas and functions, not typed numbers.',
+            incorrectMessage: 'Calculate each revenue with =B*C, total with =SUM(D2:D5), most sold with =MAX(B2:B5), and average with =AVERAGE(B2:B5).',
             xpValue: 40,
             bonusXp: 20,
           },
         },
       ],
     },
+
+    // ──────────────────────────────────────────────
+    // LESSON 3: Sorting and Filtering (4 steps)
+    // ──────────────────────────────────────────────
     {
       id: 'lesson-3',
       order: 3,
-      title: 'SUM & AVERAGE',
-      description: 'Use built-in functions to summarize data.',
+      title: 'Sorting and Filtering',
+      description: 'Learn how to sort data in order and filter to show only what you need.',
       steps: [
+        // Step 1 — Instruction: Sorting Data
         {
           id: 'step-3-1',
           order: 1,
           type: 'instruction',
-          title: 'Why Use Functions?',
-          instruction: 'Imagine you have 100 cells of data and want to add them all up. Typing **=A1+A2+A3+A4+...+A100** would be painful!\n\nThat\'s why spreadsheets have **functions** — shortcuts that do common calculations in one go.\n\nThe most popular function is **SUM**. Instead of adding each cell individually, you write:\n**=SUM(A1:A100)**\n\nOne short formula replaces 100 additions.',
-          whyItMatters: 'Functions save enormous amounts of time and reduce errors. SUM alone is used billions of times every day worldwide.',
+          title: 'Sorting Data',
+          instruction:
+            '**Sorting** rearranges your data into a specific order:\n\n' +
+            '- **Smallest to largest** (ascending) — e.g. 1, 2, 3\n' +
+            '- **Largest to smallest** (descending) — e.g. 3, 2, 1\n' +
+            '- **A–Z** or **Z–A** for text\n\n' +
+            'Sorting helps you spot patterns quickly — like who scored highest or which product sold the most.\n\n' +
+            '**Before sorting:**\n' +
+            '| Student | Score |\n|---|---|\n| Ava | 75 |\n| Liam | 68 |\n| Zoe | 91 |\n| Noah | 82 |\n\n' +
+            '**After sorting (highest to lowest):**\n' +
+            '| Student | Score |\n|---|---|\n| Zoe | 91 |\n| Noah | 82 |\n| Ava | 75 |\n| Liam | 68 |',
+          whyItMatters: 'Sorting is one of the most common things you do with data — it turns messy lists into useful information.',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 6,
+            column: 3,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Student', m: 'Student', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Score', m: 'Score', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Ava', m: 'Ava' } },
+              { r: 1, c: 1, v: { v: 75, m: '75' } },
+              { r: 2, c: 0, v: { v: 'Liam', m: 'Liam' } },
+              { r: 2, c: 1, v: { v: 68, m: '68' } },
+              { r: 3, c: 0, v: { v: 'Zoe', m: 'Zoe' } },
+              { r: 3, c: 1, v: { v: 91, m: '91' } },
+              { r: 4, c: 0, v: { v: 'Noah', m: 'Noah' } },
+              { r: 4, c: 1, v: { v: 82, m: '82' } },
+            ],
+          },
         },
+
+        // Step 2 — Task: Sort the Data
         {
           id: 'step-3-2',
           order: 2,
-          type: 'instruction',
-          title: 'How Ranges Work',
-          instruction: 'A **range** is a group of cells described by its start and end, separated by a colon (**:**).\n\n- **B2:B5** means "all cells from B2 down to B5" — that\'s B2, B3, B4, and B5.\n- **A1:C1** means "all cells from A1 across to C1" — that\'s A1, B1, and C1.\n\nLook at the example below. The cells B2 through B5 contain monthly sales figures. A range like **B2:B5** selects all four of them at once.',
-          whyItMatters: 'Ranges let you work with groups of cells efficiently instead of listing each one individually.',
+          type: 'task',
+          title: 'Sort the Data',
+          instruction:
+            'The table on the left shows student scores in **unsorted** order.\n\n' +
+            'Your task: write the data **sorted from highest to lowest score** into the results table on the right (columns D and E).\n\n' +
+            '1. In **D2**, type the name of the student with the **highest** score.\n' +
+            '2. In **E2**, type their score.\n' +
+            '3. Continue for D3/E3, D4/E4, and D5/E5 (highest to lowest).\n' +
+            '4. Click **Check**.',
+          whyItMatters: 'Understanding sort order means you can organise any dataset.',
           initialSheetState: {
             name: 'Sheet1',
-            row: 8,
-            column: 3,
-            celldata: [
-              { r: 0, c: 0, v: { v: 'Month', m: 'Month', bl: 1 } },
-              { r: 0, c: 1, v: { v: 'Sales', m: 'Sales', bl: 1 } },
-              { r: 1, c: 0, v: { v: 'Jan', m: 'Jan' } },
-              { r: 1, c: 1, v: { v: 150, m: '150', bg: '#d4edda' } },
-              { r: 2, c: 0, v: { v: 'Feb', m: 'Feb' } },
-              { r: 2, c: 1, v: { v: 200, m: '200', bg: '#d4edda' } },
-              { r: 3, c: 0, v: { v: 'Mar', m: 'Mar' } },
-              { r: 3, c: 1, v: { v: 175, m: '175', bg: '#d4edda' } },
-              { r: 4, c: 0, v: { v: 'Apr', m: 'Apr' } },
-              { r: 4, c: 1, v: { v: 225, m: '225', bg: '#d4edda' } },
-            ],
-          },
-          task: { id: 'task-3-inst', expectations: [], editableCells: [], hints: [], successMessage: '', xpValue: 5 },
-        },
-        {
-          id: 'step-3-3',
-          order: 3,
-          title: 'Your First SUM',
-          instruction: 'In cell **B6**, use the SUM function to add up all sales in **B2:B5**.\n\nSyntax: `=SUM(range)`',
-          whyItMatters: 'SUM is the most-used function in Excel — it adds any range of numbers instantly.',
-          initialSheetState: {
-            name: 'Sheet1',
-            row: 10,
+            row: 7,
             column: 6,
             celldata: [
-              { r: 0, c: 0, v: { v: 'Month', m: 'Month', bl: 1 } },
-              { r: 0, c: 1, v: { v: 'Sales', m: 'Sales', bl: 1 } },
-              { r: 1, c: 0, v: { v: 'Jan', m: 'Jan' } },
-              { r: 1, c: 1, v: { v: 150, m: '150' } },
-              { r: 2, c: 0, v: { v: 'Feb', m: 'Feb' } },
-              { r: 2, c: 1, v: { v: 200, m: '200' } },
-              { r: 3, c: 0, v: { v: 'Mar', m: 'Mar' } },
-              { r: 3, c: 1, v: { v: 175, m: '175' } },
-              { r: 4, c: 0, v: { v: 'Apr', m: 'Apr' } },
-              { r: 4, c: 1, v: { v: 225, m: '225' } },
-              { r: 5, c: 0, v: { v: 'Total', m: 'Total', bl: 1 } },
-            ],
-          },
-          task: {
-            id: 'task-3-1',
-            expectations: [
-              { cellRef: 'B6', expectedValue: 750, expectedFormula: '=SUM(B2:B5)', checkFormula: true },
-            ],
-            editableCells: ['B6'],
-            hints: [
-              'The SUM function syntax is =SUM(start:end)',
-              'Try =SUM(B2:B5) to add up all four sales values.',
-            ],
-            successMessage: 'SUM unlocked! This one function will save you hours.',
-            xpValue: 25,
-            bonusXp: 10,
-          },
-        },
-        {
-          id: 'step-3-4',
-          order: 4,
-          title: 'Calculate an Average',
-          instruction: 'In cell **B7**, use AVERAGE to find the mean of sales in **B2:B5**.',
-          initialSheetState: {
-            name: 'Sheet1',
-            row: 10,
-            column: 6,
-            celldata: [
-              { r: 0, c: 0, v: { v: 'Month', m: 'Month', bl: 1 } },
-              { r: 0, c: 1, v: { v: 'Sales', m: 'Sales', bl: 1 } },
-              { r: 1, c: 0, v: { v: 'Jan', m: 'Jan' } },
-              { r: 1, c: 1, v: { v: 150, m: '150' } },
-              { r: 2, c: 0, v: { v: 'Feb', m: 'Feb' } },
-              { r: 2, c: 1, v: { v: 200, m: '200' } },
-              { r: 3, c: 0, v: { v: 'Mar', m: 'Mar' } },
-              { r: 3, c: 1, v: { v: 175, m: '175' } },
-              { r: 4, c: 0, v: { v: 'Apr', m: 'Apr' } },
-              { r: 4, c: 1, v: { v: 225, m: '225' } },
-              { r: 5, c: 0, v: { v: 'Total', m: 'Total', bl: 1 } },
-              { r: 5, c: 1, v: { v: 750, m: '750', f: '=SUM(B2:B5)' } },
-              { r: 6, c: 0, v: { v: 'Average', m: 'Average', bl: 1 } },
+              // Original data (left side)
+              { r: 0, c: 0, v: { v: 'Student', m: 'Student', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Score', m: 'Score', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Ava', m: 'Ava' } },
+              { r: 1, c: 1, v: { v: 75, m: '75' } },
+              { r: 2, c: 0, v: { v: 'Liam', m: 'Liam' } },
+              { r: 2, c: 1, v: { v: 68, m: '68' } },
+              { r: 3, c: 0, v: { v: 'Zoe', m: 'Zoe' } },
+              { r: 3, c: 1, v: { v: 91, m: '91' } },
+              { r: 4, c: 0, v: { v: 'Noah', m: 'Noah' } },
+              { r: 4, c: 1, v: { v: 82, m: '82' } },
+              // Spacer column
+              { r: 0, c: 2, v: { v: '', m: '' } },
+              // Sorted results table (right side)
+              { r: 0, c: 3, v: { v: 'Student ↓', m: 'Student ↓', bl: 1, bg: '#fff3cd' } },
+              { r: 0, c: 4, v: { v: 'Score ↓', m: 'Score ↓', bl: 1, bg: '#fff3cd' } },
             ],
           },
           task: {
             id: 'task-3-2',
             expectations: [
-              { cellRef: 'B7', expectedValue: 187.5, expectedFormula: '=AVERAGE(B2:B5)', checkFormula: true },
+              { cellRef: 'D2', expectedValue: 'Zoe' },
+              { cellRef: 'E2', expectedValue: 91 },
+              { cellRef: 'D3', expectedValue: 'Noah' },
+              { cellRef: 'E3', expectedValue: 82 },
+              { cellRef: 'D4', expectedValue: 'Ava' },
+              { cellRef: 'E4', expectedValue: 75 },
+              { cellRef: 'D5', expectedValue: 'Liam' },
+              { cellRef: 'E5', expectedValue: 68 },
             ],
-            editableCells: ['B7'],
+            editableCells: ['D2', 'E2', 'D3', 'E3', 'D4', 'E4', 'D5', 'E5'],
             hints: [
-              'AVERAGE works just like SUM — =AVERAGE(range)',
-              'Try =AVERAGE(B2:B5)',
+              'Look at the scores: 91, 82, 75, 68. Who has the highest?',
+              'Zoe has 91 (highest), then Noah with 82, Ava with 75, Liam with 68.',
+              'Type the names and scores in order from highest to lowest.',
             ],
-            successMessage: 'AVERAGE mastered! You can now summarize data two ways.',
-            xpValue: 25,
-            bonusXp: 10,
+            successMessage: 'Sorted! Zoe (91), Noah (82), Ava (75), Liam (68) — highest to lowest.',
+            incorrectMessage: 'Sort from highest to lowest: Zoe 91, Noah 82, Ava 75, Liam 68.',
+            xpValue: 15,
+            bonusXp: 5,
           },
         },
+
+        // Step 3 — Instruction: Filtering Data
         {
-          id: 'step-3-challenge',
-          order: 5,
-          type: 'challenge',
-          title: 'Quarterly Report',
-          instruction: 'Analyse the quarterly revenue data:\n- **B6**: Total revenue using **=SUM(B2:B5)**\n- **B7**: Average revenue using **=AVERAGE(B2:B5)**\n- **C2**: Q1 percentage of total using **=B2/B6**',
-          whyItMatters: 'Quarterly reports are essential in business — combining SUM, AVERAGE, and division gives you a complete picture.',
-          initialSheetState: {
-            name: 'Sheet1',
-            row: 10,
-            column: 4,
-            celldata: [
-              { r: 0, c: 0, v: { v: 'Quarter', m: 'Quarter', bl: 1 } },
-              { r: 0, c: 1, v: { v: 'Revenue', m: 'Revenue', bl: 1 } },
-              { r: 0, c: 2, v: { v: '% of Total', m: '% of Total', bl: 1 } },
-              { r: 1, c: 0, v: { v: 'Q1', m: 'Q1' } },
-              { r: 1, c: 1, v: { v: 12000, m: '12000' } },
-              { r: 2, c: 0, v: { v: 'Q2', m: 'Q2' } },
-              { r: 2, c: 1, v: { v: 15000, m: '15000' } },
-              { r: 3, c: 0, v: { v: 'Q3', m: 'Q3' } },
-              { r: 3, c: 1, v: { v: 18000, m: '18000' } },
-              { r: 4, c: 0, v: { v: 'Q4', m: 'Q4' } },
-              { r: 4, c: 1, v: { v: 20000, m: '20000' } },
-              { r: 5, c: 0, v: { v: 'Total', m: 'Total', bl: 1 } },
-              { r: 6, c: 0, v: { v: 'Average', m: 'Average', bl: 1 } },
-            ],
-          },
-          task: {
-            id: 'task-3-challenge',
-            expectations: [
-              { cellRef: 'B6', expectedValue: 65000, expectedFormula: '=SUM(B2:B5)', checkFormula: true },
-              { cellRef: 'B7', expectedValue: 16250, expectedFormula: '=AVERAGE(B2:B5)', checkFormula: true },
-              { cellRef: 'C2', expectedFormula: '=B2/B6', checkFormula: true, tolerancePercent: 1 },
-            ],
-            editableCells: ['B6', 'B7', 'C2'],
-            hints: [
-              'Use =SUM(B2:B5) for the total revenue.',
-              'Use =AVERAGE(B2:B5) for the average.',
-              'For Q1 percentage, divide Q1 revenue by the total: =B2/B6',
-            ],
-            successMessage: '🎉 Quarterly report done! You combined SUM, AVERAGE, and division in one challenge!',
-            incorrectMessage: 'Make sure you use the correct formulas: SUM for total, AVERAGE for average, and division for percentage.',
-            xpValue: 40,
-            bonusXp: 20,
-          },
-        },
-      ],
-    },
-    {
-      id: 'lesson-4',
-      order: 4,
-      title: 'MIN, MAX & COUNT',
-      description: 'Find extremes and count your data.',
-      steps: [
-        {
-          id: 'step-4-1',
-          order: 1,
-          type: 'instruction',
-          title: 'Summarising Data',
-          instruction: 'Beyond adding and averaging, spreadsheets can answer other useful questions about your data:\n\n- **MIN** finds the **smallest** value in a range\n- **MAX** finds the **largest** value in a range\n- **COUNT** tells you **how many** numbers are in a range\n\nLook at the student scores below. In the next steps, you\'ll use MIN, MAX, and COUNT to analyse them.',
-          whyItMatters: 'These functions help you quickly understand the spread and size of any dataset.',
-          initialSheetState: {
-            name: 'Sheet1',
-            row: 8,
-            column: 3,
-            celldata: [
-              { r: 0, c: 0, v: { v: 'Student', m: 'Student', bl: 1 } },
-              { r: 0, c: 1, v: { v: 'Score', m: 'Score', bl: 1 } },
-              { r: 1, c: 0, v: { v: 'Alice', m: 'Alice' } },
-              { r: 1, c: 1, v: { v: 85, m: '85' } },
-              { r: 2, c: 0, v: { v: 'Bob', m: 'Bob' } },
-              { r: 2, c: 1, v: { v: 72, m: '72' } },
-              { r: 3, c: 0, v: { v: 'Charlie', m: 'Charlie' } },
-              { r: 3, c: 1, v: { v: 91, m: '91' } },
-              { r: 4, c: 0, v: { v: 'Diana', m: 'Diana' } },
-              { r: 4, c: 1, v: { v: 68, m: '68' } },
-              { r: 5, c: 0, v: { v: 'Eve', m: 'Eve' } },
-              { r: 5, c: 1, v: { v: 95, m: '95' } },
-            ],
-          },
-          task: { id: 'task-4-inst', expectations: [], editableCells: [], hints: [], successMessage: '', xpValue: 5 },
-        },
-        {
-          id: 'step-4-2',
-          order: 2,
-          title: 'Find the Minimum and Maximum',
-          instruction: 'Find the lowest and highest scores:\n- **B7**: `=MIN(B2:B6)`\n- **B8**: `=MAX(B2:B6)`',
-          initialSheetState: {
-            name: 'Sheet1',
-            row: 12,
-            column: 6,
-            celldata: [
-              { r: 0, c: 0, v: { v: 'Student', m: 'Student', bl: 1 } },
-              { r: 0, c: 1, v: { v: 'Score', m: 'Score', bl: 1 } },
-              { r: 1, c: 0, v: { v: 'Alice', m: 'Alice' } },
-              { r: 1, c: 1, v: { v: 85, m: '85' } },
-              { r: 2, c: 0, v: { v: 'Bob', m: 'Bob' } },
-              { r: 2, c: 1, v: { v: 72, m: '72' } },
-              { r: 3, c: 0, v: { v: 'Charlie', m: 'Charlie' } },
-              { r: 3, c: 1, v: { v: 91, m: '91' } },
-              { r: 4, c: 0, v: { v: 'Diana', m: 'Diana' } },
-              { r: 4, c: 1, v: { v: 68, m: '68' } },
-              { r: 5, c: 0, v: { v: 'Eve', m: 'Eve' } },
-              { r: 5, c: 1, v: { v: 95, m: '95' } },
-              { r: 6, c: 0, v: { v: 'Lowest', m: 'Lowest', bl: 1 } },
-              { r: 7, c: 0, v: { v: 'Highest', m: 'Highest', bl: 1 } },
-            ],
-          },
-          task: {
-            id: 'task-4-1',
-            expectations: [
-              { cellRef: 'B7', expectedValue: 68, expectedFormula: '=MIN(B2:B6)', checkFormula: true },
-              { cellRef: 'B8', expectedValue: 95, expectedFormula: '=MAX(B2:B6)', checkFormula: true },
-            ],
-            editableCells: ['B7', 'B8'],
-            hints: [
-              'MIN finds the smallest value: =MIN(range)',
-              'MAX finds the largest value: =MAX(range)',
-            ],
-            successMessage: 'MIN and MAX — now you can spot outliers instantly!',
-            xpValue: 25,
-            bonusXp: 10,
-          },
-        },
-        {
-          id: 'step-4-3',
+          id: 'step-3-3',
           order: 3,
-          title: 'Count Your Data',
-          instruction: 'In **B9**, use COUNT to count how many scores there are in **B2:B6**.',
+          type: 'instruction',
+          title: 'Filtering Data',
+          instruction:
+            '**Filtering** hides rows that don\'t meet your criteria, showing only the data you care about.\n\n' +
+            'For example, if you filter scores to show **only values above 75**:\n\n' +
+            '| Student | Score |\n|---|---|\n| Ava | 75 |\n| ~~Liam~~ | ~~68~~ |\n| Zoe | 91 |\n| Noah | 82 |\n\n' +
+            'Only Ava (75), Zoe (91), and Noah (82) would remain visible. Liam\'s row (68) would be hidden.\n\n' +
+            '💡 Filtering doesn\'t delete data — it just hides rows temporarily.',
+          whyItMatters: 'Filtering lets you focus on exactly the data you need without being distracted by everything else.',
+        },
+
+        // Step 4 — Task: Apply a Filter
+        {
+          id: 'step-3-4',
+          order: 4,
+          type: 'task',
+          title: 'Apply a Filter',
+          instruction:
+            'Filter the student data to show only students who scored **above 75**.\n\n' +
+            'Type the matching students and scores into the filtered results table (columns D and E):\n\n' +
+            '1. In **D2/E2**, enter the first student with a score above 75.\n' +
+            '2. In **D3/E3**, enter the second student.\n' +
+            '3. In **D4/E4**, enter the third student.\n' +
+            '4. Click **Check**.\n\n' +
+            '💡 Keep the same order as the original data.',
+          whyItMatters: 'Filtering is a key skill for working with large datasets.',
           initialSheetState: {
             name: 'Sheet1',
-            row: 12,
+            row: 7,
             column: 6,
             celldata: [
-              { r: 0, c: 0, v: { v: 'Student', m: 'Student', bl: 1 } },
-              { r: 0, c: 1, v: { v: 'Score', m: 'Score', bl: 1 } },
-              { r: 1, c: 0, v: { v: 'Alice', m: 'Alice' } },
-              { r: 1, c: 1, v: { v: 85, m: '85' } },
-              { r: 2, c: 0, v: { v: 'Bob', m: 'Bob' } },
-              { r: 2, c: 1, v: { v: 72, m: '72' } },
-              { r: 3, c: 0, v: { v: 'Charlie', m: 'Charlie' } },
+              // Original data
+              { r: 0, c: 0, v: { v: 'Student', m: 'Student', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Score', m: 'Score', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Ava', m: 'Ava' } },
+              { r: 1, c: 1, v: { v: 75, m: '75' } },
+              { r: 2, c: 0, v: { v: 'Liam', m: 'Liam' } },
+              { r: 2, c: 1, v: { v: 68, m: '68' } },
+              { r: 3, c: 0, v: { v: 'Zoe', m: 'Zoe' } },
               { r: 3, c: 1, v: { v: 91, m: '91' } },
-              { r: 4, c: 0, v: { v: 'Diana', m: 'Diana' } },
-              { r: 4, c: 1, v: { v: 68, m: '68' } },
-              { r: 5, c: 0, v: { v: 'Eve', m: 'Eve' } },
-              { r: 5, c: 1, v: { v: 95, m: '95' } },
-              { r: 6, c: 0, v: { v: 'Lowest', m: 'Lowest', bl: 1 } },
-              { r: 6, c: 1, v: { v: 68, m: '68', f: '=MIN(B2:B6)' } },
-              { r: 7, c: 0, v: { v: 'Highest', m: 'Highest', bl: 1 } },
-              { r: 7, c: 1, v: { v: 95, m: '95', f: '=MAX(B2:B6)' } },
-              { r: 8, c: 0, v: { v: 'Count', m: 'Count', bl: 1 } },
+              { r: 4, c: 0, v: { v: 'Noah', m: 'Noah' } },
+              { r: 4, c: 1, v: { v: 82, m: '82' } },
+              // Filtered results table
+              { r: 0, c: 3, v: { v: 'Student (>75)', m: 'Student (>75)', bl: 1, bg: '#fff3cd' } },
+              { r: 0, c: 4, v: { v: 'Score (>75)', m: 'Score (>75)', bl: 1, bg: '#fff3cd' } },
             ],
           },
           task: {
-            id: 'task-4-2',
+            id: 'task-3-4',
             expectations: [
-              { cellRef: 'B9', expectedValue: 5, expectedFormula: '=COUNT(B2:B6)', checkFormula: true },
+              { cellRef: 'D2', expectedValue: 'Zoe' },
+              { cellRef: 'E2', expectedValue: 91 },
+              { cellRef: 'D3', expectedValue: 'Noah' },
+              { cellRef: 'E3', expectedValue: 82 },
             ],
-            editableCells: ['B9'],
+            editableCells: ['D2', 'E2', 'D3', 'E3', 'D4', 'E4'],
             hints: [
-              'COUNT counts how many cells contain numbers.',
-              'Try =COUNT(B2:B6)',
+              'Look for scores strictly above 75: that\'s 91 and 82.',
+              'Zoe scored 91 and Noah scored 82 — both above 75.',
+              'Ava scored exactly 75 which is not above 75. Liam scored 68.',
             ],
-            successMessage: 'COUNT is perfect for knowing how many data points you have.',
-            xpValue: 20,
-            bonusXp: 10,
-          },
-        },
-        {
-          id: 'step-4-challenge',
-          order: 4,
-          type: 'challenge',
-          title: 'Analyse the Class',
-          instruction: 'Analyse the full set of student scores:\n- **B8**: Lowest score using **=MIN(B2:B7)**\n- **B9**: Highest score using **=MAX(B2:B7)**\n- **B10**: Number of students using **=COUNT(B2:B7)**\n- **B11**: Range (difference) using **=B9-B8**',
-          whyItMatters: 'Combining multiple functions and using formula results in new formulas is how real data analysis works.',
-          initialSheetState: {
-            name: 'Sheet1',
-            row: 14,
-            column: 3,
-            celldata: [
-              { r: 0, c: 0, v: { v: 'Student', m: 'Student', bl: 1 } },
-              { r: 0, c: 1, v: { v: 'Score', m: 'Score', bl: 1 } },
-              { r: 1, c: 0, v: { v: 'Alice', m: 'Alice' } },
-              { r: 1, c: 1, v: { v: 85, m: '85' } },
-              { r: 2, c: 0, v: { v: 'Bob', m: 'Bob' } },
-              { r: 2, c: 1, v: { v: 72, m: '72' } },
-              { r: 3, c: 0, v: { v: 'Charlie', m: 'Charlie' } },
-              { r: 3, c: 1, v: { v: 91, m: '91' } },
-              { r: 4, c: 0, v: { v: 'Diana', m: 'Diana' } },
-              { r: 4, c: 1, v: { v: 68, m: '68' } },
-              { r: 5, c: 0, v: { v: 'Eve', m: 'Eve' } },
-              { r: 5, c: 1, v: { v: 95, m: '95' } },
-              { r: 6, c: 0, v: { v: 'Frank', m: 'Frank' } },
-              { r: 6, c: 1, v: { v: 78, m: '78' } },
-              { r: 7, c: 0, v: { v: 'Lowest', m: 'Lowest', bl: 1 } },
-              { r: 8, c: 0, v: { v: 'Highest', m: 'Highest', bl: 1 } },
-              { r: 9, c: 0, v: { v: 'Count', m: 'Count', bl: 1 } },
-              { r: 10, c: 0, v: { v: 'Range', m: 'Range', bl: 1 } },
-            ],
-          },
-          task: {
-            id: 'task-4-challenge',
-            expectations: [
-              { cellRef: 'B8', expectedValue: 68, expectedFormula: '=MIN(B2:B7)', checkFormula: true },
-              { cellRef: 'B9', expectedValue: 95, expectedFormula: '=MAX(B2:B7)', checkFormula: true },
-              { cellRef: 'B10', expectedValue: 6, expectedFormula: '=COUNT(B2:B7)', checkFormula: true },
-              { cellRef: 'B11', expectedValue: 27, expectedFormula: '=B9-B8', checkFormula: true },
-            ],
-            editableCells: ['B8', 'B9', 'B10', 'B11'],
-            hints: [
-              'Use =MIN(B2:B7) for the lowest score.',
-              'Use =MAX(B2:B7) for the highest score.',
-              'Use =COUNT(B2:B7) to count the students.',
-              'Range = Highest - Lowest: =B9-B8',
-            ],
-            successMessage: '🎉 Class analysis complete! You combined MIN, MAX, COUNT, and even used formula results in another formula!',
-            incorrectMessage: 'Check each formula: MIN for lowest, MAX for highest, COUNT for total, and =B9-B8 for range.',
-            xpValue: 50,
-            bonusXp: 25,
+            successMessage: '🎉 Filtered! Only Zoe (91) and Noah (82) scored above 75. You\'ve completed the module!',
+            incorrectMessage: 'Only include students with scores strictly above 75: Zoe (91) and Noah (82).',
+            xpValue: 15,
+            bonusXp: 5,
           },
         },
       ],
