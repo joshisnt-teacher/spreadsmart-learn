@@ -1,58 +1,94 @@
 
 
-# Rework Module: Introduction to Excel (Year 8)
+# Assignment System for Teachers
 
 ## Overview
 
-Rewrite `src/data/excel-basics-module.ts` to match the expanded 3-lesson curriculum. The module title, description, and all lesson/step content will be replaced. No other files need to change -- the types, marking engine, and LessonPlayer all remain the same.
+Add the ability for teachers to assign modules, individual lessons, or specific steps to entire classes or individual students -- with a **live date** (when students can start) and a **due date** (deadline). Teachers manage all assignments from the dashboard. Students only see content that has been assigned to them and is currently live.
 
-## Important Note on Lesson 3 (Sorting and Filtering)
+## Database Changes
 
-Sorting and filtering are **interactive UI actions** (right-click menus, toolbar buttons) rather than cell edits. The current marking engine can only check cell **values and formulas** -- it cannot verify whether a student clicked "Sort" or applied a filter. Two options:
+A single new `assignments` table:
 
-- **Option A (recommended):** Make the sorting/filtering lesson instructional-only with read-only demo sheets, plus a final activity where students manually reorder data into cells (proving they understand the concept). This works with the existing system today.
-- **Option B:** Skip sorting/filtering for now and add it later when we build a more advanced interaction-tracking system.
+```text
+assignments
+-----------
+id              uuid (PK, default gen_random_uuid())
+teacher_id      uuid (NOT NULL, references auth.users)
+class_id        uuid (nullable, references classes)
+student_user_id uuid (nullable) -- for individual assignments
+module_id       text (NOT NULL)
+lesson_id       text (nullable) -- null = whole module
+step_id         text (nullable) -- null = whole lesson
+live_date       timestamptz (NOT NULL) -- when it becomes visible
+due_date        timestamptz (nullable) -- optional deadline
+created_at      timestamptz (default now())
+```
 
-The plan below uses **Option A** -- sorting steps are instructional with a hands-on "manually sort the data" activity to verify understanding.
+- If `class_id` is set, the assignment applies to every student in that class.
+- If `student_user_id` is set instead, it targets one student.
+- `lesson_id` being null means the entire module is assigned; a specific `lesson_id` scopes it to that lesson; adding `step_id` scopes it further to a single step/stage.
 
-## Structure
+RLS policies:
+- Teachers can CRUD their own assignments.
+- Students can SELECT assignments where they are the target student OR belong to the target class, AND `live_date <= now()`.
 
-### Lesson 1: Navigating a Spreadsheet (6 steps)
-1. **Instruction** -- What Is a Spreadsheet? (grid structure, cell addresses, example table with Name/Maths/English)
-2. **Task** -- Identifying Cells (edit B2 to 80, C3 to 77)
-3. **Instruction** -- How Excel Calculates (formulas start with =, operators)
-4. **Task** -- Your First Formula (Qty x Price dataset, write =B2*C2 for D2, D3, D4)
-5. **Instruction** -- Using the Fill Handle (drag-to-copy explanation)
-6. **Task** -- Use Fill Down (delete D3/D4, drag D2 down, check all totals correct)
+## Teacher Dashboard Changes
 
-### Lesson 2: Built-in Functions (5 steps)
-1. **Instruction** -- SUM and AVERAGE (syntax, colon ranges)
-2. **Task** -- Total Sales (Monday-Thursday sales, B6=SUM, B7=AVERAGE)
-3. **Instruction** -- MIN, MAX and COUNT (syntax, examples)
-4. **Task** -- Find the Extremes (B8=MAX, B9=MIN, B10=COUNT on same sales data)
-5. **Challenge** -- School Canteen Analysis (Burger/Wrap/Juice/Chips dataset with Sold/Price/Revenue columns; calculate revenue per item, total revenue, most sold item via MAX, average sold via AVERAGE)
+### New "Assignments" Tab or Section
 
-### Lesson 3: Sorting and Filtering (4 steps)
-1. **Instruction** -- Sorting Data (concept explanation, visual before/after example)
-2. **Task** -- Sort the Data (students manually enter Ava/Liam/Noah/Zoe scores in descending order into a results table to prove they understand sorting)
-3. **Instruction** -- Filtering Data (concept explanation, criteria-based example)
-4. **Task** -- Apply a Filter (students enter only the names/scores above 75 into a filtered results table)
+When a teacher selects a class, a new **Assignments** tab appears alongside the existing student progress view. This tab shows:
 
-## Technical Details
+1. **"New Assignment" button** -- opens a dialog with:
+   - **Scope selector**: Module / Lesson / Step (dropdown that narrows progressively)
+   - **Target**: "Whole class" (default) or select specific student(s)
+   - **Live date**: Date picker (defaults to now)
+   - **Due date**: Optional date picker
+2. **Assignment list** -- a table showing all assignments for the class:
+   - Scope (e.g. "Lesson 2: Built-in Functions")
+   - Target (class or student name)
+   - Live date
+   - Due date
+   - Status (Scheduled / Live / Past Due)
+   - Delete button
 
-### File to modify
-- `src/data/excel-basics-module.ts` -- complete rewrite of the module data with all new lessons, steps, cell data, and task expectations
+### Files modified:
+- `src/pages/TeacherDashboard.tsx` -- add Assignments tab, "New Assignment" dialog, assignment list
 
-### Key data design decisions
-- Module title changes to "Introduction to Excel"
-- All cell data uses the existing `CellData` format (r, c, v with v/m/f/bl/bg properties)
-- Fill Down task (Step 6) checks D3 and D4 have correct values and formulas (=B3*C3, =B4*C4) -- FortuneSheet's autofill will handle the formula adjustment
-- Canteen challenge uses a 4-item dataset matching the user's spec (Burger 25x6, Wrap 18x7, Juice 40x3, Chips 32x4)
-- Sorting/filtering tasks use a "manual entry" approach where students type sorted/filtered results into a separate output area, verified by the marking engine
+## Student-Side Content Filtering
 
-### No changes to
-- `src/types/lesson.ts`
-- `src/lib/marking-engine.ts`
-- `src/components/LessonPlayer.tsx`
-- `src/components/SpreadsheetWorkspace.tsx`
+Currently students see all lessons in the module. With assignments:
+
+- The `Index.tsx` page and `ModuleLanding` component will check assigned content for the logged-in student.
+- If assignments exist for this student, only assigned (and currently live) lessons/steps are shown.
+- If no assignments exist at all, all content remains visible (backwards-compatible for unmanaged classes).
+
+### Files modified:
+- `src/pages/Index.tsx` -- fetch assignments for current user, filter visible lessons
+- `src/components/ModuleLanding.tsx` -- accept optional `assignedLessonIds` prop, dim or hide unassigned lessons, show due dates on assigned ones
+
+## New Shared Hook
+
+A `useAssignments` hook to:
+- Fetch assignments for a student (used on Index page)
+- Fetch assignments for a class (used on Teacher Dashboard)
+
+### Files created:
+- `src/hooks/useAssignments.ts`
+
+## Summary of Changes
+
+| Area | Change |
+|------|--------|
+| Database | New `assignments` table with RLS |
+| Teacher Dashboard | Assignments tab with create/list/delete |
+| Student view | Filter visible content by live assignments |
+| Hooks | New `useAssignments.ts` |
+| Types | No changes needed (assignment data is simple enough for inline types) |
+
+## What This Does NOT Change
+
+- The module data file, marking engine, lesson player, and spreadsheet workspace remain untouched.
+- Existing progress tracking continues to work as-is.
+- Classes without any assignments behave exactly as they do today (all content visible).
 
