@@ -189,14 +189,25 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
     },
   });
 
-  const isFormulaEditing = editingCell && cellValues[editingCell]?.startsWith('=');
+  // Formula reference mode: active when editing a formula with an unmatched open paren
+  const isFormulaRefMode = (() => {
+    if (!editingCell) return false;
+    const val = cellValues[editingCell] || '';
+    if (!val.startsWith('=')) return false;
+    let depth = 0;
+    for (const ch of val) {
+      if (ch === '(') depth++;
+      else if (ch === ')') depth--;
+    }
+    return depth > 0; // has unmatched open paren
+  })();
 
   const handleCellClick = (ref: string) => {
     // Don't close if clicking inside the cell already being edited
     if (editingCell === ref) return;
 
     // If editing a formula, insert clicked cell reference instead of closing
-    if (editingCell && isFormulaEditing) {
+    if (editingCell && isFormulaRefMode) {
       suppressBlurRef.current = true;
       const input = inputRef.current;
       const currentVal = cellValues[editingCell] || '';
@@ -407,7 +418,7 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
                         isJustFilled ? 'animate-pulse' : ''
                       }`}
                       onMouseDown={() => {
-                        if (editingCell && editingCell !== ref && isFormulaEditing) {
+                        if (editingCell && editingCell !== ref && isFormulaRefMode) {
                           suppressBlurRef.current = true;
                         }
                       }}
