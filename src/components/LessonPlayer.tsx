@@ -1,5 +1,6 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
 import { Check, HelpCircle, RotateCcw, ChevronRight, ChevronLeft, Trophy, Star, Lightbulb, BookOpen, Award } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,7 +32,32 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
   const [currentHint, setCurrentHint] = useState<string | null>(null);
   const [resetKey, setResetKey] = useState(0);
   const [currentCellData, setCurrentCellData] = useState<any[]>([]);
+  const [isRedoing, setIsRedoing] = useState(false);
   const { saveProgress, loadProgress } = useLessonProgress(lesson.id);
+
+  const fireConfetti = useCallback(() => {
+    confetti({
+      particleCount: 120,
+      spread: 80,
+      origin: { y: 0.7 },
+      colors: ['#FFD700', '#FF6B6B', '#4CAF50', '#2196F3', '#9C27B0'],
+    });
+    // Second burst for extra celebration
+    setTimeout(() => {
+      confetti({
+        particleCount: 60,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+      });
+      confetti({
+        particleCount: 60,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+      });
+    }, 250);
+  }, []);
 
   // Load saved progress on mount
   useEffect(() => {
@@ -93,7 +119,12 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
 
     if (result.type === 'correct') {
       const isFirstAttempt = attemptCount === 0;
-      const xp = currentStep.task.xpValue + (isFirstAttempt ? (currentStep.task.bonusXp || 0) : 0);
+      const xp = isRedoing ? 0 : currentStep.task.xpValue + (isFirstAttempt ? (currentStep.task.bonusXp || 0) : 0);
+
+      // Fire confetti for challenge steps
+      if (isChallengeStep) {
+        fireConfetti();
+      }
 
       setProgress((prev) => ({
         ...prev,
@@ -101,6 +132,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
         totalXp: prev.totalXp + xp,
         attempts: newAttempts,
       }));
+      setIsRedoing(false);
     } else {
       setProgress((prev) => ({
         ...prev,
@@ -213,10 +245,12 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
                   key={step.id}
                   onClick={() => {
                     if (!isLocked) {
+                      const goingBack = isComplete && idx !== currentStepIndex;
                       setCurrentStepIndex(idx);
                       setFeedback(null);
                       setShowHint(false);
                       setResetKey((k) => k + 1);
+                      setIsRedoing(goingBack);
                     }
                   }}
                   disabled={isLocked}
@@ -389,9 +423,9 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
                   <Button variant="outline" size="sm" onClick={handleReset}>
                     <RotateCcw className="w-4 h-4 mr-1" /> Reset
                   </Button>
-                  {!isStepComplete ? (
+                  {(!isStepComplete || isRedoing) ? (
                     <Button size="sm" onClick={handleCheck}>
-                      <Check className="w-4 h-4 mr-1" /> Check
+                      <Check className="w-4 h-4 mr-1" /> {isRedoing ? 'Re-check' : 'Check'}
                     </Button>
                   ) : (
                     <Button size="sm" onClick={handleNext} className="bg-accent hover:bg-accent/90 text-accent-foreground">
