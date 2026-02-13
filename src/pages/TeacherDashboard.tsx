@@ -1,15 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Users, Copy, Check, ArrowLeft, Trash2, UserPlus } from 'lucide-react';
+import { Plus, Users, Copy, Check, ArrowLeft, Trash2, UserPlus, Upload, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+
+interface BulkResult {
+  username: string;
+  success: boolean;
+  error?: string;
+}
 
 interface ClassData {
   id: string;
@@ -38,6 +45,10 @@ const TeacherDashboard: React.FC = () => {
   const [newPin, setNewPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [bulkText, setBulkText] = useState('');
+  const [bulkResults, setBulkResults] = useState<BulkResult[] | null>(null);
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   const fetchClasses = useCallback(async () => {
     const { data } = await supabase
@@ -109,6 +120,41 @@ const TeacherDashboard: React.FC = () => {
       toast({ title: 'Student removed from class' });
       if (selectedClass) fetchStudents(selectedClass.id);
     }
+  };
+
+  const parseBulkText = (text: string): { username: string; pin: string }[] => {
+    return text
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .map((line) => {
+        // Support CSV (comma or tab separated): username,pin
+        const parts = line.split(/[,\t]+/).map((p) => p.trim());
+        if (parts.length >= 2) {
+          return { username: parts[0], pin: parts[1] };
+        }
+        // Single value: auto-generate a 4-digit PIN
+        return { username: parts[0], pin: String(Math.floor(1000 + Math.random() * 9000)) };
+      });
+  };
+
+  const handleBulkCreate = async () => {
+    if (!selectedClass || !bulkText.trim()) return;
+    setBulkLoading(true);
+    setBulkResults(null);
+    const students = parseBulkText(bulkText);
+    const res = await supabase.functions.invoke('bulk-create-students', {
+      body: { students, class_id: selectedClass.id },
+    });
+    if (res.error) {
+      toast({ title: 'Error', description: res.error.message, variant: 'destructive' });
+    } else {
+      setBulkResults(res.data.results);
+      const { success, failed } = res.data.summary;
+      toast({ title: 'Bulk import complete', description: `${success} created, ${failed} failed` });
+      fetchStudents(selectedClass.id);
+    }
+    setBulkLoading(false);
   };
 
   const copyJoinCode = (code: string) => {
@@ -204,9 +250,14 @@ const TeacherDashboard: React.FC = () => {
                 </div>
                 <h2 className="text-xl font-semibold">Students</h2>
               </div>
-              <Button onClick={() => setShowAddStudent(true)}>
-                <UserPlus className="w-4 h-4 mr-2" /> Add Student
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={() => { setShowBulkUpload(true); setBulkResults(null); setBulkText(''); }}>
+                  <Upload className="w-4 h-4 mr-2" /> Bulk Import
+                </Button>
+                <Button onClick={() => setShowAddStudent(true)}>
+                  <UserPlus className="w-4 h-4 mr-2" /> Add Student
+                </Button>
+              </div>
             </div>
 
             {students.length === 0 ? (
@@ -309,6 +360,61 @@ const TeacherDashboard: React.FC = () => {
               {loading ? 'Creating...' : 'Create Student'}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Import Dialog */}
+      <Dialog open={showBulkUpload} onOpenChange={setShowBulkUpload}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Bulk Import Students</DialogTitle>
+            <DialogDescription>
+              Enter one student per line. Format: <code className="bg-muted px-1 rounded text-xs">username, pin</code>. If you omit the PIN, one will be generated automatically.
+            </DialogDescription>
+          </DialogHeader>
+          {!bulkResults ? (
+            <>
+              <div className="space-y-3">
+                <Label htmlFor="bulk-input">Student List</Label>
+                <Textarea
+                  id="bulk-input"
+                  placeholder={`john.smith, 1234\njane.doe, 5678\nalex.w`}
+                  value={bulkText}
+                  onChange={(e) => setBulkText(e.target.value)}
+                  rows={8}
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {parseBulkText(bulkText).length} student(s) detected · Max 50 per batch
+                </p>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowBulkUpload(false)}>Cancel</Button>
+                <Button onClick={handleBulkCreate} disabled={bulkLoading || parseBulkText(bulkText).length === 0}>
+                  {bulkLoading ? 'Creating...' : `Import ${parseBulkText(bulkText).length} Students`}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {bulkResults.map((r, i) => (
+                  <div key={i} className={`flex items-center gap-2 text-sm px-3 py-2 rounded-md ${r.success ? 'bg-primary/5' : 'bg-destructive/5'}`}>
+                    {r.success ? (
+                      <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-destructive shrink-0" />
+                    )}
+                    <span className="font-mono">{r.username}</span>
+                    {!r.success && <span className="text-destructive text-xs ml-auto">{r.error}</span>}
+                  </div>
+                ))}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowBulkUpload(false)}>Close</Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
