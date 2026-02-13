@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import StudentProgressView from '@/components/StudentProgressView';
 
 interface BulkResult {
   username: string;
@@ -293,6 +294,8 @@ const TeacherDashboard: React.FC = () => {
                 </table>
               </div>
             )}
+
+            <StudentProgressView classId={selectedClass.id} students={students} />
           </motion.div>
         )}
       </main>
