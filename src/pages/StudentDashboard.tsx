@@ -119,7 +119,7 @@ const StudentDashboard: React.FC = () => {
                   <CardTitle className="text-lg">{excelBasicsModule.title}</CardTitle>
                   <CardDescription className="mt-1">{excelBasicsModule.description}</CardDescription>
                 </div>
-                <Button size="sm" onClick={() => navigate('/')}>
+                <Button size="sm" onClick={() => navigate(`/module/${excelBasicsModule.id}`)}>
                   <Zap className="w-4 h-4 mr-1" />
                   {completedCount > 0 ? 'Continue' : 'Start'}
                 </Button>
@@ -152,7 +152,7 @@ const StudentDashboard: React.FC = () => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: idx * 0.04 }}
                       className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                      onClick={() => navigate('/')}
+                      onClick={() => navigate(`/module/${excelBasicsModule.id}`)}
                     >
                       <div className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold shrink-0 ${
                         isComplete ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'
