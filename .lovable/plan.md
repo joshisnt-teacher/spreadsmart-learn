@@ -1,87 +1,70 @@
 
-# Enhanced Lesson Scaffolding with Instructional Steps
+
+# End-of-Lesson Challenges
 
 ## Overview
-Currently, every step requires a spreadsheet task. This plan adds support for **instruction-only steps** -- pure teaching moments where students read, absorb, and continue -- so we can scaffold concepts like "What are cells?", "What are columns and rows?", and "How does SUM work?" before asking students to do anything.
+Each lesson will end with a **challenge step** -- a slightly harder task that combines skills from that lesson. This gives students a chance to practice independently before moving on, reinforcing what they just learned.
 
 ## What Changes
 
-### 1. Update the Step type to support instruction-only steps
-- Make the `task` and `initialSheetState` fields **optional** on the `Step` interface
-- Add a `type` field: `'instruction'` or `'task'` (defaulting to `'task'` for backward compatibility)
-- Instruction steps can optionally include a read-only `initialSheetState` to show an example spreadsheet without editable cells
+### 1. Add a new step type: 'challenge'
+Extend the existing `type` field on the `Step` interface to include `'challenge'` alongside `'instruction'` and `'task'`. Challenge steps work like task steps (they have a spreadsheet, editable cells, and auto-marking) but are visually distinguished with a different header style and a trophy/challenge icon to signal "this is your moment to prove it."
 
-### 2. Update the LessonPlayer to render instruction steps
-- When the current step has `type: 'instruction'`, hide the Check/Hint/Reset buttons
-- Show a simple **"Got it"** or **"Continue"** button instead
-- Clicking it marks the step complete (awards its XP) and advances
-- The spreadsheet area will either show a read-only example sheet or be hidden if no sheet state is provided
-- The instruction panel gets more vertical space for longer explanatory text
+### 2. Update the LessonPlayer UI for challenge steps
+- Challenge steps show a distinct visual banner (e.g., a gradient accent background with a trophy icon and "Challenge" badge) in the instruction panel so students know this is the final test
+- The Check/Hint/Reset buttons remain available since challenges are interactive tasks
+- Award higher XP for challenges (e.g., 30-50 XP with a 15-20 XP first-attempt bonus)
+- On completion, show a celebratory "Lesson Complete" animation or enhanced success message before transitioning
 
-### 3. Update the marking engine and progress logic
-- `checkTask` is never called for instruction steps, so no changes needed there
-- The progress tracking already works by step ID, so instruction steps get marked complete when the student clicks Continue
-- XP for instruction steps will typically be small (5 XP) as a participation reward
+### 3. Add challenge steps to each lesson
 
-### 4. Expand the Excel Basics module content
-The current 4 lessons (8 steps total) will be expanded to include proper scaffolding. Here is the new lesson structure:
+**Lesson 1 Challenge: "Build a Mini Dataset"**
+- Students are given column headers (Name, Age, Score) and must fill in 3 rows of data themselves (6 cells total)
+- Tests that they can navigate and enter both text and numbers across multiple cells
+- 35 XP + 15 bonus
 
-**Lesson 1: Navigating a Spreadsheet** (currently 2 steps, becomes 5)
-- NEW Step 1: "What is a Spreadsheet?" -- instruction explaining columns (A, B, C...), rows (1, 2, 3...), and cells (e.g., B2 is column B, row 2). Shows a labelled example sheet (read-only).
-- NEW Step 2: "Understanding Cell References" -- instruction explaining that every cell has a unique address like A1, B3, C5. Shows an example sheet with a few cells highlighted.
-- NEW Step 3: "Selecting and Typing" -- instruction explaining that you click a cell to select it, then type to enter data. Numbers go right-aligned, text goes left-aligned.
-- Existing Step: "Select a Cell" -- type 42 in B2 (task)
-- Existing Step: "Enter Multiple Values" -- enter 10, 20, 30 (task)
+**Lesson 2 Challenge: "Complete the Invoice"**
+- Given a small invoice with Quantity in A2:A4 and Unit Price in B2:B4
+- Students must write formulas in C2, C3, C4 to calculate Line Total (=A2*B2, etc.) and D2 for a grand total (=C2+C3+C4)
+- Combines addition, subtraction, and multiplication in a realistic scenario
+- 40 XP + 20 bonus
 
-**Lesson 2: Basic Formulas** (currently 2 steps, becomes 4)
-- NEW Step 1: "What is a Formula?" -- instruction explaining formulas start with `=`, they reference other cells, and they update automatically when inputs change.
-- NEW Step 2: "Arithmetic Operators" -- instruction showing `+`, `-`, `*`, `/` with a read-only example sheet demonstrating `=A2+B2`.
-- Existing Step: "Add Two Numbers" (task)
-- Existing Step: "Subtract and Multiply" (task)
+**Lesson 3 Challenge: "Quarterly Report"**
+- Given quarterly revenue data across 4 quarters
+- Students must calculate: Total (SUM), Average (AVERAGE), and a percentage-of-total for Q1 (=B2/B6, or similar)
+- Combines SUM and AVERAGE in a new context, with a small stretch (division)
+- 40 XP + 20 bonus
 
-**Lesson 3: SUM and AVERAGE** (currently 2 steps, becomes 4)
-- NEW Step 1: "Why Use Functions?" -- instruction explaining that when you have lots of cells, typing `=A1+A2+A3+...` is tedious. Functions like SUM do it in one go.
-- NEW Step 2: "How Ranges Work" -- instruction explaining that `B2:B5` means "all cells from B2 down to B5". Shows a visual example.
-- Existing Step: "Your First SUM" (task)
-- Existing Step: "Calculate an Average" (task)
+**Lesson 4 Challenge: "Analyse the Class"**
+- Given a table of 6 student scores
+- Students must fill in: MIN, MAX, COUNT, and the Range (=MAX-MIN)
+- Combines all functions learned, plus requires using formula results within another formula
+- 50 XP + 25 bonus
 
-**Lesson 4: MIN, MAX and COUNT** (currently 2 steps, becomes 3)
-- NEW Step 1: "Summarising Data" -- instruction explaining MIN finds the smallest, MAX finds the largest, COUNT tells you how many. Shows a table of student scores as context.
-- Existing Step: "Find the Minimum and Maximum" (task)
-- Existing Step: "Count Your Data" (task)
-
-Total steps go from 8 to 16, giving students proper context before each hands-on task.
+### 4. Update progress tracking
+The `StudentProgressView` already calculates step counts from the module data, so adding steps will automatically reflect in the teacher dashboard. No changes needed there.
 
 ## Technical Details
 
-### Type changes (`src/types/lesson.ts`)
+### Type change (`src/types/lesson.ts`)
 ```typescript
-export interface Step {
-  id: string;
-  order: number;
-  title: string;
-  instruction: string;
-  type?: 'instruction' | 'task'; // defaults to 'task'
-  whyItMatters?: string;
-  mediaUrl?: string;
-  initialSheetState?: SheetState; // now optional
-  task?: TaskDefinition;          // now optional
-}
+type?: 'instruction' | 'task' | 'challenge'; // add 'challenge'
 ```
 
 ### LessonPlayer changes (`src/components/LessonPlayer.tsx`)
-- Add a check: `const isInstructionStep = currentStep.type === 'instruction' || !currentStep.task`
-- For instruction steps: render the instruction panel with more space, optionally show a read-only spreadsheet, and show a single "Continue" button that auto-completes the step
-- For task steps: keep existing Check/Hint/Reset/Continue flow unchanged
-- Update the step completion logic so instruction steps award XP immediately on Continue
+- Add detection: `const isChallengeStep = currentStep?.type === 'challenge'`
+- Challenge steps use the same task-checking flow (Check/Hint/Reset/Continue) as regular task steps
+- Render a visual distinction in the instruction panel header: a badge saying "Challenge" with a trophy icon and a subtle accent background
+- On challenge completion (last step + correct), trigger the existing `onComplete` callback
 
 ### Module data changes (`src/data/excel-basics-module.ts`)
-- Insert new instruction steps before existing task steps in each lesson
-- Each instruction step uses `type: 'instruction'`, has no `task` or `editableCells`, and may include a read-only `initialSheetState` for visual examples
-- Re-number step orders and IDs accordingly
-- Update `estimatedMinutes` from 90 to ~120
+- Append one challenge step to each of the 4 lessons
+- Each challenge has a richer `initialSheetState` with more data, multiple `editableCells`, and multiple `expectations`
+- Total steps go from 16 to 20
+- Update `estimatedMinutes` from 120 to ~140
 
 ### Files modified
-- `src/types/lesson.ts` -- make `task` and `initialSheetState` optional, add `type` field
-- `src/components/LessonPlayer.tsx` -- handle instruction-only steps
-- `src/data/excel-basics-module.ts` -- add scaffolding steps to all 4 lessons
+- `src/types/lesson.ts` -- add `'challenge'` to the type union
+- `src/components/LessonPlayer.tsx` -- visual distinction for challenge steps
+- `src/data/excel-basics-module.ts` -- add 4 challenge steps (one per lesson)
+
