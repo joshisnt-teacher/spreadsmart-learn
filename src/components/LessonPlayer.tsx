@@ -328,21 +328,57 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
             </div>
             <h3 className="text-xl font-semibold mb-3">{currentStep.title}</h3>
             <div className="prose prose-sm max-w-none text-foreground/90">
-              {currentStep.instruction.split('\n').map((line, i) => {
-                // Handle bold with **
-                const parts = line.split(/\*\*(.*?)\*\*/g);
-                return (
-                  <p key={i} className="mb-1.5 last:mb-0">
-                    {parts.map((part, j) =>
-                      j % 2 === 1 ? (
-                        <code key={j} className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono text-xs">{part}</code>
-                      ) : (
-                        <span key={j}>{part}</span>
-                      )
-                    )}
-                  </p>
-                );
-              })}
+              {(() => {
+                const lines = currentStep.instruction.split('\n');
+                const blocks: { type: 'text' | 'table'; lines: string[] }[] = [];
+                for (const line of lines) {
+                  if (line.trimStart().startsWith('|')) {
+                    const last = blocks[blocks.length - 1];
+                    if (last?.type === 'table') last.lines.push(line);
+                    else blocks.push({ type: 'table', lines: [line] });
+                  } else {
+                    blocks.push({ type: 'text', lines: [line] });
+                  }
+                }
+
+                const renderInline = (text: string) => {
+                  // Split by **bold** and `code`
+                  const tokens = text.split(/(\*\*.*?\*\*|`[^`]+`)/g);
+                  return tokens.map((tok, i) => {
+                    if (tok.startsWith('**') && tok.endsWith('**')) {
+                      return <code key={i} className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono text-xs">{tok.slice(2, -2)}</code>;
+                    }
+                    if (tok.startsWith('`') && tok.endsWith('`')) {
+                      return <code key={i} className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono text-xs">{tok.slice(1, -1)}</code>;
+                    }
+                    return <span key={i}>{tok}</span>;
+                  });
+                };
+
+                return blocks.map((block, bi) => {
+                  if (block.type === 'table') {
+                    const rows = block.lines
+                      .map(l => l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim()))
+                      .filter(cells => !cells.every(c => /^-+$/.test(c)));
+                    const [header, ...body] = rows;
+                    return (
+                      <table key={bi} className="my-2 text-sm border-collapse w-auto">
+                        <thead>
+                          <tr>{header.map((h, hi) => <th key={hi} className="border border-border px-3 py-1.5 bg-muted font-semibold text-left">{renderInline(h)}</th>)}</tr>
+                        </thead>
+                        <tbody>
+                          {body.map((row, ri) => (
+                            <tr key={ri}>{row.map((cell, ci) => <td key={ci} className="border border-border px-3 py-1.5">{renderInline(cell)}</td>)}</tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    );
+                  }
+                  const line = block.lines[0];
+                  if (!line) return <p key={bi} className="mb-1.5" />;
+                  return <p key={bi} className="mb-1.5 last:mb-0">{renderInline(line)}</p>;
+                });
+              })()}
             </div>
 
             {currentStep.whyItMatters && (
