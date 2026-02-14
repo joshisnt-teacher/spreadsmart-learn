@@ -38,8 +38,15 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-primary/5 via-primary/10 to-accent/5 border-b">
-        <div className="max-w-4xl mx-auto px-6 py-12">
+      <div className="relative bg-gradient-to-br from-primary/5 via-primary/10 to-accent/5 border-b overflow-hidden">
+        {module.bannerUrl && (
+          <img
+            src={module.bannerUrl}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none"
+          />
+        )}
+        <div className="relative max-w-4xl mx-auto px-6 py-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -10,6 +10,7 @@ interface CustomModuleRow {
   description: string;
   estimated_minutes: number;
   status: string;
+  banner_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -73,7 +74,7 @@ export function useModuleBuilder(moduleId: string | undefined) {
 
   useEffect(() => { fetchFull(); }, [fetchFull]);
 
-  const updateModule = async (updates: Partial<Pick<CustomModuleRow, 'title' | 'description' | 'estimated_minutes' | 'status'>>) => {
+  const updateModule = async (updates: Partial<Pick<CustomModuleRow, 'title' | 'description' | 'estimated_minutes' | 'status' | 'banner_url'>>) => {
     if (!moduleId) return;
     await supabase.from('custom_modules').update(updates as any).eq('id', moduleId);
     fetchFull();

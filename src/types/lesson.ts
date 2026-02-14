@@ -112,6 +112,7 @@ export interface Module {
   title: string;
   description: string;
   estimatedMinutes: number;
+  bannerUrl?: string;
   lessons: Lesson[];
 }
 
