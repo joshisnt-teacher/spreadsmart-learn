@@ -434,6 +434,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
         ) : isQuizStep && currentStep.quiz ? (
           <QuizStep
             quiz={currentStep.quiz}
+            question={currentStep.instruction}
             feedback={feedback}
             onAnswerChange={setQuizAnswer}
             answer={quizAnswer}
