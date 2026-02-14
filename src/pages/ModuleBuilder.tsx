@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
 import { useModuleBuilder } from '@/hooks/useCustomModules';
+import { supabase } from '@/integrations/supabase/client';
 import { stepToConfig } from '@/lib/module-transform';
 import { toast } from '@/hooks/use-toast';
 import type { Step, QuizQuestion } from '@/types/lesson';
@@ -160,77 +161,78 @@ const ModuleBuilder: React.FC = () => {
       setModuleDescription(result.description);
       setModuleMinutes(result.estimatedMinutes);
 
-      // Create lessons and steps
-      for (const lesson of result.lessons ?? []) {
-        await builder.addLesson();
-        // After addLesson, refetch to get the new lesson ID
-        await builder.refetch();
-      }
-      // Now populate the lessons with generated data
-      // We need to refetch after all lessons are added
-      await builder.refetch();
-      const freshModule = builder.fullModule;
-      if (freshModule) {
-        for (let i = 0; i < (result.lessons ?? []).length && i < freshModule.lessons.length; i++) {
-          const genLesson = result.lessons[i];
-          const dbLesson = freshModule.lessons[i];
-          await builder.updateLesson(dbLesson.id, { title: genLesson.title, description: genLesson.description });
+      // Direct DB inserts to avoid React state race conditions
+      for (let i = 0; i < (result.lessons ?? []).length; i++) {
+        const genLesson = result.lessons[i];
 
-          for (const step of genLesson.steps ?? []) {
-            await builder.addStep(dbLesson.id, step.type || 'instruction');
-          }
+        // Insert lesson directly and capture its ID
+        const { data: lessonRow, error: lessonErr } = await supabase
+          .from('custom_lessons')
+          .insert({
+            module_id: moduleId!,
+            title: genLesson.title || 'Untitled Lesson',
+            description: genLesson.description || '',
+            order: i,
+          } as any)
+          .select('id')
+          .single();
+
+        if (lessonErr || !lessonRow) {
+          console.error('Failed to insert lesson:', lessonErr);
+          continue;
+        }
+
+        const lessonId = (lessonRow as any).id;
+
+        // Insert all steps for this lesson directly
+        for (let j = 0; j < (genLesson.steps ?? []).length; j++) {
+          const genStep = genLesson.steps[j];
+          const config: Record<string, unknown> = {};
+          if (genStep.quiz) config.quiz = genStep.quiz;
+          if (genStep.initialSheetState) config.initialSheetState = genStep.initialSheetState;
+          if (genStep.task) config.task = genStep.task;
+
+          await supabase.from('custom_steps').insert({
+            lesson_id: lessonId,
+            title: genStep.title || 'Untitled Step',
+            instruction: genStep.instruction || '',
+            type: genStep.type || 'instruction',
+            why_it_matters: genStep.whyItMatters || null,
+            order: j,
+            config,
+          } as any);
         }
       }
-      // Final refetch and populate step configs
-      await builder.refetch();
-      const finalModule = builder.fullModule;
-      if (finalModule) {
-        for (let i = 0; i < (result.lessons ?? []).length && i < finalModule.lessons.length; i++) {
-          const genLesson = result.lessons[i];
-          const dbLesson = finalModule.lessons[i];
-          for (let j = 0; j < (genLesson.steps ?? []).length && j < dbLesson.steps.length; j++) {
-            const genStep = genLesson.steps[j];
-            const dbStep = dbLesson.steps[j];
-            const config: Record<string, unknown> = {};
-            if (genStep.quiz) config.quiz = genStep.quiz;
-            if (genStep.initialSheetState) config.initialSheetState = genStep.initialSheetState;
-            if (genStep.task) config.task = genStep.task;
-            await builder.updateStep(dbStep.id, {
-              title: genStep.title,
-              instruction: genStep.instruction,
-              type: genStep.type || 'instruction',
-              why_it_matters: genStep.whyItMatters || null,
-              config,
-            });
-          }
-        }
-      }
+
+      // Single refetch to sync UI
       await builder.refetch();
       toast({ title: 'Module generated!', description: `Created ${result.lessons?.length ?? 0} lessons.` });
+
     } else if (action === 'generate_step') {
       if (!selectedLessonId) {
         toast({ title: 'Select a lesson first', description: 'Choose a lesson where the step should be added.', variant: 'destructive' });
         return;
       }
-      await builder.addStep(selectedLessonId, result.type || 'instruction');
+
+      const currentLessonSteps = builder.fullModule?.lessons.find(l => l.id === selectedLessonId)?.steps ?? [];
+      const config: Record<string, unknown> = {};
+      if (result.quiz) config.quiz = result.quiz;
+      if (result.initialSheetState) config.initialSheetState = result.initialSheetState;
+      if (result.task) config.task = result.task;
+
+      const { data: stepRow } = await supabase.from('custom_steps').insert({
+        lesson_id: selectedLessonId,
+        title: result.title || 'Untitled Step',
+        instruction: result.instruction || '',
+        type: result.type || 'instruction',
+        why_it_matters: result.whyItMatters || null,
+        order: currentLessonSteps.length,
+        config,
+      } as any).select('id').single();
+
       await builder.refetch();
-      const updatedLesson = builder.fullModule?.lessons.find(l => l.id === selectedLessonId);
-      const newStep = updatedLesson?.steps[updatedLesson.steps.length - 1];
-      if (newStep) {
-        const config: Record<string, unknown> = {};
-        if (result.quiz) config.quiz = result.quiz;
-        if (result.initialSheetState) config.initialSheetState = result.initialSheetState;
-        if (result.task) config.task = result.task;
-        await builder.updateStep(newStep.id, {
-          title: result.title,
-          instruction: result.instruction,
-          type: result.type || 'instruction',
-          why_it_matters: result.whyItMatters || null,
-          config,
-        });
-        setSelectedStepId(newStep.id);
-      }
-      await builder.refetch();
+      if (stepRow) setSelectedStepId((stepRow as any).id);
+
     } else if (action === 'improve_content') {
       if (result.title) setStepTitle(result.title);
       if (result.instruction) setStepInstruction(result.instruction);
