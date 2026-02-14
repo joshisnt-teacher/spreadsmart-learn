@@ -1,4 +1,4 @@
-import type { TaskDefinition, CheckResult, TaskExpectation, ChartTaskExpectation, ChartType, QuizQuestion } from '@/types/lesson';
+import type { TaskDefinition, CheckResult, TaskExpectation, ChartTaskExpectation, ChartType, QuizQuestion, TableTaskConfig } from '@/types/lesson';
 
 /**
  * Parse a cell reference like "B5" into { row, col } (0-indexed)
@@ -194,6 +194,34 @@ export function checkQuizAnswer(
       type: 'correct',
       message: task.successMessage,
       details: quiz.explanation ? [quiz.explanation] : undefined,
+    };
+  }
+
+  return {
+    type: 'incorrect',
+    message: task.incorrectMessage || 'Not quite — try again!',
+  };
+}
+
+/**
+ * Check a table-task answer against expected values
+ */
+export function checkTableTaskAnswer(
+  tableTask: TableTaskConfig,
+  answer: string,
+  task: TaskDefinition,
+): CheckResult {
+  const normalize = (s: string) => s.trim().toLowerCase();
+  const normalizedAnswer = normalize(answer);
+
+  const allAccepted = [tableTask.correctAnswer, ...(tableTask.acceptableAnswers || [])];
+  const isCorrect = allAccepted.some((a) => normalize(a) === normalizedAnswer);
+
+  if (isCorrect) {
+    return {
+      type: 'correct',
+      message: task.successMessage,
+      details: tableTask.explanation ? [tableTask.explanation] : undefined,
     };
   }
 

@@ -95,4 +95,3 @@ Add a `checkTableTaskAnswer()` function to `src/lib/marking-engine.ts` that work
 - Filter task introduces the concept of narrowing data to a subset
 - The existing quiz steps (sorting vocabulary and filtering concepts) remain for conceptual reinforcement
 - No dependency on the FortuneSheet spreadsheet for this lesson
-

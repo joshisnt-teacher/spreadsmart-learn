@@ -49,6 +49,23 @@ export interface QuizQuestion {
   explanation?: string;
 }
 
+export interface TableColumn {
+  key: string;
+  label: string;
+  type: 'text' | 'number';
+}
+
+export interface TableTaskConfig {
+  columns: TableColumn[];
+  data: Record<string, string | number>[];
+  question: string;
+  correctAnswer: string;
+  acceptableAnswers?: string[];
+  explanation?: string;
+  enableSort?: boolean;
+  enableFilter?: boolean;
+}
+
 export type ChartType = 'bar' | 'line' | 'pie' | 'area';
 
 export interface ChartConfig {
@@ -71,13 +88,14 @@ export interface Step {
   order: number;
   title: string;
   instruction: string;
-  type?: 'instruction' | 'task' | 'challenge' | 'chart' | 'quiz';
+  type?: 'instruction' | 'task' | 'challenge' | 'chart' | 'quiz' | 'table-task';
   whyItMatters?: string;
   mediaUrl?: string;
   initialSheetState?: SheetState;
   task?: TaskDefinition;
   chartConfig?: ChartConfig;
   chartTask?: ChartTaskExpectation;
+  tableTask?: TableTaskConfig;
   quiz?: QuizQuestion;
 }
 
