@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BookOpen, Clock, Star, Zap, ChevronRight, CalendarClock, LogOut, Trophy, Target, RotateCcw, CheckCircle2, User } from 'lucide-react';
+import { BookOpen, Clock, Star, Zap, ChevronRight, ChevronDown, CalendarClock, LogOut, Trophy, Target, RotateCcw, CheckCircle2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -18,6 +18,7 @@ import StudentProfileDialog from '@/components/StudentProfileDialog';
 const ModuleCard: React.FC<{ module: typeof allModules[0]; navigate: ReturnType<typeof useNavigate>; variant?: 'assigned' | 'optional' }> = ({ module, navigate, variant = 'assigned' }) => {
   const { completedLessonIds, totalXp, loading: progressLoading } = useProgress(module.id);
   const { assignments, hasAssignments, isLessonAssigned, loading: assignLoading } = useStudentAssignments(module.id);
+  const [lessonsOpen, setLessonsOpen] = useState(false);
 
   const totalLessons = module.lessons.length;
   const completedCount = completedLessonIds.length;
@@ -90,36 +91,47 @@ const ModuleCard: React.FC<{ module: typeof allModules[0]; navigate: ReturnType<
           </div>
           <Progress value={progressPercent} className="h-2" />
         </div>
+        {assignedLessons.length > 0 && (
+          <button
+            onClick={() => setLessonsOpen(!lessonsOpen)}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mt-3 w-full justify-center"
+          >
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${lessonsOpen ? 'rotate-180' : ''}`} />
+            {lessonsOpen ? 'Hide lessons' : 'Show lessons'}
+          </button>
+        )}
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-2">
-          {assignedLessons.map((lesson, idx) => {
-            const isComplete = completedLessonIds.includes(lesson.id);
+      {lessonsOpen && (
+        <CardContent className="pt-0">
+          <div className="space-y-2">
+            {assignedLessons.map((lesson, idx) => {
+              const isComplete = completedLessonIds.includes(lesson.id);
 
-            return (
-              <motion.div
-                key={lesson.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.04 }}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                onClick={() => navigate(`/module/${module.id}`)}
-              >
-                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold shrink-0 ${
-                  isComplete ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'
-                }`}>
-                  {isComplete ? '✓' : idx + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{lesson.title}</p>
-                  <span className="text-xs text-muted-foreground">{lesson.steps.length} steps</span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-              </motion.div>
-            );
-          })}
-        </div>
-      </CardContent>
+              return (
+                <motion.div
+                  key={lesson.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.04 }}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                  onClick={() => navigate(`/module/${module.id}`)}
+                >
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold shrink-0 ${
+                    isComplete ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'
+                  }`}>
+                    {isComplete ? '✓' : idx + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{lesson.title}</p>
+                    <span className="text-xs text-muted-foreground">{lesson.steps.length} steps</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                </motion.div>
+              );
+            })}
+          </div>
+        </CardContent>
+      )}
     </Card>
   );
 };
