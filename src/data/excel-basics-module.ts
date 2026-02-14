@@ -7,7 +7,7 @@ export const excelBasicsModule: Module = {
   estimatedMinutes: 45,
   lessons: [
     // ──────────────────────────────────────────────
-    // LESSON 1: Navigating a Spreadsheet (6 steps)
+    // LESSON 1: Navigating a Spreadsheet (7 steps)
     // ──────────────────────────────────────────────
     {
       id: 'lesson-1',
@@ -53,10 +53,51 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 2 — Task: Identifying Cells
+        // Step 2 — Task: Resizing Rows and Columns
         {
           id: 'step-1-2',
           order: 2,
+          type: 'task',
+          title: 'Resizing Rows and Columns',
+          instruction:
+            'Sometimes data in a cell is too long to see. You can **resize columns** to make the data easier to read.\n\n' +
+            'To widen a column, hover your mouse over the **border between two column letters** (e.g. between A and B) at the top. Your cursor will change to a resize arrow. Then **click and drag** to the right.\n\n' +
+            'You can do the same for rows by dragging the border between row numbers.\n\n' +
+            'Column A below is too narrow to read the full message. Widen it, then type the hidden message into cell **B2**.',
+          whyItMatters: 'Being able to adjust column widths helps you view and work with data of all sizes — a skill you\'ll use constantly.',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 4,
+            column: 3,
+            config: { columnlen: { '0': 40 } },
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Hidden Message', m: 'Hidden Message', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Type the message here', m: 'Type the message here', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Spreadsheets are awesome', m: 'Spreadsheets are awesome' } },
+            ],
+          },
+          task: {
+            id: 'task-1-2',
+            expectations: [
+              { cellRef: 'B2', expectedValue: 'Spreadsheets are awesome' },
+            ],
+            editableCells: ['B2'],
+            hints: [
+              'Hover your mouse over the border between the A and B column headers at the top of the sheet.',
+              'When the cursor changes to a resize arrow (↔), click and drag to the right to widen column A.',
+              'The hidden message is: Spreadsheets are awesome',
+            ],
+            successMessage: 'You found the hidden message! Now you know how to resize columns.',
+            incorrectMessage: 'Widen column A to read the full message, then type it exactly into B2.',
+            xpValue: 10,
+            bonusXp: 5,
+          },
+        },
+
+        // Step 3 — Task: Identifying Cells
+        {
+          id: 'step-1-3',
+          order: 3,
           type: 'task',
           title: 'Identifying Cells',
           instruction:
@@ -85,7 +126,7 @@ export const excelBasicsModule: Module = {
             ],
           },
           task: {
-            id: 'task-1-2',
+            id: 'task-1-3',
             expectations: [
               { cellRef: 'B2', expectedValue: 80 },
               { cellRef: 'C3', expectedValue: 77 },
@@ -102,10 +143,10 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 3 — Instruction: How Excel Calculates
+        // Step 4 — Instruction: How Excel Calculates
         {
-          id: 'step-1-3',
-          order: 3,
+          id: 'step-1-4',
+          order: 4,
           type: 'instruction',
           title: 'How Excel Calculates',
           instruction:
@@ -133,10 +174,10 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 4 — Task: Your First Formula
+        // Step 5 — Task: Your First Formula
         {
-          id: 'step-1-4',
-          order: 4,
+          id: 'step-1-5',
+          order: 5,
           type: 'task',
           title: 'Your First Formula',
           instruction:
@@ -168,7 +209,7 @@ export const excelBasicsModule: Module = {
             ],
           },
           task: {
-            id: 'task-1-4',
+            id: 'task-1-5',
             expectations: [
               { cellRef: 'D2', expectedValue: 8, expectedFormula: '=B2*C2', checkFormula: true },
               { cellRef: 'D3', expectedValue: 15, expectedFormula: '=B3*C3', checkFormula: true },
@@ -188,10 +229,10 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 5 — Instruction: Using the Fill Handle
+        // Step 6 — Instruction: Using the Fill Handle
         {
-          id: 'step-1-5',
-          order: 5,
+          id: 'step-1-6',
+          order: 6,
           type: 'instruction',
           title: 'Using the Fill Handle',
           instruction:
@@ -203,10 +244,10 @@ export const excelBasicsModule: Module = {
           whyItMatters: 'The fill handle saves huge amounts of time — imagine a dataset with 1,000 rows!',
         },
 
-        // Step 6 — Task: Use Fill Down
+        // Step 7 — Task: Use Fill Down
         {
-          id: 'step-1-6',
-          order: 6,
+          id: 'step-1-7',
+          order: 7,
           type: 'task',
           title: 'Use Fill Down',
           instruction:
@@ -237,7 +278,7 @@ export const excelBasicsModule: Module = {
             ],
           },
           task: {
-            id: 'task-1-6',
+            id: 'task-1-7',
             expectations: [
               { cellRef: 'D2', expectedValue: 8, expectedFormula: '=B2*C2', checkFormula: true },
               { cellRef: 'D3', expectedValue: 15, expectedFormula: '=B3*C3', checkFormula: true },
