@@ -84,6 +84,9 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
         if (!saved.completed) {
           const idx = lesson.steps.findIndex(s => s.id === saved.current_step_id);
           if (idx >= 0) setCurrentStepIndex(idx);
+        } else {
+          // Replaying a completed lesson — award 0 XP throughout
+          setIsRedoing(true);
         }
       }
     });
@@ -149,7 +152,8 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
 
     if (result.type === 'correct') {
       const isFirstAttempt = attemptCount === 0;
-      const xp = isRedoing ? 0 : (currentStep.task?.xpValue ?? 0) + (isFirstAttempt ? (currentStep.task?.bonusXp || 0) : 0);
+      const alreadyDone = progress.completedStepIds.includes(currentStep.id);
+      const xp = (isRedoing || alreadyDone) ? 0 : (currentStep.task?.xpValue ?? 0) + (isFirstAttempt ? (currentStep.task?.bonusXp || 0) : 0);
 
       // Fire confetti for challenge steps
       if (isChallengeStep) {
@@ -182,7 +186,8 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
 
   const handleInstructionContinue = useCallback(() => {
     if (!currentStep) return;
-    const xp = currentStep.task?.xpValue ?? 5;
+    const alreadyDone = progress.completedStepIds.includes(currentStep.id);
+    const xp = (isRedoing || alreadyDone) ? 0 : (currentStep.task?.xpValue ?? 5);
     setProgress((prev) => ({
       ...prev,
       completedStepIds: [...new Set([...prev.completedStepIds, currentStep.id])],
@@ -205,7 +210,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
         currentStepId: lesson.steps[nextIdx]?.id || '',
       }));
     }, 0);
-  }, [currentStep, currentStepIndex, isLastStep, lesson.steps, onComplete, progress.totalXp]);
+  }, [currentStep, currentStepIndex, isLastStep, lesson.steps, onComplete, progress.totalXp, progress.completedStepIds, isRedoing]);
 
   const handleNext = useCallback(() => {
     if (isLastStep) {
