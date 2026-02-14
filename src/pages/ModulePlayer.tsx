@@ -15,8 +15,22 @@ const ModulePlayer: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { completedLessonIds, totalXp, loading: progressLoading, markLessonComplete } = useProgress(excelBasicsModule.id);
-  const { hasAssignments, isLessonAssigned, getDueDate, loading: assignLoading } = useStudentAssignments(excelBasicsModule.id);
+  const { assignments, hasAssignments, isLessonAssigned, getDueDate, loading: assignLoading } = useStudentAssignments(excelBasicsModule.id);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+
+  // Compute nearest module-level due date
+  const moduleDueDates = assignments
+    .filter(a => a.due_date)
+    .map(a => new Date(a.due_date!));
+  const nearestDue = moduleDueDates.length > 0
+    ? new Date(Math.min(...moduleDueDates.map(d => d.getTime())))
+    : null;
+  const daysUntilDue = nearestDue
+    ? Math.ceil((nearestDue.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
+  const moduleDueLabel = daysUntilDue !== null
+    ? daysUntilDue <= 0 ? 'Due today' : daysUntilDue === 1 ? 'Due tomorrow' : `Due in ${daysUntilDue} days`
+    : null;
 
   // Jump to lesson from query param
   useEffect(() => {
@@ -89,6 +103,7 @@ const ModulePlayer: React.FC = () => {
         hasAssignments={hasAssignments}
         isLessonAssigned={isLessonAssigned}
         getDueDate={getDueDate}
+        moduleDueLabel={moduleDueLabel}
       />
     </div>
   );

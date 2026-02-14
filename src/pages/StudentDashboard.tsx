@@ -38,6 +38,21 @@ const StudentDashboard: React.FC = () => {
 
   // Build assigned lessons list
   const assignedLessons = excelBasicsModule.lessons.filter(l => isLessonAssigned(l.id));
+
+  // Compute nearest module-level due date
+  const moduleDueDates = assignments
+    .filter(a => a.due_date)
+    .map(a => new Date(a.due_date!));
+  const nearestDue = moduleDueDates.length > 0
+    ? new Date(Math.min(...moduleDueDates.map(d => d.getTime())))
+    : null;
+  const daysUntilDue = nearestDue
+    ? Math.ceil((nearestDue.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
+  const moduleDueLabel = daysUntilDue !== null
+    ? daysUntilDue <= 0 ? 'Due today' : daysUntilDue === 1 ? 'Due tomorrow' : `Due in ${daysUntilDue} days`
+    : null;
+
   const upcomingDue = assignments
     .filter(a => a.due_date && new Date(a.due_date) > new Date())
     .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime());
@@ -116,7 +131,15 @@ const StudentDashboard: React.FC = () => {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg">{excelBasicsModule.title}</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-lg">{excelBasicsModule.title}</CardTitle>
+                    {moduleDueLabel && (
+                      <span className="text-xs font-medium text-muted-foreground flex items-center gap-1 bg-muted px-2 py-0.5 rounded-full">
+                        <CalendarClock className="w-3 h-3" />
+                        {moduleDueLabel}
+                      </span>
+                    )}
+                  </div>
                   <CardDescription className="mt-1">{excelBasicsModule.description}</CardDescription>
                 </div>
                 <Button size="sm" onClick={() => navigate(`/module/${excelBasicsModule.id}`)}>
