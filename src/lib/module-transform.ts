@@ -67,6 +67,7 @@ export function transformDbModule(db: DbModule): Module {
     title: db.title,
     description: db.description,
     estimatedMinutes: db.estimated_minutes,
+    bannerUrl: (db as any).banner_url ?? undefined,
     lessons: (db.custom_lessons ?? [])
       .sort((a, b) => a.order - b.order)
       .map(transformLesson),

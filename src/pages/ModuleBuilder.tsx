@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, GripVertical, Save, Eye, BookOpen, FileText, HelpCircle, ChevronRight, Settings, Grid3X3, Pencil, Wand2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, GripVertical, Save, Eye, BookOpen, FileText, HelpCircle, ChevronRight, Settings, Grid3X3, Pencil, Wand2, ImagePlus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,6 +41,8 @@ const ModuleBuilder: React.FC = () => {
   const [moduleTitle, setModuleTitle] = useState('');
   const [moduleDescription, setModuleDescription] = useState('');
   const [moduleMinutes, setModuleMinutes] = useState(15);
+  const [moduleBannerUrl, setModuleBannerUrl] = useState<string | null>(null);
+  const [bannerUploading, setBannerUploading] = useState(false);
   const [lessonTitle, setLessonTitle] = useState('');
 
   // Local editing state for step
@@ -68,6 +70,7 @@ const ModuleBuilder: React.FC = () => {
       setModuleTitle(builder.module.title);
       setModuleDescription(builder.module.description);
       setModuleMinutes(builder.module.estimated_minutes);
+      setModuleBannerUrl(builder.module.banner_url ?? null);
     }
   }, [builder.module?.id, builder.module?.updated_at]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -340,6 +343,59 @@ const ModuleBuilder: React.FC = () => {
                 placeholder="What will students learn?"
                 rows={2}
               />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Banner Image (optional)</Label>
+              {moduleBannerUrl ? (
+                <div className="relative rounded-lg overflow-hidden border border-border">
+                  <img src={moduleBannerUrl} alt="Module banner" className="w-full h-32 object-cover" />
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 h-7 w-7"
+                    onClick={async () => {
+                      setModuleBannerUrl(null);
+                      await builder.updateModule({ banner_url: null });
+                    }}
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              ) : (
+                <label className="flex items-center gap-2 cursor-pointer border border-dashed border-border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                  <ImagePlus className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    {bannerUploading ? 'Uploading...' : 'Click to upload a banner image'}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={bannerUploading}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file || !moduleId) return;
+                      setBannerUploading(true);
+                      const ext = file.name.split('.').pop();
+                      const path = `${moduleId}/banner.${ext}`;
+                      const { error: uploadErr } = await supabase.storage
+                        .from('module-banners')
+                        .upload(path, file, { upsert: true });
+                      if (uploadErr) {
+                        toast({ title: 'Upload failed', description: uploadErr.message, variant: 'destructive' });
+                        setBannerUploading(false);
+                        return;
+                      }
+                      const { data: urlData } = supabase.storage.from('module-banners').getPublicUrl(path);
+                      const url = urlData.publicUrl;
+                      setModuleBannerUrl(url);
+                      await builder.updateModule({ banner_url: url });
+                      setBannerUploading(false);
+                      toast({ title: 'Banner uploaded!' });
+                    }}
+                  />
+                </label>
+              )}
             </div>
           </div>
         </div>
