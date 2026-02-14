@@ -5,6 +5,7 @@ export const chartsModule: Module = {
   title: 'Charts & Data Summaries',
   description: 'Learn how to organise data for charts, read and interpret visualisations, build your own charts, and create summary tables.',
   estimatedMinutes: 50,
+  bannerUrl: 'https://ctfxhxqhvszadozamqkg.supabase.co/storage/v1/object/public/module-banners/charts-banner.png',
   lessons: [
     // ──────────────────────────────────────────────
     // LESSON 1: Preparing Data for Charts (5 steps)
