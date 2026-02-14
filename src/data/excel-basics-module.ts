@@ -3,8 +3,8 @@ import type { Module } from '@/types/lesson';
 export const excelBasicsModule: Module = {
   id: 'excel-basics',
   title: 'Introduction to Excel',
-  description: 'Learn how spreadsheets are structured, enter and edit data, write formulas, use built-in functions, and sort and filter data.',
-  estimatedMinutes: 45,
+  description: 'Learn how spreadsheets are structured, enter and edit data, format numbers, write formulas, use built-in functions, and sort and filter data.',
+  estimatedMinutes: 60,
   bannerUrl: 'https://ctfxhxqhvszadozamqkg.supabase.co/storage/v1/object/public/module-banners/excel-basics-banner.png',
   lessons: [
     // ──────────────────────────────────────────────
@@ -329,11 +329,295 @@ export const excelBasicsModule: Module = {
     },
 
     // ──────────────────────────────────────────────
-    // LESSON 2: Built-in Functions (5 steps)
+    // LESSON 2: Cell Formatting & Number Types (6 steps)
+    // ──────────────────────────────────────────────
+    {
+      id: 'lesson-formatting',
+      order: 2,
+      title: 'Cell Formatting & Number Types',
+      description: 'Learn how to format numbers as currency, percentages, and decimals — and understand date formats.',
+      steps: [
+        // Step 1 — Instruction: Why Formatting Matters
+        {
+          id: 'step-fmt-1',
+          order: 1,
+          type: 'instruction',
+          title: 'Why Formatting Matters',
+          instruction:
+            'Numbers in a spreadsheet can mean different things:\n\n' +
+            '- **3.5** could be a price (£3.50), a percentage (3.5%), or just a number.\n' +
+            '- **0.85** could mean 85% on a test.\n' +
+            '- **45000** could be a date!\n\n' +
+            'Formatting tells Excel **how to display** a number — the stored value stays the same, but it *looks* different.\n\n' +
+            'Common formats include:\n' +
+            '- **Currency** — £3.50, $12.00\n' +
+            '- **Percentage** — 85%, 42.5%\n' +
+            '- **Number** — controlling decimal places (3.1 vs 3.14 vs 3.142)\n' +
+            '- **Date** — 14/02/2026, Feb 14, 2026',
+          whyItMatters: 'Without formatting, your data can be confusing or misleading. A well-formatted spreadsheet is easier to read and less likely to cause mistakes.',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 6,
+            column: 4,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Raw Value', m: 'Raw Value', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'As Currency', m: 'As Currency', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 2, v: { v: 'As Percentage', m: 'As Percentage', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 3, v: { v: 'As Decimal (1dp)', m: 'As Decimal (1dp)', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 3.5, m: '3.5' } },
+              { r: 1, c: 1, v: { v: '£3.50', m: '£3.50' } },
+              { r: 1, c: 2, v: { v: '350%', m: '350%' } },
+              { r: 1, c: 3, v: { v: '3.5', m: '3.5' } },
+              { r: 2, c: 0, v: { v: 0.85, m: '0.85' } },
+              { r: 2, c: 1, v: { v: '£0.85', m: '£0.85' } },
+              { r: 2, c: 2, v: { v: '85%', m: '85%' } },
+              { r: 2, c: 3, v: { v: '0.9', m: '0.9' } },
+              { r: 3, c: 0, v: { v: 12, m: '12' } },
+              { r: 3, c: 1, v: { v: '£12.00', m: '£12.00' } },
+              { r: 3, c: 2, v: { v: '1200%', m: '1200%' } },
+              { r: 3, c: 3, v: { v: '12.0', m: '12.0' } },
+            ],
+          },
+        },
+
+        // Step 2 — Quiz: Percentage conversion
+        {
+          id: 'step-fmt-2',
+          order: 2,
+          type: 'quiz',
+          title: 'Quick Check: Percentages',
+          instruction: 'A student scored 17 out of 20 on a test. What is their score as a percentage?',
+          quiz: {
+            type: 'short-answer',
+            correctAnswer: '85%',
+            acceptableAnswers: ['85', '85.0%', '85.0', '0.85'],
+            explanation: '17 ÷ 20 = 0.85, which is 85%. To convert a fraction to a percentage, divide and multiply by 100.',
+          },
+          task: {
+            id: 'task-fmt-2',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'Divide the score by the total: 17 ÷ 20.',
+              'Multiply by 100 to get a percentage.',
+            ],
+            successMessage: 'Correct! 17 ÷ 20 = 0.85 = 85%.',
+            incorrectMessage: 'Try dividing 17 by 20 and multiplying by 100.',
+            xpValue: 5,
+          },
+        },
+
+        // Step 3 — Task: Canteen Price List (Currency)
+        {
+          id: 'step-fmt-3',
+          order: 3,
+          type: 'task',
+          title: 'Canteen Price List',
+          instruction:
+            'The school canteen needs a price list. The prices are stored as plain numbers.\n\n' +
+            'Your job is to calculate the **total cost** if a student buys one of each item.\n\n' +
+            '1. In **B6**, use `=SUM(B2:B5)` to calculate the total.\n' +
+            '2. In **C6**, type the total as a currency value with **£** and **two decimal places** (e.g. £6.50).\n' +
+            '3. Click **Check**.',
+          whyItMatters: 'Currency values should always show two decimal places so £3 displays as £3.00 — this avoids confusion.',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 8,
+            column: 4,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Item', m: 'Item', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Price', m: 'Price', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 2, v: { v: 'Formatted', m: 'Formatted', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Sandwich', m: 'Sandwich' } },
+              { r: 1, c: 1, v: { v: 2.5, m: '2.5' } },
+              { r: 1, c: 2, v: { v: '£2.50', m: '£2.50' } },
+              { r: 2, c: 0, v: { v: 'Juice', m: 'Juice' } },
+              { r: 2, c: 1, v: { v: 1.2, m: '1.2' } },
+              { r: 2, c: 2, v: { v: '£1.20', m: '£1.20' } },
+              { r: 3, c: 0, v: { v: 'Cookie', m: 'Cookie' } },
+              { r: 3, c: 1, v: { v: 0.8, m: '0.8' } },
+              { r: 3, c: 2, v: { v: '£0.80', m: '£0.80' } },
+              { r: 4, c: 0, v: { v: 'Fruit', m: 'Fruit' } },
+              { r: 4, c: 1, v: { v: 0.5, m: '0.5' } },
+              { r: 4, c: 2, v: { v: '£0.50', m: '£0.50' } },
+              { r: 5, c: 0, v: { v: 'Total', m: 'Total', bl: 1, bg: '#fff3cd' } },
+            ],
+          },
+          task: {
+            id: 'task-fmt-3',
+            expectations: [
+              { cellRef: 'B6', expectedValue: 5, expectedFormula: '=SUM(B2:B5)', checkFormula: true },
+              { cellRef: 'C6', expectedValue: '£5.00' },
+            ],
+            editableCells: ['B6', 'C6'],
+            hints: [
+              'In B6, type =SUM(B2:B5) to add the prices.',
+              'In C6, type the total with a £ sign and two decimal places: £5.00.',
+              'The total of 2.5 + 1.2 + 0.8 + 0.5 = 5.00.',
+            ],
+            successMessage: 'Well done! The total is £5.00. Notice how "5" and "£5.00" mean the same thing but the formatted version is much clearer.',
+            almostCorrectMessage: 'Check that C6 has the £ sign and two decimal places (e.g. £5.00).',
+            incorrectMessage: 'Use =SUM(B2:B5) in B6. In C6, type £5.00 (with the pound sign and two decimal places).',
+            xpValue: 15,
+            bonusXp: 5,
+          },
+        },
+
+        // Step 4 — Task: Test Score Percentages
+        {
+          id: 'step-fmt-4',
+          order: 4,
+          type: 'task',
+          title: 'Test Score Percentages',
+          instruction:
+            'These students took a maths test out of **40 marks**.\n\n' +
+            'Calculate each student\'s **percentage** by dividing their score by 40 and multiplying by 100:\n\n' +
+            '1. In **C2**, type `=B2/40*100`\n' +
+            '2. In **C3**, type `=B3/40*100`\n' +
+            '3. In **C4**, type `=B4/40*100`\n' +
+            '4. In **C5**, type `=B5/40*100`\n' +
+            '5. Click **Check**.',
+          whyItMatters: 'Converting raw scores to percentages lets you compare results fairly — even when tests have different totals.',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 7,
+            column: 4,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Student', m: 'Student', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Score (/40)', m: 'Score (/40)', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 2, v: { v: 'Percentage', m: 'Percentage', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Ava', m: 'Ava' } },
+              { r: 1, c: 1, v: { v: 34, m: '34' } },
+              { r: 2, c: 0, v: { v: 'Liam', m: 'Liam' } },
+              { r: 2, c: 1, v: { v: 28, m: '28' } },
+              { r: 3, c: 0, v: { v: 'Zoe', m: 'Zoe' } },
+              { r: 3, c: 1, v: { v: 37, m: '37' } },
+              { r: 4, c: 0, v: { v: 'Noah', m: 'Noah' } },
+              { r: 4, c: 1, v: { v: 22, m: '22' } },
+            ],
+          },
+          task: {
+            id: 'task-fmt-4',
+            expectations: [
+              { cellRef: 'C2', expectedValue: 85, expectedFormula: '=B2/40*100', checkFormula: true },
+              { cellRef: 'C3', expectedValue: 70, expectedFormula: '=B3/40*100', checkFormula: true },
+              { cellRef: 'C4', expectedValue: 92.5, expectedFormula: '=B4/40*100', checkFormula: true },
+              { cellRef: 'C5', expectedValue: 55, expectedFormula: '=B5/40*100', checkFormula: true },
+            ],
+            editableCells: ['C2', 'C3', 'C4', 'C5'],
+            hints: [
+              'The formula is =B2/40*100 — divide the score by the total, then multiply by 100.',
+              'Ava scored 34/40 = 85%.',
+              'C2 = 85, C3 = 70, C4 = 92.5, C5 = 55.',
+            ],
+            successMessage: '🎉 Great work! Ava got 85%, Liam 70%, Zoe 92.5%, and Noah 55%. Percentages make comparison easy!',
+            almostCorrectMessage: 'Values look right — make sure you used formulas (=B2/40*100) not typed numbers.',
+            incorrectMessage: 'Use =B2/40*100 in C2, =B3/40*100 in C3, and so on for each student.',
+            xpValue: 20,
+            bonusXp: 10,
+          },
+        },
+
+        // Step 5 — Instruction: Decimal Places & ROUND
+        {
+          id: 'step-fmt-5',
+          order: 5,
+          type: 'instruction',
+          title: 'Controlling Decimal Places',
+          instruction:
+            'Sometimes calculations give you long decimal numbers like **3.333333**.\n\n' +
+            'You can use the **ROUND** function to control how many decimal places are shown:\n\n' +
+            '`=ROUND(value, decimal_places)`\n\n' +
+            'Examples:\n' +
+            '- `=ROUND(3.333, 1)` → **3.3** (1 decimal place)\n' +
+            '- `=ROUND(3.333, 2)` → **3.33** (2 decimal places)\n' +
+            '- `=ROUND(3.333, 0)` → **3** (no decimal places)\n\n' +
+            'You can also **nest** formulas:\n' +
+            '`=ROUND(B2/3, 2)` calculates B2 ÷ 3 and rounds to 2 decimal places.',
+          whyItMatters: 'Rounding makes numbers easier to read and more appropriate — you wouldn\'t say a sandwich costs £2.333333!',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 4,
+            column: 4,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Value', m: 'Value', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'ROUND(x, 0)', m: 'ROUND(x, 0)', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 2, v: { v: 'ROUND(x, 1)', m: 'ROUND(x, 1)', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 3, v: { v: 'ROUND(x, 2)', m: 'ROUND(x, 2)', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 3.14159, m: '3.14159' } },
+              { r: 1, c: 1, v: { v: 3, m: '3' } },
+              { r: 1, c: 2, v: { v: 3.1, m: '3.1' } },
+              { r: 1, c: 3, v: { v: 3.14, m: '3.14' } },
+              { r: 2, c: 0, v: { v: 7.666, m: '7.666' } },
+              { r: 2, c: 1, v: { v: 8, m: '8' } },
+              { r: 2, c: 2, v: { v: 7.7, m: '7.7' } },
+              { r: 2, c: 3, v: { v: 7.67, m: '7.67' } },
+            ],
+          },
+        },
+
+        // Step 6 — Challenge: Splitting a Bill
+        {
+          id: 'step-fmt-6',
+          order: 6,
+          type: 'challenge',
+          title: 'Splitting the Canteen Bill',
+          instruction:
+            'Three friends bought lunch together. The prices are listed below.\n\n' +
+            '1. In **B5**, calculate the **total** using `=SUM(B2:B4)`.\n' +
+            '2. In **B6**, calculate each person\'s share by dividing the total by 3.\n' +
+            '   Use `=B5/3`.\n' +
+            '3. In **B7**, round each person\'s share to **2 decimal places** using ROUND.\n' +
+            '   Use `=ROUND(B5/3, 2)`.\n\n' +
+            '💡 **Reflection:** Why is the rounded answer better for money than the unrounded one?',
+          whyItMatters: 'When dealing with money, you must round to 2 decimal places — you can\'t pay £2.833333!',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 9,
+            column: 3,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Item', m: 'Item', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Price', m: 'Price', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Pizza', m: 'Pizza' } },
+              { r: 1, c: 1, v: { v: 3.5, m: '3.5' } },
+              { r: 2, c: 0, v: { v: 'Chips', m: 'Chips' } },
+              { r: 2, c: 1, v: { v: 2, m: '2' } },
+              { r: 3, c: 0, v: { v: 'Drinks', m: 'Drinks' } },
+              { r: 3, c: 1, v: { v: 3, m: '3' } },
+              { r: 4, c: 0, v: { v: 'Total', m: 'Total', bl: 1, bg: '#fff3cd' } },
+              { r: 5, c: 0, v: { v: 'Each (÷3)', m: 'Each (÷3)', bl: 1, bg: '#fff3cd' } },
+              { r: 6, c: 0, v: { v: 'Each (rounded)', m: 'Each (rounded)', bl: 1, bg: '#fff3cd' } },
+            ],
+          },
+          task: {
+            id: 'task-fmt-6',
+            expectations: [
+              { cellRef: 'B5', expectedValue: 8.5, expectedFormula: '=SUM(B2:B4)', checkFormula: true },
+              { cellRef: 'B6', expectedFormula: '=B5/3', checkFormula: true, tolerancePercent: 1 },
+              { cellRef: 'B7', expectedValue: 2.83, expectedFormula: '=ROUND(B5/3,2)', checkFormula: true },
+            ],
+            editableCells: ['B5', 'B6', 'B7'],
+            hints: [
+              'Start with =SUM(B2:B4) in B5 to get the total.',
+              'In B6, type =B5/3 to divide the total by 3 friends.',
+              'In B7, use =ROUND(B5/3, 2) to round to 2 decimal places.',
+            ],
+            successMessage: '🎉 Each person pays £2.83! The ROUND function makes it a proper money amount instead of £2.8333…',
+            almostCorrectMessage: 'Check that B7 uses ROUND with 2 decimal places.',
+            incorrectMessage: 'B5 = =SUM(B2:B4), B6 = =B5/3, B7 = =ROUND(B5/3, 2).',
+            xpValue: 30,
+            bonusXp: 15,
+          },
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────
+    // LESSON 3: Built-in Functions (5 steps)
     // ──────────────────────────────────────────────
     {
       id: 'lesson-2',
-      order: 2,
+      order: 3,
       title: 'Built-in Functions',
       description: 'Use SUM, AVERAGE, MIN, MAX, and COUNT to analyse data.',
       steps: [
@@ -586,11 +870,11 @@ export const excelBasicsModule: Module = {
     },
 
     // ──────────────────────────────────────────────
-    // LESSON 3: Sorting and Filtering (4 steps)
+    // LESSON 4: Sorting and Filtering (4 steps)
     // ──────────────────────────────────────────────
     {
       id: 'lesson-3',
-      order: 3,
+      order: 4,
       title: 'Sorting and Filtering',
       description: 'Learn how to sort data in order and filter to show only what you need.',
       steps: [
