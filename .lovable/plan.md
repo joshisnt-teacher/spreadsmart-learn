@@ -1,53 +1,89 @@
 
 
-# Fix XP Duplication Bugs
+# Teacher Dashboard Refresh
 
-## Problem
+## Overview
 
-XP can be earned multiple times by:
-1. Clicking through instruction steps repeatedly (they always award 5 XP, no completion check)
-2. Replaying a completed lesson from the module landing page (the `isRedoing` flag only activates when navigating back within a lesson, not on full replay)
-3. Completing a lesson again at the module level (module progress always adds XP without checking if the lesson was already done)
+Redesign the teacher dashboard's class view to show **cross-module student progress**, add a **module filter dropdown**, let teachers **preview modules**, and polish the overall visual design.
+
+## Current Issues
+
+- `StudentProgressView` is hardcoded to `excelBasicsModule` only -- ignores the Charts module entirely
+- No way for teachers to enter/preview modules themselves
+- The class view is functional but visually flat
+- No aggregate stats for the class (average progress, top students, etc.)
 
 ## Changes
 
-### 1. `src/components/LessonPlayer.tsx`
+### 1. Multi-Module Student Progress (`StudentProgressView.tsx`)
 
-**`handleInstructionContinue` (line 183-208)**: Add a guard so instruction steps only award XP if the step is not already in `completedStepIds`.
+**Replace hardcoded single-module approach with all-module aggregation:**
 
-```typescript
-const handleInstructionContinue = useCallback(() => {
-  if (!currentStep) return;
-  const alreadyDone = progress.completedStepIds.includes(currentStep.id);
-  const xp = alreadyDone ? 0 : (currentStep.task?.xpValue ?? 5);
-  // ... rest stays the same but uses this xp value
-```
+- Import `allModules` from the module registry instead of just `excelBasicsModule`
+- Fetch `module_progress` and `lesson_progress` for ALL modules (remove the `.eq('module_id', ...)` filter)
+- Add a module filter dropdown (Select component) at the top: "All Modules", "Introduction to Excel", "Charts & Data Summaries"
+- Default view: "All Modules" -- shows aggregate progress across everything
 
-**`handleCheck` (line 150-164)**: In addition to the existing `isRedoing` check, also check if the step was already completed before awarding XP.
+**"All Modules" view (default):**
+- Progress bar = total completed lessons across all modules / total lessons across all modules
+- Lessons column = total completed / total available
+- XP = sum of all module XP
 
-```typescript
-const xp = (isRedoing || isStepComplete)
-  ? 0
-  : (currentStep.task?.xpValue ?? 0) + (isFirstAttempt ? (currentStep.task?.bonusXp || 0) : 0);
-```
+**Per-module filter:**
+- When a specific module is selected, show progress for just that module (like current behavior but for any module)
 
-**Lesson load (line 69-90)**: When loading a completed lesson, set `isRedoing` to true so that replaying awards 0 XP.
+**Expanded row per student:**
+- Show a collapsible section per module (with module title as a subheader)
+- Under each module, list lesson-level progress (same as current)
 
-### 2. `src/hooks/useProgress.ts`
+### 2. Class Summary Stats
 
-**`markLessonComplete` (line 42-58)**: Only add XP if the lesson is not already in `completedLessonIds`.
+Add a row of stat cards at the top of the class view (above the student table):
 
-```typescript
-const alreadyCompleted = state.completedLessonIds.includes(lessonId);
-const newXp = alreadyCompleted ? state.totalXp : state.totalXp + xpEarned;
-```
+- **Students**: total count
+- **Avg. Progress**: average completion percentage across all students
+- **Total XP Earned**: sum of all student XP
+- **Completion Rate**: percentage of students who have completed all lessons
 
-## Summary of Guards
+These use the same data already fetched for the student table -- no extra queries needed.
 
-| Location | Current behavior | Fix |
-|----------|-----------------|-----|
-| Instruction steps | Always award 5 XP | Skip if step already completed |
-| Task/quiz/chart check | Only skips if `isRedoing` | Also skip if step already in completedStepIds |
-| Lesson replay from landing | `isRedoing` not set | Set `isRedoing=true` when loading a completed lesson |
-| Module-level completion | Always adds XP | Skip if lesson already in completedLessonIds |
+### 3. Teacher Module Preview
+
+**On the main dashboard (no class selected):**
+- Add a "Preview" button to each module card in the "Available Modules" section
+- Clicking it navigates to `/module/{moduleId}` -- the same route students use
+- The existing `ModulePlayer` page already works for any authenticated user (no role restriction)
+
+**In the header:**
+- Change the existing "Lessons" button to "Preview Modules" for clarity
+
+### 4. Visual Polish
+
+- Replace the plain `<table>` in `StudentProgressView` with the shadcn `Table` components for consistent styling
+- Add subtle row hover animations
+- Improve the header area of the class view with a gradient banner (matching student dashboard style)
+- Add student count badge to class cards on the main view
+
+## Technical Details
+
+### Files to Modify
+
+**`src/components/StudentProgressView.tsx`** (major rewrite)
+- Replace `excelBasicsModule` import with `allModules` from module registry
+- Change data model to track progress per module per student
+- Add module filter Select dropdown
+- Fetch all module/lesson progress without module_id filter
+- Update expanded row to group lessons by module
+- Use shadcn Table components
+- Add class summary stat cards
+
+**`src/pages/TeacherDashboard.tsx`**
+- Add "Preview" button to module cards that navigates to `/module/{moduleId}`
+- Add gradient header styling to class view
+- Rename "Lessons" nav button to "Preview Modules"
+- Fetch student count per class for display on class cards
+
+### No Database Changes Required
+
+All data already exists in `module_progress` and `lesson_progress` tables. The teacher RLS policies already allow viewing all progress records via the `has_role()` function.
 
