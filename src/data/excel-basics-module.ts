@@ -59,7 +59,7 @@ export const excelBasicsModule: Module = {
           order: 2,
           type: 'quiz',
           title: 'Quick Check: Columns',
-          instruction: 'Let\'s check your understanding of spreadsheet vocabulary.',
+          instruction: 'What is the name given to a group of cells that run vertically?',
           quiz: {
             type: 'short-answer',
             correctAnswer: 'Column',

@@ -8,12 +8,13 @@ import type { QuizQuestion, CheckResult } from '@/types/lesson';
 
 interface QuizStepProps {
   quiz: QuizQuestion;
+  question: string;
   feedback: CheckResult | null;
   onAnswerChange: (answer: string) => void;
   answer: string;
 }
 
-const QuizStep: React.FC<QuizStepProps> = ({ quiz, feedback, onAnswerChange, answer }) => {
+const QuizStep: React.FC<QuizStepProps> = ({ quiz, question, feedback, onAnswerChange, answer }) => {
   const isCorrect = feedback?.type === 'correct';
   const isIncorrect = feedback?.type === 'incorrect' || feedback?.type === 'almost';
 
@@ -22,8 +23,11 @@ const QuizStep: React.FC<QuizStepProps> = ({ quiz, feedback, onAnswerChange, ans
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-lg"
+        className="w-full max-w-lg space-y-6"
       >
+        {/* Question prompt */}
+        <h4 className="text-lg font-semibold text-foreground text-center">{question}</h4>
+
         {quiz.type === 'multiple-choice' && quiz.options ? (
           <RadioGroup
             value={answer}
