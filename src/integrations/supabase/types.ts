@@ -144,6 +144,118 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_lessons: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          module_id: string
+          order: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          module_id: string
+          order?: number
+          title?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          module_id?: string
+          order?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_lessons_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "custom_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_modules: {
+        Row: {
+          created_at: string
+          description: string
+          estimated_minutes: number
+          id: string
+          status: Database["public"]["Enums"]["module_status"]
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          estimated_minutes?: number
+          id?: string
+          status?: Database["public"]["Enums"]["module_status"]
+          teacher_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          estimated_minutes?: number
+          id?: string
+          status?: Database["public"]["Enums"]["module_status"]
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      custom_steps: {
+        Row: {
+          config: Json
+          created_at: string
+          id: string
+          instruction: string
+          lesson_id: string
+          order: number
+          title: string
+          type: string
+          why_it_matters: string | null
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          id?: string
+          instruction?: string
+          lesson_id: string
+          order?: number
+          title?: string
+          type?: string
+          why_it_matters?: string | null
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          id?: string
+          instruction?: string
+          lesson_id?: string
+          order?: number
+          title?: string
+          type?: string
+          why_it_matters?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_steps_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "custom_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_progress: {
         Row: {
           attempts: Json
@@ -273,6 +385,7 @@ export type Database = {
     }
     Enums: {
       app_role: "teacher" | "student"
+      module_status: "draft" | "published"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -401,6 +514,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["teacher", "student"],
+      module_status: ["draft", "published"],
     },
   },
 } as const

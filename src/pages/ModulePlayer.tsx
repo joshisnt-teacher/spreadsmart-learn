@@ -4,8 +4,10 @@ import { ArrowLeft } from 'lucide-react';
 import ModuleLanding from '@/components/ModuleLanding';
 import LessonPlayer from '@/components/LessonPlayer';
 import { getModuleById } from '@/data/module-registry';
+import { fetchCustomModule } from '@/hooks/useCustomModules';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import type { Module } from '@/types/lesson';
 import { useProgress } from '@/hooks/useProgress';
 import { useStudentAssignments } from '@/hooks/useAssignments';
 import { Button } from '@/components/ui/button';
@@ -16,7 +18,22 @@ const ModulePlayer: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const currentModule = moduleId ? getModuleById(moduleId) : undefined;
+  const [currentModule, setCurrentModule] = useState<Module | undefined>(undefined);
+  const [moduleLoading, setModuleLoading] = useState(true);
+
+  useEffect(() => {
+    if (!moduleId) { setModuleLoading(false); return; }
+    const builtIn = getModuleById(moduleId);
+    if (builtIn) {
+      setCurrentModule(builtIn);
+      setModuleLoading(false);
+    } else {
+      fetchCustomModule(moduleId).then(m => {
+        setCurrentModule(m ?? undefined);
+        setModuleLoading(false);
+      });
+    }
+  }, [moduleId]);
 
   const { completedLessonIds, totalXp, loading: progressLoading, markLessonComplete } = useProgress(currentModule?.id ?? '');
   const { assignments, hasAssignments, isLessonAssigned, getDueDate, loading: assignLoading } = useStudentAssignments(currentModule?.id ?? '');
@@ -72,7 +89,7 @@ const ModulePlayer: React.FC = () => {
     setActiveLessonId(null);
   }, []);
 
-  if (authLoading || progressLoading || assignLoading) {
+  if (authLoading || progressLoading || assignLoading || moduleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <p className="text-muted-foreground">Loading...</p>

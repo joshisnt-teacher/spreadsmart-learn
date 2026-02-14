@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import ModulePlayer from "./pages/ModulePlayer";
+import ModuleBuilder from "./pages/ModuleBuilder";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/dashboard" element={<TeacherDashboard />} />
             <Route path="/student" element={<StudentDashboard />} />
             <Route path="/module/:moduleId" element={<ModulePlayer />} />
+            <Route path="/dashboard/module-builder/:moduleId" element={<ModuleBuilder />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
