@@ -1,8 +1,32 @@
-import React, { useMemo, useCallback, useRef } from 'react';
+import React, { useMemo, useCallback, useRef, Component, type ErrorInfo, type ReactNode } from 'react';
 import { Workbook } from '@fortune-sheet/react';
 import '@fortune-sheet/react/dist/index.css';
 import type { SheetState } from '@/types/lesson';
 import { parseCellRef } from './spreadsheet/utils';
+
+// Error boundary to catch fortune-sheet internal crashes (e.g. setCaretPosition on locked cells)
+class SheetErrorBoundary extends Component<{ resetKey: number; children: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.warn('FortuneSheet internal error caught:', error.message);
+  }
+  componentDidUpdate(prevProps: { resetKey: number }) {
+    if (prevProps.resetKey !== this.props.resetKey && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+          <p>Spreadsheet encountered an error. Click <button className="underline text-primary" onClick={() => this.setState({ hasError: false })}>here</button> to reload.</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 interface SpreadsheetWorkspaceProps {
   initialState: SheetState;
@@ -116,17 +140,19 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
 
   return (
     <div className="flex flex-col h-full fortune-sheet-container">
-      <Workbook
-        key={resetKey}
-        data={sheetData}
-        showToolbar={false}
-        showSheetTabs={false}
-        showFormulaBar={true}
-        addRows={0}
-        onChange={handleChange}
-        column={initialState.column || 6}
-        row={initialState.row || 10}
-      />
+      <SheetErrorBoundary resetKey={resetKey}>
+        <Workbook
+          key={resetKey}
+          data={sheetData}
+          showToolbar={false}
+          showSheetTabs={false}
+          showFormulaBar={true}
+          addRows={0}
+          onChange={handleChange}
+          column={initialState.column || 6}
+          row={initialState.row || 10}
+        />
+      </SheetErrorBoundary>
     </div>
   );
 };
