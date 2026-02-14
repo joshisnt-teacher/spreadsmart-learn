@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.delete-student]
 verify_jwt = false
+
+[functions.ai-module-assist]
+verify_jwt = false
