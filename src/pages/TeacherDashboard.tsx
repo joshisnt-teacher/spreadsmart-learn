@@ -309,7 +309,12 @@ const TeacherDashboard: React.FC = () => {
               <p className="text-sm text-muted-foreground mb-4">Pre-built training modules included with the platform</p>
               <div className="grid gap-4 sm:grid-cols-2">
                 {allModules.map((mod) => (
-                  <Card key={mod.id}>
+                  <Card key={mod.id} className="overflow-hidden">
+                    {mod.bannerUrl && (
+                      <div className="h-32 overflow-hidden">
+                        <img src={mod.bannerUrl} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    )}
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between">
                         <div>
