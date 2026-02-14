@@ -104,9 +104,11 @@ const StudentProgressView: React.FC<Props> = ({ classId, students, onStudentDele
 
   const handleDelete = async (student: StudentData, e: React.MouseEvent) => {
     e.stopPropagation();
-    const { error } = await supabase.from('class_students').delete().eq('id', student.id);
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    const { data, error } = await supabase.functions.invoke('delete-student', {
+      body: { student_user_id: student.student_user_id, class_id: classId },
+    });
+    if (error || (data && data.error)) {
+      toast({ title: 'Error', description: data?.error || error?.message || 'Failed to delete student', variant: 'destructive' });
     } else {
       toast({ title: 'Student removed from class' });
       onStudentDeleted();
