@@ -173,7 +173,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
         }
       }
     }
-  }, [currentStep, currentCellData, chartSelection, attemptCount, progress, isChartStep, isChallengeStep, isRedoing, fireConfetti]);
+  }, [currentStep, currentCellData, chartSelection, quizAnswer, attemptCount, progress, isChartStep, isQuizStep, isChallengeStep, isRedoing, fireConfetti]);
 
   const handleInstructionContinue = useCallback(() => {
     if (!currentStep) return;
