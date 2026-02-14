@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Users, Copy, Check, ArrowLeft, UserPlus, Upload, AlertCircle, CheckCircle2, BookOpen, Clock } from 'lucide-react';
+import { Plus, Users, Copy, Check, ArrowLeft, UserPlus, Upload, AlertCircle, CheckCircle2, BookOpen, Clock, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -178,7 +178,7 @@ const TeacherDashboard: React.FC = () => {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>Lessons</Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>Preview Modules</Button>
             <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate('/auth'); }}>Sign Out</Button>
           </div>
         </div>
@@ -219,17 +219,19 @@ const TeacherDashboard: React.FC = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-muted-foreground">Join code:</span>
-                        <code className="font-mono bg-muted px-2 py-0.5 rounded text-xs">{cls.join_code}</code>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={(e) => { e.stopPropagation(); copyJoinCode(cls.join_code); }}
-                        >
-                          {copiedCode === cls.join_code ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                        </Button>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-muted-foreground">Join code:</span>
+                          <code className="font-mono bg-muted px-2 py-0.5 rounded text-xs">{cls.join_code}</code>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={(e) => { e.stopPropagation(); copyJoinCode(cls.join_code); }}
+                          >
+                            {copiedCode === cls.join_code ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -253,6 +255,14 @@ const TeacherDashboard: React.FC = () => {
                           </CardTitle>
                           <CardDescription className="mt-1">{mod.description}</CardDescription>
                         </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => navigate(`/module/${mod.id}`)}
+                        >
+                          <Eye className="w-3.5 h-3.5 mr-1.5" /> Preview
+                        </Button>
                       </div>
                     </CardHeader>
                     <CardContent className="pt-0">
@@ -275,24 +285,27 @@ const TeacherDashboard: React.FC = () => {
           </motion.div>
         ) : (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                  <span>Join code:</span>
-                  <code className="font-mono bg-muted px-2 py-0.5 rounded text-xs">{selectedClass.join_code}</code>
-                  <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => copyJoinCode(selectedClass.join_code)}>
-                    {copiedCode === selectedClass.join_code ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+            {/* Gradient class header */}
+            <div className="rounded-xl bg-gradient-to-r from-primary/10 via-accent/5 to-primary/5 border border-border p-5 -mx-1">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                    <span>Join code:</span>
+                    <code className="font-mono bg-background/80 px-2 py-0.5 rounded text-xs">{selectedClass.join_code}</code>
+                    <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => copyJoinCode(selectedClass.join_code)}>
+                      {copiedCode === selectedClass.join_code ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                    </Button>
+                  </div>
+                  <h2 className="text-xl font-semibold">Students</h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" onClick={() => { setShowBulkUpload(true); setBulkResults(null); setBulkText(''); }}>
+                    <Upload className="w-4 h-4 mr-2" /> Bulk Import
+                  </Button>
+                  <Button onClick={() => setShowAddStudent(true)}>
+                    <UserPlus className="w-4 h-4 mr-2" /> Add Student
                   </Button>
                 </div>
-                <h2 className="text-xl font-semibold">Students</h2>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={() => { setShowBulkUpload(true); setBulkResults(null); setBulkText(''); }}>
-                  <Upload className="w-4 h-4 mr-2" /> Bulk Import
-                </Button>
-                <Button onClick={() => setShowAddStudent(true)}>
-                  <UserPlus className="w-4 h-4 mr-2" /> Add Student
-                </Button>
               </div>
             </div>
 
