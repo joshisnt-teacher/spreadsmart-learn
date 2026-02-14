@@ -1,51 +1,52 @@
 
 
-# Fix: Student Deletion Not Removing Auth Account
+# Add "Resizing Rows and Columns" Step to Lesson 1
 
-## Problem
+## Overview
 
-The current "delete student" button only removes the row from `class_students`. The underlying auth user (with email `username@student.excelpath.local`) remains in the system. When a teacher tries to re-create the same username, the backend rejects it because the email is already registered.
+Add a new step early in Lesson 1 (after "What Is a Spreadsheet?" and before "Identifying Cells") that teaches students how to resize columns and rows by dragging. The step uses a clever verification trick: a cell contains a long message that is hidden because the column is too narrow. The student must widen the column to read the full message, then type it into an answer cell to prove they did it.
 
-## Solution
+## New Step Details
 
-Create a new backend function (`delete-student`) that:
-1. Verifies the caller is a teacher who owns the class
-2. Deletes the `class_students` row
-3. Cleans up related data (`lesson_progress`, `module_progress`, `badges`, `profiles`, `user_roles`)
-4. Deletes the auth user account using the admin API
+- **Position**: Step 2 in Lesson 1 (current steps 2-6 shift to become steps 3-7)
+- **Type**: `task` (with a simple text-match check)
+- **Title**: "Resizing Rows and Columns"
+- **Concept**: Cell A2 contains a long sentence like `"Spreadsheets are awesome"` but the column is intentionally narrow (configured via column width settings) so the text is cut off. The student widens column A to reveal the full message, then types it into cell B2 to confirm.
 
-Then update the frontend to call this function instead of directly deleting from `class_students`.
+## What Changes
 
-## Changes
+### 1. `src/data/excel-basics-module.ts`
 
-### 1. New Edge Function: `supabase/functions/delete-student/index.ts`
+- Insert a new step object at position 2 in Lesson 1's `steps` array with:
+  - A narrow column A (using the sheet config `columnlen` to set column A width to around 40px)
+  - Cell A1: header "Hidden Message" 
+  - Cell A2: a long string like `Spreadsheets are awesome`
+  - Cell B1: header "Type the message here"
+  - Cell B2: empty, editable -- where the student types the answer
+  - Task expectation: B2 must match the hidden text (case-insensitive via string comparison)
+  - Hints guiding the student to hover over the column border between A and B, then drag to widen
+- Update the `order` field of all subsequent steps (old step 2 becomes 3, etc.)
+- Update all step `id` values accordingly (e.g. old `step-1-2` becomes `step-1-3`, and so on through `step-1-7`)
 
-- Accepts `{ student_user_id, class_id }` in the request body
-- Validates the calling teacher owns the class
-- Deletes from `class_students`, `lesson_progress`, `module_progress`, `badges`, `profiles`, `user_roles`
-- Calls `adminClient.auth.admin.deleteUser(student_user_id)` to fully remove the auth account
-- Returns success/error JSON
+### 2. No other file changes needed
 
-### 2. Update `supabase/config.toml`
+The `LessonPlayer`, `SpreadsheetWorkspace`, and marking engine already support text-value expectations and column width config -- no code changes required outside the data file.
 
-Add the new function config with `verify_jwt = false` (same pattern as other student management functions, since auth is checked manually inside the function).
+## Step Content Preview
 
-### 3. Update `src/components/StudentProgressView.tsx`
+**Instruction text:**
+> Sometimes data in a cell is too long to see. You can **resize columns** to make the data easier to read.
+>
+> To widen a column, hover your mouse over the **border between two column letters** (e.g. between A and B) at the top. Your cursor will change to a resize arrow. Then **click and drag** to the right.
+>
+> You can do the same for rows by dragging the border between row numbers.
+>
+> **Your task:** Column A below is too narrow to read the full message. Widen it, then type the hidden message into cell **B2**.
 
-Change the `handleDelete` function from:
-```
-supabase.from('class_students').delete().eq('id', student.id)
-```
-to calling the new `delete-student` edge function via `supabase.functions.invoke('delete-student', ...)`.
+**Why it matters:** Being able to adjust column widths helps you view and work with data of all sizes -- a skill you'll use constantly.
 
-### 4. Summary of file changes
+## Technical Notes
 
-| File | Change |
-|------|--------|
-| `supabase/functions/delete-student/index.ts` | New edge function to fully delete student account |
-| `supabase/config.toml` | Add `[functions.delete-student]` config |
-| `src/components/StudentProgressView.tsx` | Call edge function instead of direct table delete |
-
-## No Database Schema Changes
-
-All required tables and RLS policies already exist. The edge function uses the service role to bypass RLS for cleanup.
+- Column width is controlled via the sheet's `config.columnlen` property (e.g., `{ "0": 40 }` sets column A to 40px)
+- The marking engine's `checkTask` compares expected string values, which handles this verification naturally
+- All existing step IDs in Lesson 1 will be renumbered to maintain sequential ordering, and any saved student progress referencing old IDs will gracefully skip (students may need to redo Lesson 1 steps, but this is acceptable for a content update)
