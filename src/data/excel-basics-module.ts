@@ -656,26 +656,27 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 2 — Task: Sort the Data
+        // Step 2 — Task: Find Top and Bottom Scores (LARGE/SMALL)
         {
           id: 'step-3-2',
           order: 2,
           type: 'task',
-          title: 'Sort the Data',
+          title: 'Find the Top and Bottom Scores',
           instruction:
-            'The table on the left shows student scores in **unsorted** order.\n\n' +
-            'Your task: write the data **sorted from highest to lowest score** into the results table on the right (columns D and E).\n\n' +
-            '1. In **D2**, type the name of the student with the **highest** score.\n' +
-            '2. In **E2**, type their score.\n' +
-            '3. Continue for D3/E3, D4/E4, and D5/E5 (highest to lowest).\n' +
+            'Instead of manually sorting data, spreadsheets have functions that find the **k-th largest or smallest** value in a range.\n\n' +
+            '- `=LARGE(range, k)` returns the k-th **largest** value\n' +
+            '- `=SMALL(range, k)` returns the k-th **smallest** value\n\n' +
+            'Use these formulas in column D:\n\n' +
+            '1. In **D2**, type `=LARGE(B2:B5, 1)` — the highest score\n' +
+            '2. In **D3**, type `=LARGE(B2:B5, 2)` — the second highest\n' +
+            '3. In **D4**, type `=SMALL(B2:B5, 1)` — the lowest score\n' +
             '4. Click **Check**.',
-          whyItMatters: 'Understanding sort order means you can organise any dataset.',
+          whyItMatters: 'LARGE and SMALL let you rank values without rearranging data — essential for dashboards and reports.',
           initialSheetState: {
             name: 'Sheet1',
             row: 7,
             column: 6,
             celldata: [
-              // Original data (left side)
               { r: 0, c: 0, v: { v: 'Student', m: 'Student', bl: 1, bg: '#e8f0fe' } },
               { r: 0, c: 1, v: { v: 'Score', m: 'Score', bl: 1, bg: '#e8f0fe' } },
               { r: 1, c: 0, v: { v: 'Ava', m: 'Ava' } },
@@ -686,33 +687,28 @@ export const excelBasicsModule: Module = {
               { r: 3, c: 1, v: { v: 91, m: '91' } },
               { r: 4, c: 0, v: { v: 'Noah', m: 'Noah' } },
               { r: 4, c: 1, v: { v: 82, m: '82' } },
-              // Spacer column
-              { r: 0, c: 2, v: { v: '', m: '' } },
-              // Sorted results table (right side)
-              { r: 0, c: 3, v: { v: 'Student ↓', m: 'Student ↓', bl: 1, bg: '#fff3cd' } },
-              { r: 0, c: 4, v: { v: 'Score ↓', m: 'Score ↓', bl: 1, bg: '#fff3cd' } },
+              { r: 0, c: 3, v: { v: 'Result', m: 'Result', bl: 1, bg: '#fff3cd' } },
+              { r: 1, c: 3, v: { v: '1st highest', m: '1st highest', fc: '#888888', fs: 9 } },
+              { r: 2, c: 3, v: { v: '2nd highest', m: '2nd highest', fc: '#888888', fs: 9 } },
+              { r: 3, c: 3, v: { v: 'Lowest', m: 'Lowest', fc: '#888888', fs: 9 } },
             ],
           },
           task: {
             id: 'task-3-2',
             expectations: [
-              { cellRef: 'D2', expectedValue: 'Zoe' },
-              { cellRef: 'E2', expectedValue: 91 },
-              { cellRef: 'D3', expectedValue: 'Noah' },
-              { cellRef: 'E3', expectedValue: 82 },
-              { cellRef: 'D4', expectedValue: 'Ava' },
-              { cellRef: 'E4', expectedValue: 75 },
-              { cellRef: 'D5', expectedValue: 'Liam' },
-              { cellRef: 'E5', expectedValue: 68 },
+              { cellRef: 'D2', expectedValue: 91, expectedFormula: '=LARGE(B2:B5,1)', checkFormula: true },
+              { cellRef: 'D3', expectedValue: 82, expectedFormula: '=LARGE(B2:B5,2)', checkFormula: true },
+              { cellRef: 'D4', expectedValue: 68, expectedFormula: '=SMALL(B2:B5,1)', checkFormula: true },
             ],
-            editableCells: ['D2', 'E2', 'D3', 'E3', 'D4', 'E4', 'D5', 'E5'],
+            editableCells: ['D2', 'D3', 'D4'],
             hints: [
-              'Look at the scores: 91, 82, 75, 68. Who has the highest?',
-              'Zoe has 91 (highest), then Noah with 82, Ava with 75, Liam with 68.',
-              'Type the names and scores in order from highest to lowest.',
+              'LARGE(B2:B5, 1) finds the biggest value in B2:B5.',
+              'Type =LARGE(B2:B5, 1) in D2, =LARGE(B2:B5, 2) in D3, and =SMALL(B2:B5, 1) in D4.',
+              'Make sure each formula starts with = and uses the exact range B2:B5.',
             ],
-            successMessage: 'Sorted! Zoe (91), Noah (82), Ava (75), Liam (68) — highest to lowest.',
-            incorrectMessage: 'Sort from highest to lowest: Zoe 91, Noah 82, Ava 75, Liam 68.',
+            successMessage: '🎉 You used LARGE and SMALL to rank values without rearranging the data!',
+            almostCorrectMessage: 'The values are right but check your formulas — use LARGE() and SMALL().',
+            incorrectMessage: 'Try =LARGE(B2:B5, 1) in D2, =LARGE(B2:B5, 2) in D3, =SMALL(B2:B5, 1) in D4.',
             xpValue: 15,
             bonusXp: 5,
           },
@@ -725,35 +721,32 @@ export const excelBasicsModule: Module = {
           type: 'instruction',
           title: 'Filtering Data',
           instruction:
-            '**Filtering** hides rows that don\'t meet your criteria, showing only the data you care about.\n\n' +
-            'For example, if you filter scores to show **only values above 75**:\n\n' +
-            '| Student | Score |\n|---|---|\n| Ava | 75 |\n| ~~Liam~~ | ~~68~~ |\n| Zoe | 91 |\n| Noah | 82 |\n\n' +
-            'Only Ava (75), Zoe (91), and Noah (82) would remain visible. Liam\'s row (68) would be hidden.\n\n' +
-            '💡 Filtering doesn\'t delete data — it just hides rows temporarily.',
-          whyItMatters: 'Filtering lets you focus on exactly the data you need without being distracted by everything else.',
+            '**Filtering** lets you see only the rows that match a condition — everything else is hidden, not deleted.\n\n' +
+            'For example, filtering scores to show **only values above 75**:\n\n' +
+            '| Student | Score | Visible? |\n|---|---|---|\n| Ava | 75 | ❌ (not above 75) |\n| Liam | 68 | ❌ |\n| Zoe | 91 | ✅ |\n| Noah | 82 | ✅ |\n\n' +
+            'Spreadsheets have built-in filter tools, but you can also use **formulas** to achieve the same result.\n\n' +
+            'Next, you\'ll use `COUNTIF` and `IF` — two powerful functions for working with filtered data.',
+          whyItMatters: 'Filtering is one of the most-used features in any spreadsheet — it helps you focus on exactly the data you need.',
         },
 
-        // Step 4 — Task: Apply a Filter
+        // Step 4 — Task: Count the Matches (COUNTIF)
         {
           id: 'step-3-4',
           order: 4,
           type: 'task',
-          title: 'Apply a Filter',
+          title: 'Count the Matches',
           instruction:
-            'Filter the student data to show only students who scored **above 75**.\n\n' +
-            'Type the matching students and scores into the filtered results table (columns D and E):\n\n' +
-            '1. In **D2/E2**, enter the first student with a score above 75.\n' +
-            '2. In **D3/E3**, enter the second student.\n' +
-            '3. In **D4/E4**, enter the third student.\n' +
-            '4. Click **Check**.\n\n' +
-            '💡 Keep the same order as the original data.',
-          whyItMatters: 'Filtering is a key skill for working with large datasets.',
+            '`COUNTIF(range, criteria)` counts how many cells in a range meet a condition.\n\n' +
+            'How many students scored **above 75**?\n\n' +
+            '1. In **D2**, type `=COUNTIF(B2:B5, ">75")`\n' +
+            '2. Click **Check**.\n\n' +
+            '💡 The criteria `">75"` must be in quotes.',
+          whyItMatters: 'COUNTIF is the building block for summary reports and dashboards.',
           initialSheetState: {
             name: 'Sheet1',
             row: 7,
             column: 6,
             celldata: [
-              // Original data
               { r: 0, c: 0, v: { v: 'Student', m: 'Student', bl: 1, bg: '#e8f0fe' } },
               { r: 0, c: 1, v: { v: 'Score', m: 'Score', bl: 1, bg: '#e8f0fe' } },
               { r: 1, c: 0, v: { v: 'Ava', m: 'Ava' } },
@@ -764,29 +757,108 @@ export const excelBasicsModule: Module = {
               { r: 3, c: 1, v: { v: 91, m: '91' } },
               { r: 4, c: 0, v: { v: 'Noah', m: 'Noah' } },
               { r: 4, c: 1, v: { v: 82, m: '82' } },
-              // Filtered results table
-              { r: 0, c: 3, v: { v: 'Student (>75)', m: 'Student (>75)', bl: 1, bg: '#fff3cd' } },
-              { r: 0, c: 4, v: { v: 'Score (>75)', m: 'Score (>75)', bl: 1, bg: '#fff3cd' } },
+              { r: 0, c: 3, v: { v: 'Count >75', m: 'Count >75', bl: 1, bg: '#fff3cd' } },
             ],
           },
           task: {
             id: 'task-3-4',
             expectations: [
-              { cellRef: 'D2', expectedValue: 'Zoe' },
-              { cellRef: 'E2', expectedValue: 91 },
-              { cellRef: 'D3', expectedValue: 'Noah' },
-              { cellRef: 'E3', expectedValue: 82 },
+              { cellRef: 'D2', expectedValue: 2, expectedFormula: '=COUNTIF(B2:B5,">75")', checkFormula: true },
             ],
-            editableCells: ['D2', 'E2', 'D3', 'E3', 'D4', 'E4'],
+            editableCells: ['D2'],
             hints: [
-              'Look for scores strictly above 75: that\'s 91 and 82.',
-              'Zoe scored 91 and Noah scored 82 — both above 75.',
-              'Ava scored exactly 75 which is not above 75. Liam scored 68.',
+              'COUNTIF counts cells matching a condition.',
+              'Type =COUNTIF(B2:B5, ">75") — remember the quotes around >75.',
+              'Only Zoe (91) and Noah (82) are strictly above 75, so the answer is 2.',
             ],
-            successMessage: '🎉 Filtered! Only Zoe (91) and Noah (82) scored above 75. You\'ve completed the module!',
-            incorrectMessage: 'Only include students with scores strictly above 75: Zoe (91) and Noah (82).',
+            successMessage: '🎉 Correct! 2 students scored above 75. COUNTIF is great for quick summaries.',
+            almostCorrectMessage: 'Right value but use the COUNTIF formula instead of typing the number.',
+            incorrectMessage: 'Try =COUNTIF(B2:B5, ">75") in cell D2.',
+            xpValue: 10,
+            bonusXp: 5,
+          },
+        },
+
+        // Step 5 — Task: Filter with IF
+        {
+          id: 'step-3-5',
+          order: 5,
+          type: 'task',
+          title: 'Filter with IF',
+          instruction:
+            '`IF(condition, value_if_true, value_if_false)` lets you show or hide values based on a condition.\n\n' +
+            'Use IF to show only the names of students who scored **above 75**:\n\n' +
+            '1. In **D2**, type `=IF(B2>75, A2, "")`\n' +
+            '2. In **D3**, type `=IF(B3>75, A3, "")`\n' +
+            '3. In **D4**, type `=IF(B4>75, A4, "")`\n' +
+            '4. In **D5**, type `=IF(B5>75, A5, "")`\n' +
+            '5. Click **Check**.\n\n' +
+            '💡 Cells where the score is 75 or below will show blank.',
+          whyItMatters: 'IF formulas let you build smart, dynamic filters directly in your spreadsheet.',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 7,
+            column: 6,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Student', m: 'Student', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Score', m: 'Score', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Ava', m: 'Ava' } },
+              { r: 1, c: 1, v: { v: 75, m: '75' } },
+              { r: 2, c: 0, v: { v: 'Liam', m: 'Liam' } },
+              { r: 2, c: 1, v: { v: 68, m: '68' } },
+              { r: 3, c: 0, v: { v: 'Zoe', m: 'Zoe' } },
+              { r: 3, c: 1, v: { v: 91, m: '91' } },
+              { r: 4, c: 0, v: { v: 'Noah', m: 'Noah' } },
+              { r: 4, c: 1, v: { v: 82, m: '82' } },
+              { r: 0, c: 3, v: { v: 'Filtered Names', m: 'Filtered Names', bl: 1, bg: '#fff3cd' } },
+            ],
+          },
+          task: {
+            id: 'task-3-5',
+            expectations: [
+              { cellRef: 'D2', expectedFormula: '=IF(B2>75,A2,"")', checkFormula: true },
+              { cellRef: 'D3', expectedFormula: '=IF(B3>75,A3,"")', checkFormula: true },
+              { cellRef: 'D4', expectedFormula: '=IF(B4>75,A4,"")', checkFormula: true },
+              { cellRef: 'D5', expectedFormula: '=IF(B5>75,A5,"")', checkFormula: true },
+            ],
+            editableCells: ['D2', 'D3', 'D4', 'D5'],
+            hints: [
+              'Each IF formula checks if the score in column B is above 75.',
+              'Type =IF(B2>75, A2, "") in D2 — it shows the name only if the score exceeds 75.',
+              'D2 and D3 will be blank (75 and 68 aren\'t above 75). D4 shows Zoe, D5 shows Noah.',
+            ],
+            successMessage: '🎉 You built a formula-based filter! Only Zoe and Noah appear because they scored above 75.',
+            almostCorrectMessage: 'Close! Make sure each cell uses an IF formula, not a typed value.',
+            incorrectMessage: 'Use =IF(B2>75, A2, "") in D2 and adjust the row number for D3–D5.',
             xpValue: 15,
             bonusXp: 5,
+          },
+        },
+
+        // Step 6 — Quiz: Filtering Concept
+        {
+          id: 'step-3-6',
+          order: 6,
+          type: 'quiz',
+          title: 'Filtering Concept Check',
+          instruction: 'What happens to data that doesn\'t match a filter?',
+          quiz: {
+            type: 'multiple-choice',
+            options: ['It is deleted', 'It is hidden temporarily', 'It turns red', 'It moves to another sheet'],
+            correctAnswer: 'It is hidden temporarily',
+            explanation: 'Filtering only hides rows that don\'t match — the data is still there and reappears when you remove the filter.',
+          },
+          task: {
+            id: 'task-3-6',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'Think about what happens when you remove a filter — does the data come back?',
+              'Filters are non-destructive — they hide, not delete.',
+            ],
+            successMessage: 'Correct! Filtering hides data temporarily — nothing is deleted.',
+            incorrectMessage: 'Not quite — filtering doesn\'t delete or move data, it just hides it temporarily.',
+            xpValue: 5,
           },
         },
       ],
