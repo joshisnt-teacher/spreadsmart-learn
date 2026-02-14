@@ -620,6 +620,188 @@ export const chartsModule: Module = {
             bonusXp: 10,
           },
         },
+        {
+          id: 'charts-3-4',
+          order: 4,
+          type: 'chart',
+          title: 'Visualise Monthly Rainfall',
+          instruction:
+            'A weather station recorded average rainfall over six months.\n\n' +
+            'Your task: **find the best way to visualise how rainfall changes over time.**\n\n' +
+            'Think about:\n' +
+            '- Is this about comparing categories or showing a **trend**?\n' +
+            '- Which column has the labels? Which has the values?\n\n' +
+            'Use the **Chart Builder** to set the chart type, X-axis, and Y-axis, then click **Check**.',
+          whyItMatters: 'Choosing the right chart type on your own — without being told — is the real skill.',
+          chartConfig: {
+            type: 'line',
+            dataSource: 'sheet',
+            xKey: 'Month',
+            yKey: 'Rainfall (mm)',
+            title: 'Monthly Rainfall',
+          },
+          chartTask: {
+            expectedChartType: 'line',
+            expectedXKey: 'Month',
+            expectedYKey: 'Rainfall (mm)',
+          },
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 8,
+            column: 3,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Month', m: 'Month', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Rainfall (mm)', m: 'Rainfall (mm)', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Jan', m: 'Jan' } },
+              { r: 1, c: 1, v: { v: 78, m: '78' } },
+              { r: 2, c: 0, v: { v: 'Feb', m: 'Feb' } },
+              { r: 2, c: 1, v: { v: 62, m: '62' } },
+              { r: 3, c: 0, v: { v: 'Mar', m: 'Mar' } },
+              { r: 3, c: 1, v: { v: 55, m: '55' } },
+              { r: 4, c: 0, v: { v: 'Apr', m: 'Apr' } },
+              { r: 4, c: 1, v: { v: 41, m: '41' } },
+              { r: 5, c: 0, v: { v: 'May', m: 'May' } },
+              { r: 5, c: 1, v: { v: 35, m: '35' } },
+              { r: 6, c: 0, v: { v: 'Jun', m: 'Jun' } },
+              { r: 6, c: 1, v: { v: 28, m: '28' } },
+            ],
+          },
+          task: {
+            id: 'task-charts-3-4',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'The data shows values changing over time — which chart type shows trends?',
+              'A line chart is best for showing change over time.',
+              'X-Axis = Month (the time labels), Y-Axis = Rainfall (mm) (the values).',
+            ],
+            successMessage: 'A line chart is perfect here — it clearly shows rainfall decreasing from January to June!',
+            incorrectMessage: 'This data shows a trend over time. Try a Line Chart with X = Month, Y = Rainfall (mm).',
+            xpValue: 25,
+            bonusXp: 10,
+          },
+        },
+        {
+          id: 'charts-3-5',
+          order: 5,
+          type: 'chart',
+          title: 'Visualise Budget Spending',
+          instruction:
+            'A student tracked how they spent their monthly pocket money.\n\n' +
+            'Your task: **choose the best chart to visualise each category\'s share of total spending.**\n\n' +
+            'Think about:\n' +
+            '- Are you comparing separate items, or showing **parts of a whole**?\n' +
+            '- Which column contains the category names? Which has the amounts?\n\n' +
+            'Set up the Chart Builder and click **Check**.',
+          whyItMatters: 'Understanding when to use a pie chart vs a bar chart is a common real-world decision.',
+          chartConfig: {
+            type: 'pie',
+            dataSource: 'sheet',
+            xKey: 'Category',
+            yKey: 'Amount (£)',
+            title: 'Monthly Spending Breakdown',
+          },
+          chartTask: {
+            expectedChartType: 'pie',
+            expectedXKey: 'Category',
+            expectedYKey: 'Amount (£)',
+          },
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 7,
+            column: 3,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Category', m: 'Category', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Amount (£)', m: 'Amount (£)', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Food', m: 'Food' } },
+              { r: 1, c: 1, v: { v: 25, m: '25' } },
+              { r: 2, c: 0, v: { v: 'Games', m: 'Games' } },
+              { r: 2, c: 1, v: { v: 15, m: '15' } },
+              { r: 3, c: 0, v: { v: 'Clothes', m: 'Clothes' } },
+              { r: 3, c: 1, v: { v: 10, m: '10' } },
+              { r: 4, c: 0, v: { v: 'Savings', m: 'Savings' } },
+              { r: 4, c: 1, v: { v: 30, m: '30' } },
+              { r: 5, c: 0, v: { v: 'Transport', m: 'Transport' } },
+              { r: 5, c: 1, v: { v: 5, m: '5' } },
+            ],
+          },
+          task: {
+            id: 'task-charts-3-5',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'You want to show how each category contributes to the total — which chart shows parts of a whole?',
+              'A pie chart shows proportions of a total.',
+              'X-Axis = Category, Y-Axis = Amount (£).',
+            ],
+            successMessage: 'A pie chart is ideal here — Savings takes the biggest slice at £30!',
+            incorrectMessage: 'You\'re showing parts of a whole. Try a Pie Chart with X = Category, Y = Amount (£).',
+            xpValue: 25,
+            bonusXp: 10,
+          },
+        },
+        {
+          id: 'charts-3-6',
+          order: 6,
+          type: 'chart',
+          title: 'Chart Challenge: App Downloads',
+          instruction:
+            'A developer is tracking how many times their app was downloaded each week.\n\n' +
+            '**Challenge:** Look at the data and decide for yourself:\n' +
+            '- What is the best chart type to **show how downloads changed over the weeks**?\n' +
+            '- Which column should go on each axis?\n\n' +
+            'There\'s no instruction this time — use what you\'ve learnt! Set up the Chart Builder and click **Check**.',
+          whyItMatters: 'In the real world, nobody tells you which chart to use — you need to figure it out from the data.',
+          chartConfig: {
+            type: 'area',
+            dataSource: 'sheet',
+            xKey: 'Week',
+            yKey: 'Downloads',
+            title: 'Weekly App Downloads',
+          },
+          chartTask: {
+            expectedChartType: 'area',
+            expectedXKey: 'Week',
+            expectedYKey: 'Downloads',
+          },
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 9,
+            column: 3,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Week', m: 'Week', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Downloads', m: 'Downloads', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Week 1', m: 'Week 1' } },
+              { r: 1, c: 1, v: { v: 120, m: '120' } },
+              { r: 2, c: 0, v: { v: 'Week 2', m: 'Week 2' } },
+              { r: 2, c: 1, v: { v: 340, m: '340' } },
+              { r: 3, c: 0, v: { v: 'Week 3', m: 'Week 3' } },
+              { r: 3, c: 1, v: { v: 580, m: '580' } },
+              { r: 4, c: 0, v: { v: 'Week 4', m: 'Week 4' } },
+              { r: 4, c: 1, v: { v: 890, m: '890' } },
+              { r: 5, c: 0, v: { v: 'Week 5', m: 'Week 5' } },
+              { r: 5, c: 1, v: { v: 1250, m: '1250' } },
+              { r: 6, c: 0, v: { v: 'Week 6', m: 'Week 6' } },
+              { r: 6, c: 1, v: { v: 1580, m: '1580' } },
+              { r: 7, c: 0, v: { v: 'Week 7', m: 'Week 7' } },
+              { r: 7, c: 1, v: { v: 2100, m: '2100' } },
+            ],
+          },
+          task: {
+            id: 'task-charts-3-6',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'The data shows growth over time — and the volume of downloads matters.',
+              'An area chart is like a line chart but emphasises the volume underneath.',
+              'X-Axis = Week, Y-Axis = Downloads.',
+            ],
+            successMessage: '🎉 An area chart perfectly shows the growing volume of downloads over time! You\'ve mastered chart building.',
+            incorrectMessage: 'This data shows growing volume over time. Try an Area Chart with X = Week, Y = Downloads.',
+            xpValue: 35,
+            bonusXp: 15,
+          },
+        },
       ],
     },
 
