@@ -41,16 +41,35 @@ export interface TaskDefinition {
   bonusXp?: number; // first-attempt bonus
 }
 
+export type ChartType = 'bar' | 'line' | 'pie' | 'area';
+
+export interface ChartConfig {
+  type: ChartType;
+  dataSource: 'sheet' | 'static';
+  staticData?: { name: string; value: number }[];
+  xKey?: string; // column header for X axis
+  yKey?: string; // column header for Y axis
+  title?: string;
+}
+
+export interface ChartTaskExpectation {
+  expectedChartType?: ChartType;
+  expectedXKey?: string;
+  expectedYKey?: string;
+}
+
 export interface Step {
   id: string;
   order: number;
   title: string;
   instruction: string;
-  type?: 'instruction' | 'task' | 'challenge';
+  type?: 'instruction' | 'task' | 'challenge' | 'chart';
   whyItMatters?: string;
   mediaUrl?: string;
   initialSheetState?: SheetState;
   task?: TaskDefinition;
+  chartConfig?: ChartConfig;
+  chartTask?: ChartTaskExpectation;
 }
 
 export interface Lesson {

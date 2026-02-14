@@ -9,13 +9,120 @@ import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/useAuth';
 import { useProgress } from '@/hooks/useProgress';
 import { useStudentAssignments } from '@/hooks/useAssignments';
-import { excelBasicsModule } from '@/data/excel-basics-module';
+import { allModules } from '@/data/module-registry';
+
+/** Small component per module card to encapsulate hooks */
+const ModuleCard: React.FC<{ module: typeof allModules[0]; navigate: ReturnType<typeof useNavigate> }> = ({ module, navigate }) => {
+  const { completedLessonIds, totalXp, loading: progressLoading } = useProgress(module.id);
+  const { assignments, hasAssignments, isLessonAssigned, getDueDate, loading: assignLoading } = useStudentAssignments(module.id);
+
+  const totalLessons = module.lessons.length;
+  const completedCount = completedLessonIds.length;
+  const progressPercent = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
+
+  const assignedLessons = module.lessons.filter(l => isLessonAssigned(l.id));
+
+  // Compute nearest module-level due date
+  const moduleDueDates = assignments
+    .filter(a => a.due_date)
+    .map(a => new Date(a.due_date!));
+  const nearestDue = moduleDueDates.length > 0
+    ? new Date(Math.min(...moduleDueDates.map(d => d.getTime())))
+    : null;
+  const daysUntilDue = nearestDue
+    ? Math.ceil((nearestDue.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
+  const moduleDueLabel = daysUntilDue !== null
+    ? daysUntilDue <= 0 ? 'Due today' : daysUntilDue === 1 ? 'Due tomorrow' : `Due in ${daysUntilDue} days`
+    : null;
+
+  if (progressLoading || assignLoading) return null;
+
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-lg">{module.title}</CardTitle>
+              {moduleDueLabel && (
+                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1 bg-muted px-2 py-0.5 rounded-full">
+                  <CalendarClock className="w-3 h-3" />
+                  {moduleDueLabel}
+                </span>
+              )}
+            </div>
+            <CardDescription className="mt-1">{module.description}</CardDescription>
+          </div>
+          <Button size="sm" onClick={() => navigate(`/module/${module.id}`)}>
+            <Zap className="w-4 h-4 mr-1" />
+            {completedCount > 0 ? 'Continue' : 'Start'}
+          </Button>
+        </div>
+        <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
+          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> ~{module.estimatedMinutes} min</span>
+          <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {totalLessons} lessons</span>
+          <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5" /> {totalXp} XP</span>
+        </div>
+        {completedCount > 0 && (
+          <div className="mt-3">
+            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+              <span>Progress</span>
+              <span>{completedCount}/{totalLessons}</span>
+            </div>
+            <Progress value={progressPercent} className="h-2" />
+          </div>
+        )}
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="space-y-2">
+          {assignedLessons.map((lesson, idx) => {
+            const isComplete = completedLessonIds.includes(lesson.id);
+            const dueDate = getDueDate(lesson.id);
+
+            return (
+              <motion.div
+                key={lesson.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.04 }}
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                onClick={() => navigate(`/module/${module.id}`)}
+              >
+                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold shrink-0 ${
+                  isComplete ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'
+                }`}>
+                  {isComplete ? '✓' : idx + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{lesson.title}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs text-muted-foreground">{lesson.steps.length} steps</span>
+                    {dueDate && (
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <CalendarClock className="w-3 h-3" />
+                        Due {format(new Date(dueDate), 'dd MMM')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+              </motion.div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const StudentDashboard: React.FC = () => {
   const { user, loading: authLoading, role, signOut } = useAuth();
   const navigate = useNavigate();
-  const { completedLessonIds, totalXp, loading: progressLoading } = useProgress(excelBasicsModule.id);
-  const { assignments, hasAssignments, isLessonAssigned, getDueDate, loading: assignLoading } = useStudentAssignments(excelBasicsModule.id);
+
+  // Aggregate stats across all modules — use first module for quick stats
+  const { completedLessonIds, totalXp, loading: progressLoading } = useProgress(allModules[0]?.id ?? '');
+  const { assignments, loading: assignLoading } = useStudentAssignments(allModules[0]?.id ?? '');
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/auth');
@@ -32,26 +139,8 @@ const StudentDashboard: React.FC = () => {
 
   if (!user) return null;
 
-  const totalLessons = excelBasicsModule.lessons.length;
+  const totalLessons = allModules.reduce((sum, m) => sum + m.lessons.length, 0);
   const completedCount = completedLessonIds.length;
-  const progressPercent = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
-
-  // Build assigned lessons list
-  const assignedLessons = excelBasicsModule.lessons.filter(l => isLessonAssigned(l.id));
-
-  // Compute nearest module-level due date
-  const moduleDueDates = assignments
-    .filter(a => a.due_date)
-    .map(a => new Date(a.due_date!));
-  const nearestDue = moduleDueDates.length > 0
-    ? new Date(Math.min(...moduleDueDates.map(d => d.getTime())))
-    : null;
-  const daysUntilDue = nearestDue
-    ? Math.ceil((nearestDue.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : null;
-  const moduleDueLabel = daysUntilDue !== null
-    ? daysUntilDue <= 0 ? 'Due today' : daysUntilDue === 1 ? 'Due tomorrow' : `Due in ${daysUntilDue} days`
-    : null;
 
   const upcomingDue = assignments
     .filter(a => a.due_date && new Date(a.due_date) > new Date())
@@ -122,98 +211,13 @@ const StudentDashboard: React.FC = () => {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-10">
-        {/* Assigned Module */}
+        {/* Module cards */}
         <section>
-          <h2 className="text-xl font-semibold mb-4">
-            {hasAssignments ? 'Assigned Modules' : 'My Modules'}
-          </h2>
-          <Card className="overflow-hidden">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">{excelBasicsModule.title}</CardTitle>
-                    {moduleDueLabel && (
-                      <span className="text-xs font-medium text-muted-foreground flex items-center gap-1 bg-muted px-2 py-0.5 rounded-full">
-                        <CalendarClock className="w-3 h-3" />
-                        {moduleDueLabel}
-                      </span>
-                    )}
-                  </div>
-                  <CardDescription className="mt-1">{excelBasicsModule.description}</CardDescription>
-                </div>
-                <Button size="sm" onClick={() => navigate(`/module/${excelBasicsModule.id}`)}>
-                  <Zap className="w-4 h-4 mr-1" />
-                  {completedCount > 0 ? 'Continue' : 'Start'}
-                </Button>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
-                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> ~{excelBasicsModule.estimatedMinutes} min</span>
-                <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {totalLessons} lessons</span>
-                <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5" /> {totalXp} XP</span>
-              </div>
-              {completedCount > 0 && (
-                <div className="mt-3">
-                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>Progress</span>
-                    <span>{completedCount}/{totalLessons}</span>
-                  </div>
-                  <Progress value={progressPercent} className="h-2" />
-                </div>
-              )}
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-2">
-                {assignedLessons.map((lesson, idx) => {
-                  const isComplete = completedLessonIds.includes(lesson.id);
-                  const dueDate = getDueDate(lesson.id);
-
-                  return (
-                    <motion.div
-                      key={lesson.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.04 }}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                      onClick={() => navigate(`/module/${excelBasicsModule.id}`)}
-                    >
-                      <div className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold shrink-0 ${
-                        isComplete ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'
-                      }`}>
-                        {isComplete ? '✓' : idx + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{lesson.title}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-muted-foreground">{lesson.steps.length} steps</span>
-                          {dueDate && (
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <CalendarClock className="w-3 h-3" />
-                              Due {format(new Date(dueDate), 'dd MMM')}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Explore More */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Explore More</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Card className="border-dashed opacity-60">
-              <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-                <BookOpen className="w-8 h-8 text-muted-foreground mb-2" />
-                <p className="text-sm font-medium text-muted-foreground">More modules coming soon</p>
-                <p className="text-xs text-muted-foreground mt-1">New content will appear here as it becomes available</p>
-              </CardContent>
-            </Card>
+          <h2 className="text-xl font-semibold mb-4">My Modules</h2>
+          <div className="space-y-6">
+            {allModules.map((mod) => (
+              <ModuleCard key={mod.id} module={mod} navigate={navigate} />
+            ))}
           </div>
         </section>
       </div>
