@@ -53,6 +53,33 @@ export const excelBasicsModule: Module = {
           },
         },
 
+        // Quiz — Vocabulary check
+        {
+          id: 'step-1-1q',
+          order: 2,
+          type: 'quiz',
+          title: 'Quick Check: Columns',
+          instruction: 'Let\'s check your understanding of spreadsheet vocabulary.',
+          quiz: {
+            type: 'short-answer',
+            correctAnswer: 'Column',
+            acceptableAnswers: ['Columns', 'a column'],
+            explanation: 'A column is a vertical group of cells, labelled with letters (A, B, C…).',
+          },
+          task: {
+            id: 'task-1-1q',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'Think about the vertical lines in a spreadsheet.',
+              'They are labelled with letters: A, B, C…',
+            ],
+            successMessage: 'Correct! Columns run vertically and are labelled with letters.',
+            incorrectMessage: 'Not quite — think about what runs vertically in a spreadsheet.',
+            xpValue: 5,
+          },
+        },
+
         // Step 2 — Task: Resizing Rows and Columns
         {
           id: 'step-1-2',
@@ -325,6 +352,33 @@ export const excelBasicsModule: Module = {
           whyItMatters: 'SUM and AVERAGE are the two most-used functions in the world. They save time and reduce errors.',
         },
 
+        // Quiz — Formula symbol
+        {
+          id: 'step-2-1q',
+          order: 2,
+          type: 'quiz',
+          title: 'Quick Check: Formulas',
+          instruction: 'What symbol must every formula in a spreadsheet start with?',
+          quiz: {
+            type: 'short-answer',
+            correctAnswer: '=',
+            acceptableAnswers: ['equals', 'equals sign', 'equal sign', 'equal'],
+            explanation: 'The equals sign (=) tells the spreadsheet that you\'re entering a formula, not plain text.',
+          },
+          task: {
+            id: 'task-2-1q',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'It\'s a single character you type before any function name.',
+              'You\'ve seen it in formulas like =SUM(B2:B5).',
+            ],
+            successMessage: 'Correct! Every formula starts with = (equals sign).',
+            incorrectMessage: 'Not quite — look at the start of any formula like =SUM(...).',
+            xpValue: 5,
+          },
+        },
+
         // Step 2 — Task: Total Sales
         {
           id: 'step-2-2',
@@ -572,6 +626,33 @@ export const excelBasicsModule: Module = {
               { r: 4, c: 0, v: { v: 'Noah', m: 'Noah' } },
               { r: 4, c: 1, v: { v: 82, m: '82' } },
             ],
+          },
+        },
+
+        // Quiz — Sorting vocabulary
+        {
+          id: 'step-3-1q',
+          order: 2,
+          type: 'quiz',
+          title: 'Quick Check: Sorting',
+          instruction: 'If data is sorted from largest to smallest, what is this order called?',
+          quiz: {
+            type: 'multiple-choice',
+            options: ['Ascending', 'Descending', 'Alphabetical', 'Random'],
+            correctAnswer: 'Descending',
+            explanation: 'Descending order goes from largest to smallest (e.g. 100, 75, 50, 25). Ascending is the opposite.',
+          },
+          task: {
+            id: 'task-3-1q',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'Think about going "down" from the top.',
+              '"Descend" means to go down — from high to low.',
+            ],
+            successMessage: 'Correct! Descending = largest to smallest.',
+            incorrectMessage: 'Not quite — "descending" means going down, from high to low.',
+            xpValue: 5,
           },
         },
 
