@@ -44,8 +44,9 @@ export const useProgress = (moduleId: string) => {
   const markLessonComplete = useCallback(async (lessonId: string, xpEarned: number) => {
     if (!user) return;
 
+    const alreadyCompleted = state.completedLessonIds.includes(lessonId);
     const newCompleted = [...new Set([...state.completedLessonIds, lessonId])];
-    const newXp = state.totalXp + xpEarned;
+    const newXp = alreadyCompleted ? state.totalXp : state.totalXp + xpEarned;
 
     setState(prev => ({
       ...prev,
