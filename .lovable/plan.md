@@ -1,53 +1,84 @@
 
 
-# Fix: AI Module Generation Not Saving Steps
+# Student Dashboard Improvements
 
-## What Went Well
-The AI edge function produced excellent content -- a full "Computer Hardware Essentials" module with 6 steps (instructions, spreadsheet tasks with SUM formulas, a quiz, and memory classification). The problem is purely in how the generated content gets saved to the database.
+## Issues Found
 
-## The Problem
-The `handleAiResult` function has a race condition. Each call to `builder.addLesson()` or `builder.addStep()` triggers a database insert AND a React state refetch. But the code then immediately reads `builder.fullModule` expecting the freshly-fetched data -- which hasn't arrived yet because React state updates are asynchronous.
+### Bug 1: Stats only reflect the first module
+Lines 128-130 call `useProgress(allModules[0]?.id)` and `useStudentAssignments(allModules[0]?.id)`, so the header stats (Total XP, Lessons Done, Upcoming Due) only show data for the "Introduction to Excel" module. They should aggregate across all modules.
 
-Result: the module metadata (title, description) saved correctly, one empty "Untitled Lesson" was created, but zero steps were populated.
+### Bug 2: Button never says "Review" / "View"
+Line 64 only checks `completedCount > 0` to toggle between "Start" and "Continue". It never detects a fully completed module.
 
-## The Fix
+### Bug 3: Per-lesson due dates shown unnecessarily
+Lines 106-111 display a due date badge on each lesson row, but due dates are only meaningful at the module level (already shown next to the title).
 
-Refactor `handleAiResult` to **not rely on React state between operations**. Instead:
+---
 
-1. Insert lessons directly via Supabase and capture the returned IDs immediately
-2. Insert steps directly via Supabase using those lesson IDs
-3. Only call `builder.refetch()` once at the very end to sync the UI
+## Plan
 
-### Changes to `src/pages/ModuleBuilder.tsx`
+### 1. Fix aggregated stats
+- Remove the single-module `useProgress` / `useStudentAssignments` calls from the main `StudentDashboard` component.
+- Create a small `useAggregatedStats` hook (or inline logic) that queries `module_progress` for all rows belonging to the current user, then sums `total_xp` and counts all `completed_lesson_ids` across every module.
+- For "Upcoming Due", query all assignments for the student (no module filter) and count those with a future `due_date`.
 
-Replace the `handleAiResult` function's `generate_module` branch:
+### 2. Completed module state
+- In `ModuleCard`, compare `completedCount === totalLessons` (and `totalLessons > 0`).
+- If fully complete: show a "Review" button (with a different icon, e.g. `Eye` or `RotateCcw`) instead of "Continue", and add a small "Completed" badge/checkmark on the card.
+- The progress bar will show 100%.
 
-- Instead of calling `builder.addLesson()` (which triggers a refetch), directly insert into `custom_lessons` and capture the returned `id`
-- Instead of calling `builder.addStep()`, directly insert into `custom_steps` with the full config in one go
-- This eliminates the need for multiple refetch cycles and the stale-state problem
-- One single `builder.refetch()` at the end syncs the UI
+### 3. Remove per-lesson due dates
+- Remove the `getDueDate` call and the `CalendarClock` badge from each lesson row inside `ModuleCard`.
+- Keep the module-level due date label next to the title (already working).
 
-### Changes to `src/pages/ModuleBuilder.tsx` (generate_step branch)
+### 4. "More Modules" section
+- Below "My Modules", add a "More Modules" section.
+- This will list modules from `allModules` that the student does **not** have any assignments for (i.e., optional/unassigned modules).
+- Teachers can assign these later, making them appear in "My Modules".
+- If there are no unassigned modules, hide the section.
+- Assigned modules appear in "My Modules"; unassigned ones appear in "More Modules" with a lighter visual treatment.
 
-Apply the same pattern: insert the step directly with its config rather than adding a blank step and then updating it in a second pass.
+### 5. Profile button
+- Add an avatar/profile button in the header (top-right, next to Sign Out).
+- Clicking it opens a dialog/sheet where the student can:
+  - Edit their display name (updates `profiles.display_name`).
+  - Upload an avatar image (uploads to a storage bucket, updates `profiles.avatar_url`).
+- Show the student's current avatar (or initials fallback) in the header.
+- The `profiles` table already has `display_name` and `avatar_url` columns, so no database changes are needed.
+- A new `avatar-uploads` storage bucket will be created for student avatar images.
 
-### Changes to `src/hooks/useCustomModules.ts`
+---
 
-No changes needed -- the builder hook methods are fine for interactive use. The AI handler will bypass them for bulk operations only.
+## Technical Details
 
-## Technical Detail
+### Files to modify
+- **`src/pages/StudentDashboard.tsx`** -- main changes for all 5 items
+- **`src/hooks/useProgress.ts`** -- add a new `useAggregatedProgress` hook that fetches all `module_progress` rows for the user
+- **`src/hooks/useAssignments.ts`** -- add a `useAllStudentAssignments` hook (no module filter) for the upcoming due count and for splitting modules into assigned vs. unassigned
 
-```text
-Before (broken):
-  addLesson() -> fetchFull() [async, state not ready]
-  refetch()   -> fetchFull() [async, state not ready]  
-  read builder.fullModule -> STALE DATA (empty lessons)
-  loop does nothing
+### New files
+- **`src/components/StudentProfileDialog.tsx`** -- profile edit dialog with name input and avatar upload
 
-After (fixed):
-  supabase.insert('custom_lessons') -> returns { id } immediately
-  supabase.insert('custom_steps', { lesson_id, config, ... }) -> done
-  builder.refetch() once -> UI updates with all data
+### Database / Storage
+- Create an `avatar-uploads` public storage bucket with appropriate RLS (authenticated users can upload/manage their own files, public read access)
+- No table schema changes needed (profiles table already has the right columns)
+
+### Aggregated stats query approach
+```sql
+-- All module progress for user
+SELECT module_id, completed_lesson_ids, total_xp
+FROM module_progress
+WHERE user_id = :userId
+
+-- All assignments for student (across all modules)
+SELECT * FROM assignments
+WHERE student_user_id = :userId OR class_id IN (
+  SELECT class_id FROM class_students WHERE student_user_id = :userId
+)
 ```
 
-The key insight: for bulk sequential operations, bypass the React-state-based builder methods and use direct Supabase calls, collecting returned IDs along the way.
+### Module splitting logic
+- Fetch all student assignments (no module filter).
+- "My Modules" = modules where at least one assignment exists targeting that module.
+- "More Modules" = remaining modules from `allModules` with no assignments.
+- If the student has zero assignments total, default to showing everything under "My Modules" (current behavior).
