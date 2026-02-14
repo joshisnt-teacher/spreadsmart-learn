@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Clock, ChevronRight, Star, Zap, Lock, CalendarClock } from 'lucide-react';
+import { BookOpen, Clock, ChevronRight, Star, Zap, Lock, CalendarClock, RotateCcw, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import type { Module } from '@/types/lesson';
 
@@ -31,6 +32,7 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
   const totalLessons = module.lessons.length;
   const completedCount = completedLessonIds.length;
   const progressPercent = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
+  const isFullyComplete = totalLessons > 0 && completedCount === totalLessons;
 
   // Find the first incomplete lesson
   const nextLesson = module.lessons.find((l) => !completedLessonIds.includes(l.id)) || module.lessons[0];
@@ -58,7 +60,12 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
             </div>
             <div className="flex items-center gap-3 mb-3">
               <h1 className="text-4xl font-bold tracking-tight">{module.title}</h1>
-              {moduleDueLabel && (
+              {isFullyComplete && (
+                <Badge variant="secondary" className="bg-accent/10 text-accent border-0 gap-1 text-sm">
+                  <CheckCircle2 className="w-4 h-4" /> Completed
+                </Badge>
+              )}
+              {moduleDueLabel && !isFullyComplete && (
                 <span className="text-sm font-medium text-muted-foreground flex items-center gap-1.5 bg-muted/60 px-3 py-1 rounded-full">
                   <CalendarClock className="w-3.5 h-3.5" />
                   {moduleDueLabel}
@@ -95,10 +102,16 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
             <Button
               size="lg"
               className="mt-8"
+              variant={isFullyComplete ? 'outline' : 'default'}
               onClick={() => onStartLesson(nextLesson.id)}
             >
-              <Zap className="w-4 h-4 mr-2" />
-              {completedCount > 0 ? 'Continue Learning' : 'Start Module'}
+              {isFullyComplete ? (
+                <><RotateCcw className="w-4 h-4 mr-2" /> Review Module</>
+              ) : completedCount > 0 ? (
+                <><Zap className="w-4 h-4 mr-2" /> Continue Learning</>
+              ) : (
+                <><Zap className="w-4 h-4 mr-2" /> Start Module</>
+              )}
             </Button>
           </motion.div>
         </div>
