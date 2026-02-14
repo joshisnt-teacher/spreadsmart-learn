@@ -1,133 +1,39 @@
 
 
-# New Module: Graphs and Pivot Tables
+# Fix: Render Markdown Tables and Inline Code in Instructions
 
-## The Core Challenge
+## Problem
 
-FortuneSheet (our spreadsheet library) does **not** support charts or pivot tables. These features are listed as "coming soon" in their documentation and are not available in the installed version. So we cannot render a chart inside the spreadsheet component the way Excel would.
+The instruction renderer in `LessonPlayer.tsx` splits text by newlines and only processes `**bold**` syntax. The "What Is a Summary Table?" step contains markdown tables and inline code backticks, which display as raw pipe characters and backtick text instead of formatted content.
 
-## Proposed Solution: Hybrid Approach
+## Solution
 
-Keep everything inside the app by combining the existing spreadsheet workspace with a new **chart workspace** component powered by Recharts (already installed). The module would flow in three phases:
+Upgrade the instruction rendering logic to handle three markdown features:
+1. **Tables** -- detect consecutive lines starting with `|` and render them as HTML `<table>` elements
+2. **Inline code** -- detect backtick-wrapped text and render as `<code>` elements
+3. **Bold** -- keep the existing `**bold**` handling
 
-### Phase 1: Data Preparation (Spreadsheet steps)
-Teach students how to organize and structure data for charting -- using the existing spreadsheet workspace and marking engine. Topics:
-- Structuring data in a table layout (headers, consistent rows)
-- Using formulas to summarize data (SUM, AVERAGE by category)
-- Sorting and grouping data manually (simulating what a pivot table does conceptually)
+## Changes
 
-These steps work exactly like the current module -- spreadsheet tasks with auto-marking.
+### `src/components/LessonPlayer.tsx` (instruction rendering block, ~lines 330-345)
 
-### Phase 2: Understanding Charts (Instruction + Interactive Chart steps)
-Introduce a new step type called `'chart'` that renders an interactive chart component (built with Recharts) alongside the spreadsheet data. This would:
-- Show students a dataset in a read-only spreadsheet
-- Display the corresponding chart (bar, line, pie) next to or below the data
-- Let students answer questions about the chart by typing answers into cells (e.g., "Which month had the highest sales? Type your answer in B1")
+Replace the simple line-by-line renderer with a smarter one that:
 
-### Phase 3: Build Your Own Chart (Interactive chart-building steps)
-A new step type where students:
-1. See a dataset in the spreadsheet
-2. Choose chart type, X-axis column, Y-axis column via a simple form/dropdown UI
-3. The app renders the chart live from their selections
-4. The marking engine checks that they selected the correct chart type and axes for the given data
+1. **Groups lines into blocks** -- consecutive lines starting with `|` are collected into a table block; other lines remain as paragraph blocks
+2. **Renders table blocks** as styled `<table>` elements:
+   - First row becomes `<thead>` with bold header cells
+   - Separator rows (`|---|---|`) are skipped
+   - Remaining rows become `<tbody>` rows
+3. **Renders paragraph blocks** with:
+   - `**bold**` converted to styled `<code>` elements (existing behavior)
+   - `` `code` `` converted to styled `<code>` elements (new)
 
-## Technical Changes
-
-### 1. Extend the Step type (`src/types/lesson.ts`)
-
-Add new step type and chart configuration:
-
-```typescript
-type StepType = 'instruction' | 'task' | 'challenge' | 'chart';
-
-interface ChartConfig {
-  type: 'bar' | 'line' | 'pie' | 'area';
-  dataSource: 'sheet' | 'static'; // read from sheet or predefined
-  staticData?: { name: string; value: number }[];
-  xKey?: string;
-  yKey?: string;
-  title?: string;
-}
-
-interface ChartTaskExpectation {
-  expectedChartType?: 'bar' | 'line' | 'pie' | 'area';
-  expectedXKey?: string;
-  expectedYKey?: string;
-}
-
-// Add to Step interface:
-chartConfig?: ChartConfig;
-chartTask?: ChartTaskExpectation;
+The parsing logic will be a helper function that:
+```
+- Split instruction by \n
+- Walk through lines, grouping consecutive | lines into table blocks
+- For each table block: parse headers, skip separator, parse data rows
+- For each text line: process **bold** and `code` inline formatting
 ```
 
-### 2. New component: `ChartWorkspace.tsx`
-
-A component that renders a Recharts chart from either:
-- Static data defined in the step
-- Data extracted from the spreadsheet state
-
-For "build your own chart" steps, it includes dropdowns for chart type, X-axis, and Y-axis selection, with a live-updating preview.
-
-### 3. New component: `ChartBuilder.tsx`
-
-For interactive chart-building steps:
-- Dropdown to select chart type (bar, line, pie)
-- Dropdowns to select which columns map to X and Y axes
-- Live chart preview updates as selections change
-- "Check" button validates selections against expected answers
-
-### 4. Update `LessonPlayer.tsx`
-
-Add rendering logic for `type: 'chart'` steps:
-- Split layout: spreadsheet on one side, chart on the other (using the existing resizable panels library)
-- For chart-building steps, show the builder UI instead of a static chart
-
-### 5. Extend marking engine (`src/lib/marking-engine.ts`)
-
-Add a `checkChartTask` function that validates:
-- Correct chart type selected
-- Correct axis mappings
-- Can also check cell-based answers (reusing existing logic)
-
-### 6. New data file: `src/data/charts-module.ts`
-
-The full module content with lessons like:
-- Lesson 1: Preparing Data for Charts (spreadsheet tasks)
-- Lesson 2: Reading Charts (chart display + cell-answer tasks)
-- Lesson 3: Building Your Own Charts (chart builder tasks)
-- Lesson 4: Pivot Table Concepts (spreadsheet tasks simulating grouping/summarizing)
-
-### 7. Register the new module
-
-Update `ModulePlayer.tsx` and `StudentDashboard.tsx` to support multiple modules (currently hardcoded to `excelBasicsModule`).
-
-## What This Looks Like for Students
-
-1. They work with data in the familiar spreadsheet
-2. They see real interactive charts rendered from that data (bar charts, pie charts, line graphs)
-3. They build their own charts by selecting options, seeing instant visual feedback
-4. They answer comprehension questions about charts
-5. Everything stays inside the app -- no external tools needed
-
-## Pivot Tables Approach
-
-True pivot tables are not feasible in FortuneSheet. Instead, we teach the **concept** through guided exercises:
-- "Group this sales data by region using SUM formulas"
-- "Create a summary table from raw data"
-- Students manually build what a pivot table would produce, which actually teaches the underlying logic better
-
-## What We Already Have vs. What's New
-
-| Feature | Status |
-|---|---|
-| Spreadsheet workspace | Already built |
-| Cell-based marking | Already built |
-| Formula checking | Already built |
-| Recharts library | Already installed |
-| Resizable panels | Already installed |
-| Chart rendering component | **New** |
-| Chart builder UI | **New** |
-| Chart task marking | **New** |
-| Multi-module support | **New** |
-| Charts module content | **New** |
-
+No other files need changes -- the instruction text in `charts-module.ts` already uses correct markdown syntax; it just needs a renderer that understands it.
