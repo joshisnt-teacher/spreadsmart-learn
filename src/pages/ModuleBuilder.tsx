@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, GripVertical, Save, Eye, BookOpen, FileText, HelpCircle, ChevronRight, Settings, Grid3X3, Pencil } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, GripVertical, Save, Eye, BookOpen, FileText, HelpCircle, ChevronRight, Settings, Grid3X3, Pencil, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,6 +16,7 @@ import { stepToConfig } from '@/lib/module-transform';
 import { toast } from '@/hooks/use-toast';
 import type { Step, QuizQuestion } from '@/types/lesson';
 import TaskStepEditor, { type TaskStepConfig } from '@/components/builder/TaskStepEditor';
+import AiAssistantModal, { type AiAction } from '@/components/builder/AiAssistantModal';
 
 const STEP_TYPES = [
   { value: 'instruction', label: 'Instruction', icon: FileText },
@@ -33,6 +34,7 @@ const ModuleBuilder: React.FC = () => {
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
 
   // Local state for module settings (save on blur, not on every keystroke)
   const [moduleTitle, setModuleTitle] = useState('');
@@ -146,6 +148,97 @@ const ModuleBuilder: React.FC = () => {
     toast({ title: newStatus === 'published' ? 'Module published!' : 'Module unpublished' });
   };
 
+  const handleAiResult = async (action: AiAction, result: any) => {
+    if (action === 'generate_module') {
+      // Update module metadata
+      await builder.updateModule({
+        title: result.title,
+        description: result.description,
+        estimated_minutes: result.estimatedMinutes,
+      });
+      setModuleTitle(result.title);
+      setModuleDescription(result.description);
+      setModuleMinutes(result.estimatedMinutes);
+
+      // Create lessons and steps
+      for (const lesson of result.lessons ?? []) {
+        await builder.addLesson();
+        // After addLesson, refetch to get the new lesson ID
+        await builder.refetch();
+      }
+      // Now populate the lessons with generated data
+      // We need to refetch after all lessons are added
+      await builder.refetch();
+      const freshModule = builder.fullModule;
+      if (freshModule) {
+        for (let i = 0; i < (result.lessons ?? []).length && i < freshModule.lessons.length; i++) {
+          const genLesson = result.lessons[i];
+          const dbLesson = freshModule.lessons[i];
+          await builder.updateLesson(dbLesson.id, { title: genLesson.title, description: genLesson.description });
+
+          for (const step of genLesson.steps ?? []) {
+            await builder.addStep(dbLesson.id, step.type || 'instruction');
+          }
+        }
+      }
+      // Final refetch and populate step configs
+      await builder.refetch();
+      const finalModule = builder.fullModule;
+      if (finalModule) {
+        for (let i = 0; i < (result.lessons ?? []).length && i < finalModule.lessons.length; i++) {
+          const genLesson = result.lessons[i];
+          const dbLesson = finalModule.lessons[i];
+          for (let j = 0; j < (genLesson.steps ?? []).length && j < dbLesson.steps.length; j++) {
+            const genStep = genLesson.steps[j];
+            const dbStep = dbLesson.steps[j];
+            const config: Record<string, unknown> = {};
+            if (genStep.quiz) config.quiz = genStep.quiz;
+            if (genStep.initialSheetState) config.initialSheetState = genStep.initialSheetState;
+            if (genStep.task) config.task = genStep.task;
+            await builder.updateStep(dbStep.id, {
+              title: genStep.title,
+              instruction: genStep.instruction,
+              type: genStep.type || 'instruction',
+              why_it_matters: genStep.whyItMatters || null,
+              config,
+            });
+          }
+        }
+      }
+      await builder.refetch();
+      toast({ title: 'Module generated!', description: `Created ${result.lessons?.length ?? 0} lessons.` });
+    } else if (action === 'generate_step') {
+      if (!selectedLessonId) {
+        toast({ title: 'Select a lesson first', description: 'Choose a lesson where the step should be added.', variant: 'destructive' });
+        return;
+      }
+      await builder.addStep(selectedLessonId, result.type || 'instruction');
+      await builder.refetch();
+      const updatedLesson = builder.fullModule?.lessons.find(l => l.id === selectedLessonId);
+      const newStep = updatedLesson?.steps[updatedLesson.steps.length - 1];
+      if (newStep) {
+        const config: Record<string, unknown> = {};
+        if (result.quiz) config.quiz = result.quiz;
+        if (result.initialSheetState) config.initialSheetState = result.initialSheetState;
+        if (result.task) config.task = result.task;
+        await builder.updateStep(newStep.id, {
+          title: result.title,
+          instruction: result.instruction,
+          type: result.type || 'instruction',
+          why_it_matters: result.whyItMatters || null,
+          config,
+        });
+        setSelectedStepId(newStep.id);
+      }
+      await builder.refetch();
+    } else if (action === 'improve_content') {
+      if (result.title) setStepTitle(result.title);
+      if (result.instruction) setStepInstruction(result.instruction);
+      if (result.whyItMatters) setStepWhyItMatters(result.whyItMatters);
+      toast({ title: 'Content improved!', description: 'Review the changes and click Save Step when ready.' });
+    }
+  };
+
   if (builder.loading || authLoading) {
     return <div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Loading...</p></div>;
   }
@@ -198,6 +291,9 @@ const ModuleBuilder: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="text-primary border-primary/30 hover:bg-primary/10" onClick={() => setAiModalOpen(true)}>
+            <Wand2 className="w-4 h-4 mr-1.5" /> AI Assist
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)}>
             <Settings className="w-4 h-4 mr-1.5" /> Settings
           </Button>
@@ -513,6 +609,19 @@ const ModuleBuilder: React.FC = () => {
           )}
         </div>
       </div>
+
+      <AiAssistantModal
+        open={aiModalOpen}
+        onOpenChange={setAiModalOpen}
+        onResult={handleAiResult}
+        context={{
+          moduleTitle,
+          moduleDescription,
+          currentLessonTitle: currentLesson?.title,
+          currentStepTitle: currentStep?.title,
+          currentStepInstruction: currentStep?.instruction,
+        }}
+      />
     </div>
   );
 };
