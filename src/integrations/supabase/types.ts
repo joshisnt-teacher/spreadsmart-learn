@@ -181,6 +181,7 @@ export type Database = {
       }
       custom_modules: {
         Row: {
+          banner_url: string | null
           created_at: string
           description: string
           estimated_minutes: number
@@ -191,6 +192,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          banner_url?: string | null
           created_at?: string
           description?: string
           estimated_minutes?: number
@@ -201,6 +203,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          banner_url?: string | null
           created_at?: string
           description?: string
           estimated_minutes?: number
