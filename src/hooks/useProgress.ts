@@ -67,6 +67,40 @@ export const useProgress = (moduleId: string) => {
   return { ...state, markLessonComplete };
 };
 
+/** Aggregated progress across all modules for the current user */
+export const useAggregatedProgress = () => {
+  const { user } = useAuth();
+  const [totalXp, setTotalXp] = useState(0);
+  const [totalCompleted, setTotalCompleted] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setTotalXp(0);
+      setTotalCompleted(0);
+      setLoading(false);
+      return;
+    }
+
+    const load = async () => {
+      const { data } = await supabase
+        .from('module_progress')
+        .select('completed_lesson_ids, total_xp')
+        .eq('user_id', user.id);
+
+      const xp = (data ?? []).reduce((sum, r) => sum + (r.total_xp ?? 0), 0);
+      const completed = (data ?? []).reduce((sum, r) => sum + (r.completed_lesson_ids?.length ?? 0), 0);
+      setTotalXp(xp);
+      setTotalCompleted(completed);
+      setLoading(false);
+    };
+
+    load();
+  }, [user]);
+
+  return { totalXp, totalCompleted, loading };
+};
+
 export const useLessonProgress = (lessonId: string) => {
   const { user } = useAuth();
 
