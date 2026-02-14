@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Users, Copy, Check, ArrowLeft, UserPlus, Upload, AlertCircle, CheckCircle2, BookOpen, Clock, Eye } from 'lucide-react';
+import { Plus, Users, Copy, Check, ArrowLeft, UserPlus, Upload, AlertCircle, CheckCircle2, BookOpen, Clock, Eye, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import StudentProgressView from '@/components/StudentProgressView';
 import AssignmentManager from '@/components/AssignmentManager';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { allModules } from '@/data/module-registry';
+import { useTeacherModules } from '@/hooks/useCustomModules';
 import { Badge } from '@/components/ui/badge';
 
 interface BulkResult {
@@ -60,6 +61,7 @@ const TeacherDashboard: React.FC = () => {
   const [bulkText, setBulkText] = useState('');
   const [bulkResults, setBulkResults] = useState<BulkResult[] | null>(null);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const { modules: customModules, createModule, deleteModule, loading: customLoading } = useTeacherModules();
 
   const fetchClasses = useCallback(async () => {
     const { data } = await supabase
@@ -239,10 +241,72 @@ const TeacherDashboard: React.FC = () => {
               </div>
             )}
 
-            {/* Modules Overview */}
+            {/* Your Custom Modules */}
             <div className="pt-4">
-              <h2 className="text-xl font-semibold mb-1">Available Modules</h2>
-              <p className="text-sm text-muted-foreground mb-4">Browse the training modules you can assign to your classes</p>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold mb-1">Your Modules</h2>
+                  <p className="text-sm text-muted-foreground">Create and manage your own teaching modules</p>
+                </div>
+                <Button onClick={async () => {
+                  const id = await createModule();
+                  if (id) navigate(`/dashboard/module-builder/${id}`);
+                }}>
+                  <Plus className="w-4 h-4 mr-2" /> Create Module
+                </Button>
+              </div>
+              {customModules.length > 0 ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {customModules.map((mod) => (
+                    <Card key={mod.id}>
+                      <CardHeader className="pb-2">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-base flex items-center gap-2">
+                              <BookOpen className="w-4 h-4 text-primary" />
+                              {mod.title}
+                              <Badge variant={mod.status === 'published' ? 'default' : 'secondary'} className="text-xs">
+                                {mod.status}
+                              </Badge>
+                            </CardTitle>
+                            <CardDescription className="mt-1">{mod.description || 'No description'}</CardDescription>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate(`/dashboard/module-builder/${mod.id}`)}>
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={async (e) => {
+                              e.stopPropagation();
+                              await deleteModule(mod.id);
+                              toast({ title: 'Module deleted' });
+                            }}>
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> ~{mod.estimated_minutes} min</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="py-8 text-center">
+                    <BookOpen className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">No custom modules yet. Create your first module to get started.</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Built-in Modules Overview */}
+            <div className="pt-4">
+              <h2 className="text-xl font-semibold mb-1">Built-in Modules</h2>
+              <p className="text-sm text-muted-foreground mb-4">Pre-built training modules included with the platform</p>
               <div className="grid gap-4 sm:grid-cols-2">
                 {allModules.map((mod) => (
                   <Card key={mod.id}>
