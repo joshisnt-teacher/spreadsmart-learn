@@ -1,16 +1,18 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Check, HelpCircle, RotateCcw, ChevronRight, ChevronLeft, Trophy, Star, Lightbulb, BookOpen, Award } from 'lucide-react';
+import { Check, HelpCircle, RotateCcw, ChevronRight, ChevronLeft, Trophy, Star, Lightbulb, BookOpen, Award, BarChart3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import SpreadsheetWorkspace from '@/components/SpreadsheetWorkspace';
-import { checkTask, getHint } from '@/lib/marking-engine';
+import ChartWorkspace from '@/components/ChartWorkspace';
+import ChartBuilder from '@/components/ChartBuilder';
+import { checkTask, checkChartTask, getHint } from '@/lib/marking-engine';
 import { useLessonProgress } from '@/hooks/useProgress';
-import type { Lesson, Step, CheckResult, LessonProgress } from '@/types/lesson';
+import type { Lesson, Step, CheckResult, LessonProgress, ChartType } from '@/types/lesson';
 
 interface LessonPlayerProps {
   lesson: Lesson;
@@ -33,6 +35,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
   const [resetKey, setResetKey] = useState(0);
   const [currentCellData, setCurrentCellData] = useState<any[]>([]);
   const [isRedoing, setIsRedoing] = useState(false);
+  const [chartSelection, setChartSelection] = useState<{ type: ChartType | null; xKey: string | null; yKey: string | null }>({ type: null, xKey: null, yKey: null });
   const { saveProgress, loadProgress } = useLessonProgress(lesson.id);
 
   const fireConfetti = useCallback(() => {
@@ -97,7 +100,8 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
 
   const currentStep = lesson.steps[currentStepIndex];
   const isChallengeStep = currentStep?.type === 'challenge';
-  const isInstructionStep = currentStep?.type === 'instruction' || (!currentStep?.task && !isChallengeStep);
+  const isChartStep = currentStep?.type === 'chart';
+  const isInstructionStep = currentStep?.type === 'instruction' || (!currentStep?.task && !isChallengeStep && !isChartStep);
   const isStepComplete = progress.completedStepIds.includes(currentStep?.id || '');
   const isLastStep = currentStepIndex === lesson.steps.length - 1;
   const isLessonComplete = progress.completedStepIds.length === lesson.steps.length;
@@ -116,12 +120,26 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
       [currentStep.id]: attemptCount + 1,
     };
 
-    const result = checkTask(currentCellData, currentStep.task, attemptCount + 1);
+    let result: CheckResult;
+
+    // Chart builder task — check chart selections
+    if (isChartStep && currentStep.chartTask) {
+      result = checkChartTask(
+        currentStep.chartTask,
+        chartSelection.type,
+        chartSelection.xKey,
+        chartSelection.yKey,
+        currentStep.task!,
+      );
+    } else {
+      result = checkTask(currentCellData, currentStep.task!, attemptCount + 1);
+    }
+
     setFeedback(result);
 
     if (result.type === 'correct') {
       const isFirstAttempt = attemptCount === 0;
-      const xp = isRedoing ? 0 : currentStep.task.xpValue + (isFirstAttempt ? (currentStep.task.bonusXp || 0) : 0);
+      const xp = isRedoing ? 0 : (currentStep.task?.xpValue ?? 0) + (isFirstAttempt ? (currentStep.task?.bonusXp || 0) : 0);
 
       // Fire confetti for challenge steps
       if (isChallengeStep) {
@@ -142,13 +160,15 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
       }));
 
       // Auto-show hint after 2+ failures
-      const hint = getHint(currentStep.task, attemptCount + 1);
-      if (hint) {
-        setCurrentHint(hint);
-        setShowHint(true);
+      if (currentStep.task) {
+        const hint = getHint(currentStep.task, attemptCount + 1);
+        if (hint) {
+          setCurrentHint(hint);
+          setShowHint(true);
+        }
       }
     }
-  }, [currentStep, currentCellData, attemptCount, progress]);
+  }, [currentStep, currentCellData, chartSelection, attemptCount, progress, isChartStep, isChallengeStep, isRedoing, fireConfetti]);
 
   const handleInstructionContinue = useCallback(() => {
     if (!currentStep) return;
@@ -188,6 +208,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
     setShowHint(false);
     setCurrentHint(null);
     setResetKey((k) => k + 1);
+    setChartSelection({ type: null, xKey: null, yKey: null });
     setProgress((prev) => ({
       ...prev,
       currentStepId: lesson.steps[nextIdx]?.id || '',
@@ -201,7 +222,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
   }, []);
 
   const handleHint = useCallback(() => {
-    if (!currentStep) return;
+    if (!currentStep?.task) return;
     const hint = getHint(currentStep.task, Math.max(attemptCount, 2));
     if (hint) {
       setCurrentHint(hint);
@@ -273,7 +294,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
                       ? step.type === 'challenge' ? 'bg-warning text-warning-foreground' : 'bg-primary text-primary-foreground'
                       : 'bg-muted text-muted-foreground'
                   }`}>
-                    {isComplete ? <Check className="w-3 h-3" /> : step.type === 'challenge' ? <Trophy className="w-3 h-3" /> : idx + 1}
+                    {isComplete ? <Check className="w-3 h-3" /> : step.type === 'challenge' ? <Trophy className="w-3 h-3" /> : step.type === 'chart' ? <BarChart3 className="w-3 h-3" /> : idx + 1}
                   </span>
                   <span className="truncate">{step.title}</span>
                 </button>
@@ -333,8 +354,41 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
           </div>
         </div>
 
-        {/* Spreadsheet — only for task/challenge steps or instruction steps with a sheet */}
-        {isInstructionStep && !isChallengeStep ? (
+        {/* Spreadsheet & Chart area */}
+        {isChartStep ? (
+          <div className="flex-1 flex min-h-0">
+            {/* Spreadsheet side */}
+            {currentStep.initialSheetState && (
+              <div className="w-1/2 p-4 min-h-0">
+                <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm">
+                  <SpreadsheetWorkspace
+                    initialState={currentStep.initialSheetState}
+                    editableCells={currentStep.task?.editableCells ?? []}
+                    onDataChange={handleDataChange}
+                    resetKey={resetKey}
+                  />
+                </div>
+              </div>
+            )}
+            {/* Chart side */}
+            <div className={`${currentStep.initialSheetState ? 'w-1/2' : 'flex-1'} p-4 min-h-0`}>
+              <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm">
+                {currentStep.chartTask ? (
+                  <ChartBuilder
+                    config={currentStep.chartConfig!}
+                    cellData={currentCellData.length > 0 ? currentCellData : currentStep.initialSheetState?.celldata ?? []}
+                    onSelectionChange={(type, xKey, yKey) => setChartSelection({ type, xKey, yKey })}
+                  />
+                ) : currentStep.chartConfig ? (
+                  <ChartWorkspace
+                    config={currentStep.chartConfig}
+                    cellData={currentCellData.length > 0 ? currentCellData : currentStep.initialSheetState?.celldata ?? []}
+                  />
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ) : isInstructionStep && !isChallengeStep ? (
           currentStep.initialSheetState ? (
             <div className="flex-1 p-4 min-h-0">
               <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm opacity-80">
@@ -353,8 +407,8 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
           <div className="flex-1 p-4 min-h-0">
             <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm">
               <SpreadsheetWorkspace
-                initialState={currentStep.initialSheetState}
-                editableCells={currentStep.task.editableCells}
+                initialState={currentStep.initialSheetState!}
+                editableCells={currentStep.task!.editableCells}
                 onDataChange={handleDataChange}
                 resetKey={resetKey}
               />

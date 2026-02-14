@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import ModuleLanding from '@/components/ModuleLanding';
 import LessonPlayer from '@/components/LessonPlayer';
-import { excelBasicsModule } from '@/data/excel-basics-module';
+import { getModuleById } from '@/data/module-registry';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useProgress } from '@/hooks/useProgress';
@@ -11,11 +11,15 @@ import { useStudentAssignments } from '@/hooks/useAssignments';
 import { Button } from '@/components/ui/button';
 
 const ModulePlayer: React.FC = () => {
+  const { moduleId } = useParams<{ moduleId: string }>();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { completedLessonIds, totalXp, loading: progressLoading, markLessonComplete } = useProgress(excelBasicsModule.id);
-  const { assignments, hasAssignments, isLessonAssigned, getDueDate, loading: assignLoading } = useStudentAssignments(excelBasicsModule.id);
+
+  const currentModule = moduleId ? getModuleById(moduleId) : undefined;
+
+  const { completedLessonIds, totalXp, loading: progressLoading, markLessonComplete } = useProgress(currentModule?.id ?? '');
+  const { assignments, hasAssignments, isLessonAssigned, getDueDate, loading: assignLoading } = useStudentAssignments(currentModule?.id ?? '');
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
 
   // Compute nearest module-level due date
@@ -35,18 +39,18 @@ const ModulePlayer: React.FC = () => {
   // Jump to lesson from query param
   useEffect(() => {
     const lessonParam = searchParams.get('lesson');
-    if (lessonParam && excelBasicsModule.lessons.some(l => l.id === lessonParam)) {
+    if (lessonParam && currentModule?.lessons.some(l => l.id === lessonParam)) {
       setActiveLessonId(lessonParam);
       setSearchParams({}, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, currentModule]);
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/auth');
   }, [authLoading, user, navigate]);
 
   const activeLesson = activeLessonId
-    ? excelBasicsModule.lessons.find((l) => l.id === activeLessonId)
+    ? currentModule?.lessons.find((l) => l.id === activeLessonId)
     : null;
 
   const handleStartLesson = useCallback((lessonId: string) => {
@@ -78,6 +82,14 @@ const ModulePlayer: React.FC = () => {
 
   if (!user) return null;
 
+  if (!currentModule) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">Module not found</p>
+      </div>
+    );
+  }
+
   if (activeLesson) {
     return (
       <LessonPlayer
@@ -96,7 +108,7 @@ const ModulePlayer: React.FC = () => {
         </Button>
       </div>
       <ModuleLanding
-        module={excelBasicsModule}
+        module={currentModule}
         completedLessonIds={completedLessonIds}
         totalXp={totalXp}
         onStartLesson={handleStartLesson}

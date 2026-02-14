@@ -1,4 +1,4 @@
-import type { TaskDefinition, CheckResult, TaskExpectation } from '@/types/lesson';
+import type { TaskDefinition, CheckResult, TaskExpectation, ChartTaskExpectation, ChartType } from '@/types/lesson';
 
 /**
  * Parse a cell reference like "B5" into { row, col } (0-indexed)
@@ -136,4 +136,41 @@ export function getHint(task: TaskDefinition, attemptCount: number): string | nu
   if (attemptCount < 2) return null;
   const hintIndex = Math.min(attemptCount - 2, task.hints.length - 1);
   return task.hints[hintIndex] ?? null;
+}
+
+/**
+ * Check chart builder selections against expected values
+ */
+export function checkChartTask(
+  chartTask: ChartTaskExpectation,
+  selectedType: ChartType | null,
+  selectedXKey: string | null,
+  selectedYKey: string | null,
+  task: TaskDefinition,
+): CheckResult {
+  const errors: string[] = [];
+
+  if (chartTask.expectedChartType && selectedType !== chartTask.expectedChartType) {
+    errors.push(`Chart type should be ${chartTask.expectedChartType}, not ${selectedType || 'empty'}.`);
+  }
+  if (chartTask.expectedXKey && selectedXKey !== chartTask.expectedXKey) {
+    errors.push(`X-axis should be "${chartTask.expectedXKey}".`);
+  }
+  if (chartTask.expectedYKey && selectedYKey !== chartTask.expectedYKey) {
+    errors.push(`Y-axis should be "${chartTask.expectedYKey}".`);
+  }
+
+  if (errors.length === 0) {
+    return { type: 'correct', message: task.successMessage };
+  }
+
+  if (errors.length === 1) {
+    return { type: 'almost', message: 'Almost there!', details: errors };
+  }
+
+  return {
+    type: 'incorrect',
+    message: task.incorrectMessage || 'Check your chart settings.',
+    details: errors,
+  };
 }
