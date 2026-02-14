@@ -1,89 +1,227 @@
 
 
-# Teacher Dashboard Refresh
+# Teacher Module Builder -- Investigation and Implementation Plan
 
-## Overview
+## Feasibility Assessment
 
-Redesign the teacher dashboard's class view to show **cross-module student progress**, add a **module filter dropdown**, let teachers **preview modules**, and polish the overall visual design.
+This is a **large but achievable** feature. The current architecture stores modules as hardcoded TypeScript objects. Moving to database-driven modules with a visual builder requires new database tables, a multi-step editor UI, and refactoring how modules are loaded.
 
-## Current Issues
+## Current Architecture (What We're Working With)
 
-- `StudentProgressView` is hardcoded to `excelBasicsModule` only -- ignores the Charts module entirely
-- No way for teachers to enter/preview modules themselves
-- The class view is functional but visually flat
-- No aggregate stats for the class (average progress, top students, etc.)
+Modules are nested TypeScript constants:
 
-## Changes
+```text
+Module
+  +-- id, title, description, estimatedMinutes
+  +-- Lesson[]
+        +-- id, order, title, description
+        +-- Step[]
+              +-- id, order, title, instruction, type, whyItMatters
+              +-- initialSheetState? (celldata, row, column, config)
+              +-- task? (expectations, editableCells, hints, xpValue, bonusXp, messages)
+              +-- quiz? (type, options, correctAnswer, acceptableAnswers, explanation)
+              +-- tableTask? (columns, data, question, correctAnswer, enableSort, enableFilter)
+              +-- chartConfig? / chartTask?
+```
 
-### 1. Multi-Module Student Progress (`StudentProgressView.tsx`)
+The LessonPlayer, marking engine, SpreadsheetWorkspace, InteractiveTable, and ChartBuilder all consume these types directly. They don't care where the data comes from -- they just need objects matching the `Module` / `Lesson` / `Step` interfaces.
 
-**Replace hardcoded single-module approach with all-module aggregation:**
+## Database Design
 
-- Import `allModules` from the module registry instead of just `excelBasicsModule`
-- Fetch `module_progress` and `lesson_progress` for ALL modules (remove the `.eq('module_id', ...)` filter)
-- Add a module filter dropdown (Select component) at the top: "All Modules", "Introduction to Excel", "Charts & Data Summaries"
-- Default view: "All Modules" -- shows aggregate progress across everything
+### New Tables
 
-**"All Modules" view (default):**
-- Progress bar = total completed lessons across all modules / total lessons across all modules
-- Lessons column = total completed / total available
-- XP = sum of all module XP
+**`custom_modules`** -- Stores the top-level module metadata
 
-**Per-module filter:**
-- When a specific module is selected, show progress for just that module (like current behavior but for any module)
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid (PK) | |
+| teacher_id | uuid (FK auth.users) | Owner |
+| title | text | Module name |
+| description | text | |
+| estimated_minutes | integer | |
+| status | enum: draft/published | Only published modules are visible to students |
+| created_at | timestamptz | |
+| updated_at | timestamptz | |
 
-**Expanded row per student:**
-- Show a collapsible section per module (with module title as a subheader)
-- Under each module, list lesson-level progress (same as current)
+**`custom_lessons`** -- Lessons within a custom module
 
-### 2. Class Summary Stats
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid (PK) | |
+| module_id | uuid (FK custom_modules) | |
+| order | integer | Sort order |
+| title | text | |
+| description | text | |
 
-Add a row of stat cards at the top of the class view (above the student table):
+**`custom_steps`** -- Steps within a lesson (stores all step data as JSONB)
 
-- **Students**: total count
-- **Avg. Progress**: average completion percentage across all students
-- **Total XP Earned**: sum of all student XP
-- **Completion Rate**: percentage of students who have completed all lessons
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid (PK) | |
+| lesson_id | uuid (FK custom_lessons) | |
+| order | integer | Sort order |
+| type | text | instruction, task, quiz, table-task, chart, challenge |
+| title | text | |
+| instruction | text | Markdown content |
+| why_it_matters | text | Optional |
+| config | jsonb | All type-specific config (sheet state, task, quiz, tableTask, chartConfig) |
 
-These use the same data already fetched for the student table -- no extra queries needed.
+Using a single `config` JSONB column for step-type-specific data keeps the schema simple while supporting all current and future step types.
 
-### 3. Teacher Module Preview
+### RLS Policies
 
-**On the main dashboard (no class selected):**
-- Add a "Preview" button to each module card in the "Available Modules" section
-- Clicking it navigates to `/module/{moduleId}` -- the same route students use
-- The existing `ModulePlayer` page already works for any authenticated user (no role restriction)
+- Teachers can CRUD their own modules (WHERE teacher_id = auth.uid())
+- Students can SELECT published modules that are assigned to them (via assignments table)
+- No cross-teacher access
 
-**In the header:**
-- Change the existing "Lessons" button to "Preview Modules" for clarity
+## Builder Interface Design
 
-### 4. Visual Polish
+### Module Editor Page (`/dashboard/module-builder/:moduleId?`)
 
-- Replace the plain `<table>` in `StudentProgressView` with the shadcn `Table` components for consistent styling
-- Add subtle row hover animations
-- Improve the header area of the class view with a gradient banner (matching student dashboard style)
-- Add student count badge to class cards on the main view
+A multi-panel editor with three levels of navigation:
 
-## Technical Details
+```text
++-------------------------------------------+
+| Module Settings (title, description, etc) |
++--------+----------------------------------+
+| Lesson | Step Editor                      |
+| List   |                                  |
+|        | [Type selector]                  |
+| L1 *   | [Title + Instruction fields]     |
+| L2     | [Type-specific config panel]     |
+| L3     |   - Spreadsheet builder          |
+|        |   - Quiz builder                 |
+|        |   - Table builder                |
+|        |   - Chart builder                |
++--------+----------------------------------+
+```
 
-### Files to Modify
+### Step Type Editors
 
-**`src/components/StudentProgressView.tsx`** (major rewrite)
-- Replace `excelBasicsModule` import with `allModules` from module registry
-- Change data model to track progress per module per student
-- Add module filter Select dropdown
-- Fetch all module/lesson progress without module_id filter
-- Update expanded row to group lessons by module
-- Use shadcn Table components
-- Add class summary stat cards
+**Instruction Step**: Title, rich-text instruction area (markdown), optional "Why It Matters" text, optional spreadsheet preview (read-only demonstration).
 
-**`src/pages/TeacherDashboard.tsx`**
-- Add "Preview" button to module cards that navigates to `/module/{moduleId}`
-- Add gradient header styling to class view
-- Rename "Lessons" nav button to "Preview Modules"
-- Fetch student count per class for display on class cards
+**Task Step (Spreadsheet)**: 
+- A live FortuneSheet instance where the teacher fills in initial data
+- A cell selector to mark which cells are editable
+- For each editable cell: expected value, expected formula (optional), tolerance
+- Hints (ordered list of text inputs)
+- Success/incorrect/almost messages
+- XP value and bonus XP
 
-### No Database Changes Required
+**Quiz Step**: Question text, answer type (multiple-choice or short-answer), correct answer, acceptable alternatives, explanation.
 
-All data already exists in `module_progress` and `lesson_progress` tables. The teacher RLS policies already allow viewing all progress records via the `has_role()` function.
+**Table Task Step**: Column definitions (name + type), row data entry (a simple editable grid), question, correct answer, acceptable answers, toggle sort/filter.
+
+**Chart Step**: Would be deferred to Phase 2 due to complexity (requires linking chart config to sheet data).
+
+### How the Spreadsheet Builder Works
+
+This is the trickiest part. The teacher needs to:
+
+1. Enter data into a live spreadsheet (reuse the existing FortuneSheet component in "unlocked" mode)
+2. Click cells to toggle them as "editable" (highlighted in a different colour)
+3. For editable cells, set expected values/formulas in a side panel
+
+The builder would capture the FortuneSheet state on save and serialise it into the `CellData[]` format the system already uses. A "preview" button would let them test the step as a student would see it.
+
+## Module Loading Refactor
+
+### Hybrid Registry
+
+The existing `moduleRegistry` would become a hybrid that serves both hardcoded and database modules:
+
+```typescript
+// module-registry.ts (updated)
+export async function getAllModulesForUser(userId: string): Promise<Module[]> {
+  // 1. Start with hardcoded built-in modules
+  const builtIn = [excelBasicsModule, chartsModule];
+  
+  // 2. Fetch published custom modules assigned to this user
+  const { data } = await supabase
+    .from('custom_modules')
+    .select('*, custom_lessons(*, custom_steps(*))')
+    .eq('status', 'published');
+  
+  // 3. Transform DB rows into Module objects
+  const custom = data?.map(transformDbModule) ?? [];
+  
+  return [...builtIn, ...custom];
+}
+```
+
+A `transformDbModule()` function converts the flat DB structure back into the nested `Module` type that LessonPlayer already expects. No changes needed to LessonPlayer, marking engine, or any rendering components.
+
+## Risk Assessment
+
+### High Risk Areas
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| **Spreadsheet state serialisation** | If celldata format is wrong, the sheet won't render or marking breaks | Build a robust serialiser with validation; add a "Preview as Student" mode |
+| **Formula expectations** | Teachers may set impossible or ambiguous formula checks | Provide a "test your answer" button in the builder that runs the marking engine |
+| **JSONB data corruption** | Invalid JSON in the config column breaks step loading | Validate with Zod schema before saving; wrap step rendering in error boundaries |
+| **Large payloads** | A module with many steps could produce large JSONB objects | JSONB in Postgres handles this well (up to 1GB), but add client-side size warnings |
+| **XP gaming** | Custom modules could set absurdly high XP values | Cap XP per step (e.g., max 50) and validate on save |
+
+### Medium Risk Areas
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| **Draft/published state confusion** | Students seeing incomplete modules | Strict status filtering in queries; clear UI indicators |
+| **Ordering bugs** | Steps or lessons appearing in wrong order | Use integer ordering with drag-and-drop reorder; validate no gaps |
+| **Cross-teacher visibility** | Teacher A seeing Teacher B's drafts | Strict RLS policies on all custom_ tables |
+
+### Low Risk Areas
+
+- Existing components (LessonPlayer, marking engine, SpreadsheetWorkspace) don't need changes -- they consume the `Module` type interface regardless of data source
+- The assignment system already works with module/lesson IDs -- custom modules just use UUID IDs instead of string slugs
+
+## Phased Implementation
+
+### Phase 1: Foundation (recommended starting point)
+- Database tables and RLS policies
+- Module metadata editor (create/edit/delete modules and lessons)
+- Instruction and Quiz step builders
+- Module loading from database
+- Publish/draft toggle
+
+### Phase 2: Spreadsheet Builder
+- FortuneSheet-based cell data editor
+- Editable cell selector
+- Task expectation configuration (values, formulas, hints)
+- Preview mode
+
+### Phase 3: Table Task and Chart Builders
+- Interactive table data editor
+- Chart configuration builder
+- Challenge step support
+
+### Phase 4: Polish
+- Drag-and-drop reordering for lessons and steps
+- Module duplication/templating
+- Import/export modules as JSON
+
+## Files to Create
+- `src/pages/ModuleBuilder.tsx` -- Main builder page
+- `src/components/builder/ModuleSettings.tsx` -- Title/description form
+- `src/components/builder/LessonList.tsx` -- Sidebar lesson navigator
+- `src/components/builder/StepEditor.tsx` -- Step type router
+- `src/components/builder/InstructionEditor.tsx` -- Instruction step form
+- `src/components/builder/QuizEditor.tsx` -- Quiz step form
+- `src/components/builder/TaskEditor.tsx` -- Spreadsheet task form
+- `src/components/builder/TableTaskEditor.tsx` -- Table task form
+- `src/components/builder/SpreadsheetEditor.tsx` -- FortuneSheet wrapper for building initial states
+- `src/hooks/useCustomModules.ts` -- CRUD hooks for custom modules
+- `src/lib/module-transform.ts` -- DB row to Module type transformer
+
+## Files to Modify
+- `src/data/module-registry.ts` -- Add async loading of custom modules
+- `src/pages/TeacherDashboard.tsx` -- Add "Create Module" button and list custom modules
+- `src/App.tsx` -- Add route for `/dashboard/module-builder/:moduleId?`
+- `src/pages/ModulePlayer.tsx` -- Support loading custom modules by UUID
+- `src/hooks/useAssignments.ts` -- Support assigning custom modules
+
+## Estimated Effort
+
+This is a substantial feature -- roughly equivalent to building a simple CMS. Phase 1 alone would be a significant amount of work. The good news is that the existing rendering and marking infrastructure doesn't need to change at all, which eliminates the biggest source of risk.
 
