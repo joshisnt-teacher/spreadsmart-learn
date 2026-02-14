@@ -62,7 +62,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
   // Load saved progress on mount
   useEffect(() => {
     loadProgress().then((saved) => {
-      if (saved && !saved.completed) {
+      if (saved) {
         const attempts = (saved.attempts && typeof saved.attempts === 'object' && !Array.isArray(saved.attempts))
           ? saved.attempts as Record<string, number>
           : {};
@@ -73,9 +73,11 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
           totalXp: saved.total_xp,
           attempts,
         });
-        // Jump to the right step
-        const idx = lesson.steps.findIndex(s => s.id === saved.current_step_id);
-        if (idx >= 0) setCurrentStepIndex(idx);
+        // Jump to saved step only for in-progress lessons; completed lessons start at step 1
+        if (!saved.completed) {
+          const idx = lesson.steps.findIndex(s => s.id === saved.current_step_id);
+          if (idx >= 0) setCurrentStepIndex(idx);
+        }
       }
     });
   }, [lesson.id]);
