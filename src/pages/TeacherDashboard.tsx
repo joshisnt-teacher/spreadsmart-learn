@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Users, Copy, Check, ArrowLeft, UserPlus, Upload, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, Users, Copy, Check, ArrowLeft, UserPlus, Upload, AlertCircle, CheckCircle2, BookOpen, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -14,6 +14,8 @@ import { useNavigate } from 'react-router-dom';
 import StudentProgressView from '@/components/StudentProgressView';
 import AssignmentManager from '@/components/AssignmentManager';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { allModules } from '@/data/module-registry';
+import { Badge } from '@/components/ui/badge';
 
 interface BulkResult {
   username: string;
@@ -234,6 +236,42 @@ const TeacherDashboard: React.FC = () => {
                 ))}
               </div>
             )}
+
+            {/* Modules Overview */}
+            <div className="pt-4">
+              <h2 className="text-xl font-semibold mb-1">Available Modules</h2>
+              <p className="text-sm text-muted-foreground mb-4">Browse the training modules you can assign to your classes</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {allModules.map((mod) => (
+                  <Card key={mod.id}>
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <BookOpen className="w-4 h-4 text-primary" />
+                            {mod.title}
+                          </CardTitle>
+                          <CardDescription className="mt-1">{mod.description}</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span>{mod.lessons.length} lessons</span>
+                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> ~{mod.estimatedMinutes} min</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {mod.lessons.map((lesson) => (
+                          <Badge key={lesson.id} variant="outline" className="text-xs font-normal">
+                            {lesson.title}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
           </motion.div>
         ) : (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
