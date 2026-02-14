@@ -1,76 +1,98 @@
 
 
-# Improve Sorting and Filtering Lesson Steps
+# Replace Sorting/Filtering with Interactive React Table
 
-## Problem
+## Overview
 
-The current "Sort the Data" and "Apply a Filter" steps ask students to manually copy names and scores into a second table in the correct order. This is tedious busywork that doesn't teach actual spreadsheet skills.
+Replace the current spreadsheet-based sorting and filtering steps (Lesson 3) with an interactive React data table. Students will sort and filter real sample data by clicking column headers and using filter controls, then answer questions about the results.
 
-## Solution
+## Sample Data
 
-Replace the manual-copy tasks with **formula-based tasks** and **additional quiz questions** that teach real spreadsheet techniques while reinforcing sorting/filtering concepts.
+A table of 8 students with three columns:
 
-### New Step Flow for Lesson 3 (Sorting and Filtering)
+| Name | Age | Height (cm) |
+|------|-----|-------------|
+| Ava | 14 | 158 |
+| Liam | 16 | 172 |
+| Zoe | 13 | 149 |
+| Noah | 15 | 165 |
+| Mia | 14 | 161 |
+| Ethan | 17 | 178 |
+| Olivia | 13 | 152 |
+| James | 16 | 168 |
+
+## New Step Flow for Lesson 3
 
 ```text
-Step 1: Instruction - Sorting Data (keep as-is)
+Step 1: Instruction - What is Sorting? (updated with new data context)
 Step 2: Quiz - Sorting vocabulary (keep as-is)
-Step 3: Task - Use LARGE/SMALL functions to extract sorted values
-Step 4: Instruction - Filtering Data (keep, improve wording)
-Step 5: Task - Use COUNTIF to count filtered results
-Step 6: Task - Use IF to filter matching rows
-Step 7: Quiz - Filtering concept check
+Step 3: Table Task - Sort by Age descending, answer "Who is the oldest?"
+Step 4: Instruction - What is Filtering? (updated)
+Step 5: Table Task - Sort by Height ascending, answer "Who is the shortest?"
+Step 6: Table Task - Filter to age 14 only, answer "How many students are 14?"
+Step 7: Quiz - Filtering concept check (keep as-is)
 ```
 
-### Step 3 — "Find the Top and Bottom Scores" (replaces manual sort)
+## New Step Type: `'table-task'`
 
-Instead of copying data, students use the `LARGE()` and `SMALL()` functions:
+A new interactive step where students see a sortable/filterable table and must answer a question based on how they manipulate it.
 
-- Instruction explains that `LARGE(range, k)` returns the k-th largest value and `SMALL(range, k)` returns the k-th smallest
-- Students write:
-  - `=LARGE(B2:B5, 1)` in D2 to find the highest score
-  - `=LARGE(B2:B5, 2)` in D3 for second highest
-  - `=SMALL(B2:B5, 1)` in D4 for the lowest score
-- This teaches a real formula approach to ranking/sorting data
+### Data model additions (`src/types/lesson.ts`)
 
-### Step 5 — "Count the Matches" (new COUNTIF task)
+```typescript
+interface TableColumn {
+  key: string;
+  label: string;
+  type: 'text' | 'number';
+}
 
-Students use `COUNTIF` to count how many students scored above 75:
+interface TableTaskConfig {
+  columns: TableColumn[];
+  data: Record<string, string | number>[];
+  question: string;
+  correctAnswer: string;
+  acceptableAnswers?: string[];
+  explanation?: string;
+  enableSort?: boolean;
+  enableFilter?: boolean;
+}
+```
 
-- `=COUNTIF(B2:B5, ">75")` in a result cell
-- This introduces criteria-based functions and connects to the concept of filtering
+Add `tableTask?: TableTaskConfig` to the `Step` interface and `'table-task'` to the type union.
 
-### Step 6 — "Filter with IF" (replaces manual filter copy)
+## New Components
 
-Students write IF formulas to show or hide values:
+### `src/components/InteractiveTable.tsx`
 
-- `=IF(B2>75, A2, "")` in D2, dragged/copied down to D5
-- The result shows only names of students who scored above 75, with blanks for those who didn't
-- This teaches a practical formula-based filtering technique
+An interactive data table built with the existing shadcn Table components (`src/components/ui/table.tsx`):
 
-### Step 7 — Quiz: Filtering Concept
+- **Sortable columns**: Click a column header to toggle ascending/descending sort (with arrow indicators)
+- **Filter controls**: A dropdown or input per column to filter rows (only shown when `enableFilter` is true)
+- **Question + Answer area**: Below the table, displays the question text and a text input for the student's answer
+- **Clean, student-friendly UI**: Uses existing Card, Badge, and Button components
 
-Multiple choice: "What happens to data that doesn't match a filter?"
-- Options: "It is deleted" / "It is hidden temporarily" / "It turns red" / "It moves to another sheet"
-- Correct: "It is hidden temporarily"
+The component will manage its own sort/filter state internally and expose only the student's typed answer via a callback.
 
-## Technical Details
+### Marking integration
 
-### Files to modify
+Add a `checkTableTaskAnswer()` function to `src/lib/marking-engine.ts` that works like `checkQuizAnswer` -- case-insensitive, whitespace-trimmed comparison against `correctAnswer` and `acceptableAnswers`.
 
-**`src/data/excel-basics-module.ts`** (lines 660-791)
+## Files to Create
 
-Replace the existing steps 3-2 (Sort the Data) and 3-4 (Apply a Filter) with the new formula-based steps described above. Update step IDs and order numbers accordingly.
+- **`src/components/InteractiveTable.tsx`** -- The sortable/filterable table component with question input
 
-The new steps use the same `initialSheetState`, `task`, and `expectations` structure already in use -- just with formula-based expectations (`expectedFormula` and `checkFormula: true`) instead of plain value expectations.
+## Files to Modify
 
-### No other files need changes
-
-The marking engine (`marking-engine.ts`) already supports `checkFormula` and `expectedFormula` in task expectations. The `LessonPlayer`, `SpreadsheetWorkspace`, and `QuizStep` components all work as-is.
+- **`src/types/lesson.ts`** -- Add `TableColumn`, `TableTaskConfig` interfaces; add `'table-task'` to step type; add `tableTask` to Step
+- **`src/lib/marking-engine.ts`** -- Add `checkTableTaskAnswer()` function
+- **`src/components/LessonPlayer.tsx`** -- Detect `type === 'table-task'`, render `InteractiveTable`, wire check button to marking, add table icon to sidebar
+- **`src/data/excel-basics-module.ts`** -- Replace Lesson 3 steps 3-6 (the LARGE/SMALL, COUNTIF, IF formula steps) with the new table-task steps described above
 
 ## What This Achieves
 
-- Students learn real spreadsheet functions (LARGE, SMALL, COUNTIF, IF) instead of manually copying data
-- Sorting and filtering concepts are reinforced through practical formula use
-- Quiz questions confirm conceptual understanding
-- The lesson connects back to the functions taught in Lesson 2, reinforcing prior learning
+- Students learn sorting and filtering by actually doing it on a visual table -- much more intuitive than formulas
+- Practical questions ("Who is the oldest?", "Who is the shortest?") give immediate purpose to the sorting
+- Filter task introduces the concept of narrowing data to a subset
+- The existing quiz steps (sorting vocabulary and filtering concepts) remain for conceptual reinforcement
+- No dependency on the FortuneSheet spreadsheet for this lesson
+
