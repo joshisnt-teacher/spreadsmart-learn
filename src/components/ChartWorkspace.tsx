@@ -54,26 +54,18 @@ function extractDataFromSheet(
 
   if (xCol === -1 || yCol === -1) return [];
 
-  // Collect data rows (skip header row 0)
-  const rowMap: Record<number, { name?: string; value?: number }> = {};
-  cellData.forEach((c) => {
-    if (c.r === 0) return;
-    if (c.c === xCol) {
-      rowMap[c.r] = { ...rowMap[c.r], name: String(c.v?.v ?? '') };
-    }
-    if (c.c === yCol) {
-      rowMap[c.r] = { ...rowMap[c.r], value: Number(c.v?.v ?? 0) };
-    }
-  });
-
-  return Object.keys(rowMap)
-    .map(Number)
-    .sort((a, b) => a - b)
-    .filter((r) => rowMap[r].name !== undefined && rowMap[r].value !== undefined)
-    .map((r) => ({
-      name: rowMap[r].name!,
-      value: rowMap[r].value!,
-    }));
+  // Collect contiguous data rows (skip header row 0), stop at first empty row
+  const maxRow = Math.max(...cellData.map((c) => c.r));
+  const result: { name: string; value: number }[] = [];
+  for (let r = 1; r <= maxRow; r++) {
+    const xCell = cellData.find((c) => c.r === r && c.c === xCol);
+    const yCell = cellData.find((c) => c.r === r && c.c === yCol);
+    const xVal = xCell?.v?.v;
+    const yVal = yCell?.v?.v;
+    if (xVal === undefined || xVal === '' || yVal === undefined || yVal === '') break;
+    result.push({ name: String(xVal), value: Number(yVal) });
+  }
+  return result;
 }
 
 const ChartWorkspace: React.FC<ChartWorkspaceProps> = ({
