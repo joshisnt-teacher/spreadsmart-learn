@@ -135,12 +135,33 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
                       <p className="text-xs text-muted-foreground mt-0.5">{lesson.description}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-xs text-muted-foreground">{lesson.steps.length} steps</p>
-                        {dueDate && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <CalendarClock className="w-3 h-3" />
-                            Due {format(new Date(dueDate), 'dd MMM')}
-                          </span>
-                        )}
+                        {dueDate && (() => {
+                          const due = new Date(dueDate);
+                          const now = new Date();
+                          const daysLeft = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                          const isOverdue = daysLeft < 0 && !isComplete;
+                          const isUrgent = daysLeft >= 0 && daysLeft <= 2 && !isComplete;
+                          return (
+                            <span className={`text-xs font-medium flex items-center gap-1 px-2 py-0.5 rounded-full ${
+                              isComplete
+                                ? 'bg-accent/10 text-accent-foreground'
+                                : isOverdue
+                                ? 'bg-destructive/10 text-destructive'
+                                : isUrgent
+                                ? 'bg-warning/10 text-warning'
+                                : 'bg-muted text-muted-foreground'
+                            }`}>
+                              <CalendarClock className="w-3 h-3" />
+                              {isComplete
+                                ? `Completed`
+                                : isOverdue
+                                ? `Overdue`
+                                : isUrgent
+                                ? `Due ${format(due, 'dd MMM')} · ${daysLeft}d left`
+                                : `Due ${format(due, 'dd MMM')}`}
+                            </span>
+                          );
+                        })()}
                         {isHidden && (
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
                             <Lock className="w-3 h-3" /> Not assigned

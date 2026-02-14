@@ -161,14 +161,31 @@ const StudentDashboard: React.FC = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium">{lesson.title}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
+                      <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-xs text-muted-foreground">{lesson.steps.length} steps</span>
-                          {dueDate && (
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <CalendarClock className="w-3 h-3" />
-                              Due {format(new Date(dueDate), 'dd MMM')}
-                            </span>
-                          )}
+                          {dueDate && (() => {
+                            const due = new Date(dueDate);
+                            const now = new Date();
+                            const daysLeft = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                            const isOverdue = daysLeft < 0;
+                            const isUrgent = daysLeft >= 0 && daysLeft <= 2;
+                            return (
+                              <span className={`text-xs font-medium flex items-center gap-1 px-2 py-0.5 rounded-full ${
+                                isOverdue
+                                  ? 'bg-destructive/10 text-destructive'
+                                  : isUrgent
+                                  ? 'bg-warning/10 text-warning'
+                                  : 'bg-muted text-muted-foreground'
+                              }`}>
+                                <CalendarClock className="w-3 h-3" />
+                                {isOverdue
+                                  ? `Overdue`
+                                  : isUrgent
+                                  ? `Due ${format(due, 'dd MMM')} · ${daysLeft}d left`
+                                  : `Due ${format(due, 'dd MMM')}`}
+                              </span>
+                            );
+                          })()}
                         </div>
                       </div>
                       <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
