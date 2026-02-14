@@ -1,75 +1,76 @@
 
 
-# Add Quiz Step Type to Modules
+# Improve Sorting and Filtering Lesson Steps
 
-## Overview
+## Problem
 
-Add a new `'quiz'` step type that supports **multiple-choice** and **short-answer** questions. These steps will appear inline alongside existing spreadsheet and chart steps, testing vocabulary and conceptual knowledge without needing a spreadsheet.
+The current "Sort the Data" and "Apply a Filter" steps ask students to manually copy names and scores into a second table in the correct order. This is tedious busywork that doesn't teach actual spreadsheet skills.
 
-## Changes
+## Solution
 
-### 1. Extend types (`src/types/lesson.ts`)
+Replace the manual-copy tasks with **formula-based tasks** and **additional quiz questions** that teach real spreadsheet techniques while reinforcing sorting/filtering concepts.
 
-Add a `QuizQuestion` interface and include `'quiz'` in the step type union:
+### New Step Flow for Lesson 3 (Sorting and Filtering)
 
-- `QuizQuestion.type`: `'multiple-choice'` or `'short-answer'`
-- `QuizQuestion.options`: string array for multiple-choice
-- `QuizQuestion.correctAnswer`: the primary correct answer
-- `QuizQuestion.acceptableAnswers`: optional alternative accepted answers (for short-answer flexibility)
-- `QuizQuestion.explanation`: shown after a correct answer for reinforcement
-- Add `quiz?: QuizQuestion` to the `Step` interface
-- Add `'quiz'` to the step `type` union
+```text
+Step 1: Instruction - Sorting Data (keep as-is)
+Step 2: Quiz - Sorting vocabulary (keep as-is)
+Step 3: Task - Use LARGE/SMALL functions to extract sorted values
+Step 4: Instruction - Filtering Data (keep, improve wording)
+Step 5: Task - Use COUNTIF to count filtered results
+Step 6: Task - Use IF to filter matching rows
+Step 7: Quiz - Filtering concept check
+```
 
-### 2. New component: `src/components/QuizStep.tsx`
+### Step 3 — "Find the Top and Bottom Scores" (replaces manual sort)
 
-A focused UI component that renders:
-- **Multiple choice**: Styled radio cards using the existing `RadioGroup` component, with clear option labels
-- **Short answer**: A text `Input` field that submits on Enter
-- Visual feedback: green highlight for correct, red for incorrect, with explanation text after success
-- A "Check" callback that returns the student's selected/typed answer
+Instead of copying data, students use the `LARGE()` and `SMALL()` functions:
 
-### 3. Extend marking engine (`src/lib/marking-engine.ts`)
+- Instruction explains that `LARGE(range, k)` returns the k-th largest value and `SMALL(range, k)` returns the k-th smallest
+- Students write:
+  - `=LARGE(B2:B5, 1)` in D2 to find the highest score
+  - `=LARGE(B2:B5, 2)` in D3 for second highest
+  - `=SMALL(B2:B5, 1)` in D4 for the lowest score
+- This teaches a real formula approach to ranking/sorting data
 
-Add a `checkQuizAnswer()` function:
-- Case-insensitive, whitespace-trimmed comparison
-- Checks against `correctAnswer` and all `acceptableAnswers`
-- Returns standard `CheckResult` with the explanation as a detail
+### Step 5 — "Count the Matches" (new COUNTIF task)
 
-### 4. Update `src/components/LessonPlayer.tsx`
+Students use `COUNTIF` to count how many students scored above 75:
 
-- Detect `type === 'quiz'` steps (new `isQuizStep` boolean)
-- Render `QuizStep` in the main content area instead of a spreadsheet/chart
-- Wire the check button to `checkQuizAnswer()`
-- Track quiz answer state with a new `quizAnswer` state variable
-- Show `HelpCircle` icon in the sidebar step list for quiz steps
+- `=COUNTIF(B2:B5, ">75")` in a result cell
+- This introduces criteria-based functions and connects to the concept of filtering
 
-### 5. Add quiz questions to Excel Basics module (`src/data/excel-basics-module.ts`)
+### Step 6 — "Filter with IF" (replaces manual filter copy)
 
-Insert quiz steps at natural points within existing lessons:
+Students write IF formulas to show or hide values:
 
-**Lesson 1 (Navigating a Spreadsheet)** -- add after "What Is a Spreadsheet?" (step 1):
-- "What is the name given to a group of cells that run vertically?" -- **Column** (short-answer, also accept "Columns")
+- `=IF(B2>75, A2, "")` in D2, dragged/copied down to D5
+- The result shows only names of students who scored above 75, with blanks for those who didn't
+- This teaches a practical formula-based filtering technique
 
-**Lesson 2 (Built-in Functions)** -- add after "SUM and AVERAGE" instruction:
-- "What symbol must every formula in a spreadsheet start with?" -- **=** (short-answer, accept "equals", "equals sign")
+### Step 7 — Quiz: Filtering Concept
 
-**Lesson 3 (Sorting and Filtering)** -- add after "Sorting Data" instruction:
-- "If data is sorted from largest to smallest, what is this order called?" -- Multiple choice: Ascending / **Descending** / Alphabetical / Random
+Multiple choice: "What happens to data that doesn't match a filter?"
+- Options: "It is deleted" / "It is hidden temporarily" / "It turns red" / "It moves to another sheet"
+- Correct: "It is hidden temporarily"
 
-### 6. Add quiz questions to Charts module (`src/data/charts-module.ts`)
+## Technical Details
 
-**Lesson 1 (Preparing Data for Charts)** -- add after "What Makes a Good Chart?" instruction:
-- "Which chart type is best for showing parts of a whole?" -- Multiple choice: Bar / Line / **Pie** / Area
+### Files to modify
 
-**Lesson 2 (Reading Charts)** -- add at the start:
-- "What is the term for the horizontal line along the bottom of a chart?" -- **X-axis** (short-answer, accept "x axis", "horizontal axis")
+**`src/data/excel-basics-module.ts`** (lines 660-791)
 
-**Lesson 4 (Data Summary Tables)** -- add after "What Is a Summary Table?" instruction:
-- "Which function adds values only when a specific condition is met?" -- Multiple choice: SUM / AVERAGE / **SUMIF** / COUNT
+Replace the existing steps 3-2 (Sort the Data) and 3-4 (Apply a Filter) with the new formula-based steps described above. Update step IDs and order numbers accordingly.
 
-## What Stays the Same
+The new steps use the same `initialSheetState`, `task`, and `expectations` structure already in use -- just with formula-based expectations (`expectedFormula` and `checkFormula: true`) instead of plain value expectations.
 
-- XP system, progress tracking, hints, and attempt counting all work identically
-- Existing instruction, task, challenge, and chart step types are unchanged
-- The step ordering within lessons shifts to accommodate the new quiz steps (IDs and order numbers updated accordingly)
+### No other files need changes
 
+The marking engine (`marking-engine.ts`) already supports `checkFormula` and `expectedFormula` in task expectations. The `LessonPlayer`, `SpreadsheetWorkspace`, and `QuizStep` components all work as-is.
+
+## What This Achieves
+
+- Students learn real spreadsheet functions (LARGE, SMALL, COUNTIF, IF) instead of manually copying data
+- Sorting and filtering concepts are reinforced through practical formula use
+- Quiz questions confirm conceptual understanding
+- The lesson connects back to the functions taught in Lesson 2, reinforcing prior learning
