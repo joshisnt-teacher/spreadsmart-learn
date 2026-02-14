@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, GripVertical, Save, Eye, BookOpen, FileText, HelpCircle, ChevronRight, Settings } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, GripVertical, Save, Eye, BookOpen, FileText, HelpCircle, ChevronRight, Settings, Grid3X3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,9 +15,11 @@ import { useModuleBuilder } from '@/hooks/useCustomModules';
 import { stepToConfig } from '@/lib/module-transform';
 import { toast } from '@/hooks/use-toast';
 import type { Step, QuizQuestion } from '@/types/lesson';
+import TaskStepEditor, { type TaskStepConfig } from '@/components/builder/TaskStepEditor';
 
 const STEP_TYPES = [
   { value: 'instruction', label: 'Instruction', icon: FileText },
+  { value: 'task', label: 'Spreadsheet Task', icon: Grid3X3 },
   { value: 'quiz', label: 'Quiz', icon: HelpCircle },
 ] as const;
 
@@ -42,7 +44,8 @@ const ModuleBuilder: React.FC = () => {
   const [quizCorrectAnswer, setQuizCorrectAnswer] = useState('');
   const [quizExplanation, setQuizExplanation] = useState('');
   const [quizAcceptable, setQuizAcceptable] = useState('');
-
+  // Task-specific
+  const [taskConfig, setTaskConfig] = useState<TaskStepConfig | null>(null);
   useEffect(() => {
     if (!authLoading && (!user || role === 'student')) {
       navigate(user ? '/dashboard' : '/auth');
@@ -72,6 +75,15 @@ const ModuleBuilder: React.FC = () => {
         setQuizExplanation('');
         setQuizAcceptable('');
       }
+      // Task config
+      if (currentStep.initialSheetState && currentStep.task) {
+        setTaskConfig({
+          initialSheetState: currentStep.initialSheetState,
+          task: currentStep.task,
+        });
+      } else {
+        setTaskConfig(null);
+      }
     }
   }, [currentStep?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -89,6 +101,10 @@ const ModuleBuilder: React.FC = () => {
         quiz.options = quizOptions.filter(o => o.trim());
       }
       config.quiz = quiz;
+    }
+    if (stepType === 'task' && taskConfig) {
+      config.initialSheetState = taskConfig.initialSheetState;
+      config.task = taskConfig.task;
     }
     await builder.updateStep(selectedStepId, {
       title: stepTitle,
@@ -405,6 +421,13 @@ const ModuleBuilder: React.FC = () => {
                             </div>
                           </CardContent>
                         </Card>
+                      )}
+
+                      {stepType === 'task' && (
+                        <TaskStepEditor
+                          config={taskConfig}
+                          onChange={setTaskConfig}
+                        />
                       )}
 
                       {stepType === 'instruction' && (
