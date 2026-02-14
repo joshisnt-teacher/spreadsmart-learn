@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Check, HelpCircle, RotateCcw, ChevronRight, ChevronLeft, Trophy, Star, Lightbulb, BookOpen, Award, BarChart3 } from 'lucide-react';
+import { Check, HelpCircle, RotateCcw, ChevronRight, ChevronLeft, Trophy, Star, Lightbulb, BookOpen, Award, BarChart3, MessageCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -10,7 +10,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import SpreadsheetWorkspace from '@/components/SpreadsheetWorkspace';
 import ChartWorkspace from '@/components/ChartWorkspace';
 import ChartBuilder from '@/components/ChartBuilder';
-import { checkTask, checkChartTask, getHint } from '@/lib/marking-engine';
+import QuizStep from '@/components/QuizStep';
+import { checkTask, checkChartTask, checkQuizAnswer, getHint } from '@/lib/marking-engine';
 import { useLessonProgress } from '@/hooks/useProgress';
 import type { Lesson, Step, CheckResult, LessonProgress, ChartType } from '@/types/lesson';
 
@@ -36,6 +37,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
   const [currentCellData, setCurrentCellData] = useState<any[]>([]);
   const [isRedoing, setIsRedoing] = useState(false);
   const [chartSelection, setChartSelection] = useState<{ type: ChartType | null; xKey: string | null; yKey: string | null }>({ type: null, xKey: null, yKey: null });
+  const [quizAnswer, setQuizAnswer] = useState('');
   const { saveProgress, loadProgress } = useLessonProgress(lesson.id);
 
   const fireConfetti = useCallback(() => {
@@ -101,7 +103,8 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
   const currentStep = lesson.steps[currentStepIndex];
   const isChallengeStep = currentStep?.type === 'challenge';
   const isChartStep = currentStep?.type === 'chart';
-  const isInstructionStep = currentStep?.type === 'instruction' || (!currentStep?.task && !isChallengeStep && !isChartStep);
+  const isQuizStep = currentStep?.type === 'quiz';
+  const isInstructionStep = currentStep?.type === 'instruction' || (!currentStep?.task && !isChallengeStep && !isChartStep && !isQuizStep);
   const isStepComplete = progress.completedStepIds.includes(currentStep?.id || '');
   const isLastStep = currentStepIndex === lesson.steps.length - 1;
   const isLessonComplete = progress.completedStepIds.length === lesson.steps.length;
@@ -131,6 +134,8 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
         chartSelection.yKey,
         currentStep.task!,
       );
+    } else if (isQuizStep && currentStep.quiz) {
+      result = checkQuizAnswer(currentStep.quiz, quizAnswer, currentStep.task!);
     } else {
       result = checkTask(currentCellData, currentStep.task!, attemptCount + 1);
     }
@@ -209,6 +214,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
     setCurrentHint(null);
     setResetKey((k) => k + 1);
     setChartSelection({ type: null, xKey: null, yKey: null });
+    setQuizAnswer('');
     setProgress((prev) => ({
       ...prev,
       currentStepId: lesson.steps[nextIdx]?.id || '',
@@ -219,6 +225,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
     setResetKey((k) => k + 1);
     setFeedback(null);
     setShowHint(false);
+    setQuizAnswer('');
   }, []);
 
   const handleHint = useCallback(() => {
@@ -294,7 +301,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
                       ? step.type === 'challenge' ? 'bg-warning text-warning-foreground' : 'bg-primary text-primary-foreground'
                       : 'bg-muted text-muted-foreground'
                   }`}>
-                    {isComplete ? <Check className="w-3 h-3" /> : step.type === 'challenge' ? <Trophy className="w-3 h-3" /> : step.type === 'chart' ? <BarChart3 className="w-3 h-3" /> : idx + 1}
+                    {isComplete ? <Check className="w-3 h-3" /> : step.type === 'challenge' ? <Trophy className="w-3 h-3" /> : step.type === 'chart' ? <BarChart3 className="w-3 h-3" /> : step.type === 'quiz' ? <MessageCircle className="w-3 h-3" /> : idx + 1}
                   </span>
                   <span className="truncate">{step.title}</span>
                 </button>
@@ -424,6 +431,13 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
               </div>
             </div>
           </div>
+        ) : isQuizStep && currentStep.quiz ? (
+          <QuizStep
+            quiz={currentStep.quiz}
+            feedback={feedback}
+            onAnswerChange={setQuizAnswer}
+            answer={quizAnswer}
+          />
         ) : isInstructionStep && !isChallengeStep ? (
           currentStep.initialSheetState ? (
             <div className="flex-1 p-4 min-h-0">

@@ -41,6 +41,14 @@ export interface TaskDefinition {
   bonusXp?: number; // first-attempt bonus
 }
 
+export interface QuizQuestion {
+  type: 'multiple-choice' | 'short-answer';
+  options?: string[];
+  correctAnswer: string;
+  acceptableAnswers?: string[];
+  explanation?: string;
+}
+
 export type ChartType = 'bar' | 'line' | 'pie' | 'area';
 
 export interface ChartConfig {
@@ -63,13 +71,14 @@ export interface Step {
   order: number;
   title: string;
   instruction: string;
-  type?: 'instruction' | 'task' | 'challenge' | 'chart';
+  type?: 'instruction' | 'task' | 'challenge' | 'chart' | 'quiz';
   whyItMatters?: string;
   mediaUrl?: string;
   initialSheetState?: SheetState;
   task?: TaskDefinition;
   chartConfig?: ChartConfig;
   chartTask?: ChartTaskExpectation;
+  quiz?: QuizQuestion;
 }
 
 export interface Lesson {

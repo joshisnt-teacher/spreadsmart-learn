@@ -162,6 +162,34 @@ export const chartsModule: Module = {
             '- Showing parts of a whole? → **Pie chart**',
           whyItMatters: 'Choosing the right chart type makes your data story clear and convincing.',
         },
+
+        // Quiz — Chart types
+        {
+          id: 'charts-1-4q',
+          order: 5,
+          type: 'quiz',
+          title: 'Quick Check: Chart Types',
+          instruction: 'Which chart type is best for showing parts of a whole?',
+          quiz: {
+            type: 'multiple-choice',
+            options: ['Bar', 'Line', 'Pie', 'Area'],
+            correctAnswer: 'Pie',
+            explanation: 'A pie chart divides a circle into slices, making it easy to see how each part contributes to the total.',
+          },
+          task: {
+            id: 'task-charts-1-4q',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'Think about a chart shaped like a circle with slices.',
+              'Each slice represents a proportion of the whole.',
+            ],
+            successMessage: 'Correct! Pie charts show parts of a whole.',
+            incorrectMessage: 'Not quite — think about which chart uses slices to show proportions.',
+            xpValue: 5,
+          },
+        },
+
         {
           id: 'charts-1-5',
           order: 5,
@@ -245,6 +273,32 @@ export const chartsModule: Module = {
       title: 'Reading Charts',
       description: 'Interpret bar, line, and pie charts to answer questions about data.',
       steps: [
+        // Quiz — Axis vocabulary
+        {
+          id: 'charts-2-0q',
+          order: 1,
+          type: 'quiz',
+          title: 'Quick Check: Chart Axes',
+          instruction: 'What is the term for the horizontal line along the bottom of a chart?',
+          quiz: {
+            type: 'short-answer',
+            correctAnswer: 'X-axis',
+            acceptableAnswers: ['x axis', 'horizontal axis', 'x-axis', 'the x axis', 'the x-axis'],
+            explanation: 'The X-axis runs horizontally (left to right) along the bottom. The Y-axis runs vertically.',
+          },
+          task: {
+            id: 'task-charts-2-0q',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'It\'s named after a letter of the alphabet.',
+              'X goes left-to-right, Y goes up-and-down.',
+            ],
+            successMessage: 'Correct! The X-axis runs horizontally along the bottom of a chart.',
+            incorrectMessage: 'Not quite — it\'s called the X-axis (horizontal).',
+            xpValue: 5,
+          },
+        },
         {
           id: 'charts-2-1',
           order: 1,
@@ -889,6 +943,34 @@ export const chartsModule: Module = {
             bonusXp: 10,
           },
         },
+
+        // Quiz — SUMIF vocabulary
+        {
+          id: 'charts-4-1q',
+          order: 2,
+          type: 'quiz',
+          title: 'Quick Check: Conditional Functions',
+          instruction: 'Which function adds values only when a specific condition is met?',
+          quiz: {
+            type: 'multiple-choice',
+            options: ['SUM', 'AVERAGE', 'SUMIF', 'COUNT'],
+            correctAnswer: 'SUMIF',
+            explanation: 'SUMIF adds up values only for rows that match a condition — e.g. =SUMIF(A:A,"Ava",B:B) totals only Ava\'s amounts.',
+          },
+          task: {
+            id: 'task-charts-4-1q',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'It combines "SUM" with a condition (an "IF").',
+              'The function name literally says what it does: SUM + IF.',
+            ],
+            successMessage: 'Correct! SUMIF adds values conditionally.',
+            incorrectMessage: 'Not quite — look for a function that combines adding with a condition.',
+            xpValue: 5,
+          },
+        },
+
         {
           id: 'charts-4-3',
           order: 3,
