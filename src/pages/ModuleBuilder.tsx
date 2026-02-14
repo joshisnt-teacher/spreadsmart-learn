@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, GripVertical, Save, Eye, BookOpen, FileText, HelpCircle, ChevronRight, Settings, Grid3X3 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, GripVertical, Save, Eye, BookOpen, FileText, HelpCircle, ChevronRight, Settings, Grid3X3, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -32,6 +32,13 @@ const ModuleBuilder: React.FC = () => {
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+
+  // Local state for module settings (save on blur, not on every keystroke)
+  const [moduleTitle, setModuleTitle] = useState('');
+  const [moduleDescription, setModuleDescription] = useState('');
+  const [moduleMinutes, setModuleMinutes] = useState(15);
+  const [lessonTitle, setLessonTitle] = useState('');
 
   // Local editing state for step
   const [stepTitle, setStepTitle] = useState('');
@@ -52,9 +59,25 @@ const ModuleBuilder: React.FC = () => {
     }
   }, [authLoading, user, role, navigate]);
 
+  // Sync local module settings from DB
+  useEffect(() => {
+    if (builder.module) {
+      setModuleTitle(builder.module.title);
+      setModuleDescription(builder.module.description);
+      setModuleMinutes(builder.module.estimated_minutes);
+    }
+  }, [builder.module?.id, builder.module?.updated_at]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // When we select a step, populate local editing state
   const currentLesson = builder.fullModule?.lessons.find(l => l.id === selectedLessonId);
   const currentStep = currentLesson?.steps.find(s => s.id === selectedStepId);
+
+  // Sync lesson title from DB when switching lessons
+  useEffect(() => {
+    if (currentLesson) {
+      setLessonTitle(currentLesson.title);
+    }
+  }, [currentLesson?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (currentStep) {
@@ -143,7 +166,32 @@ const ModuleBuilder: React.FC = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="font-bold text-lg leading-tight">{mod.title || 'Untitled Module'}</h1>
+            {isEditingTitle ? (
+              <Input
+                value={moduleTitle}
+                onChange={e => setModuleTitle(e.target.value)}
+                onBlur={() => {
+                  setIsEditingTitle(false);
+                  builder.updateModule({ title: moduleTitle });
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    setIsEditingTitle(false);
+                    builder.updateModule({ title: moduleTitle });
+                  }
+                }}
+                autoFocus
+                className="font-bold text-lg h-8 w-64"
+              />
+            ) : (
+              <h1
+                className="font-bold text-lg leading-tight cursor-pointer group flex items-center gap-1.5 hover:text-primary transition-colors"
+                onClick={() => setIsEditingTitle(true)}
+              >
+                {moduleTitle || 'Untitled Module'}
+                <Pencil className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity" />
+              </h1>
+            )}
             <Badge variant={isPublished ? 'default' : 'secondary'} className="text-xs mt-0.5">
               {isPublished ? 'Published' : 'Draft'}
             </Badge>
@@ -169,8 +217,9 @@ const ModuleBuilder: React.FC = () => {
             <div className="space-y-2">
               <Label>Module Title</Label>
               <Input
-                value={builder.module.title}
-                onChange={e => builder.updateModule({ title: e.target.value })}
+                value={moduleTitle}
+                onChange={e => setModuleTitle(e.target.value)}
+                onBlur={() => builder.updateModule({ title: moduleTitle })}
                 placeholder="Module title"
               />
             </div>
@@ -178,16 +227,18 @@ const ModuleBuilder: React.FC = () => {
               <Label>Estimated Minutes</Label>
               <Input
                 type="number"
-                value={builder.module.estimated_minutes}
-                onChange={e => builder.updateModule({ estimated_minutes: parseInt(e.target.value) || 15 })}
+                value={moduleMinutes}
+                onChange={e => setModuleMinutes(parseInt(e.target.value) || 15)}
+                onBlur={() => builder.updateModule({ estimated_minutes: moduleMinutes })}
                 min={1}
               />
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label>Description</Label>
               <Textarea
-                value={builder.module.description}
-                onChange={e => builder.updateModule({ description: e.target.value })}
+                value={moduleDescription}
+                onChange={e => setModuleDescription(e.target.value)}
+                onBlur={() => builder.updateModule({ description: moduleDescription })}
                 placeholder="What will students learn?"
                 rows={2}
               />
@@ -245,8 +296,9 @@ const ModuleBuilder: React.FC = () => {
                   </div>
                   {/* Lesson title edit */}
                   <Input
-                    value={currentLesson.title}
-                    onChange={e => builder.updateLesson(selectedLessonId, { title: e.target.value })}
+                    value={lessonTitle}
+                    onChange={e => setLessonTitle(e.target.value)}
+                    onBlur={() => builder.updateLesson(selectedLessonId, { title: lessonTitle })}
                     className="text-xs h-8"
                     placeholder="Lesson title"
                   />
