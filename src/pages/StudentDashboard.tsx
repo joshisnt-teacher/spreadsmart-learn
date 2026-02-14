@@ -40,6 +40,11 @@ const ModuleCard: React.FC<{ module: typeof allModules[0]; navigate: ReturnType<
 
   return (
     <Card className="overflow-hidden">
+      {module.bannerUrl && (
+        <div className="h-32 overflow-hidden">
+          <img src={module.bannerUrl} alt="" className="w-full h-full object-cover" />
+        </div>
+      )}
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
