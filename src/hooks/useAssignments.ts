@@ -108,3 +108,28 @@ export function useStudentAssignments(moduleId: string): UseStudentAssignmentsRe
 
   return { assignments, loading, hasAssignments, isLessonAssigned, getDueDate };
 }
+
+/** All assignments for the current student across all modules */
+export function useAllStudentAssignments() {
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      const { data } = await supabase
+        .from('assignments')
+        .select('*');
+      setAssignments((data as Assignment[]) ?? []);
+      setLoading(false);
+    };
+    fetchAll();
+  }, []);
+
+  const assignedModuleIds = [...new Set(assignments.map(a => a.module_id))];
+
+  const upcomingDueCount = assignments.filter(
+    a => a.due_date && new Date(a.due_date) > new Date()
+  ).length;
+
+  return { assignments, loading, assignedModuleIds, upcomingDueCount };
+}
