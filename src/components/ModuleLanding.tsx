@@ -15,6 +15,7 @@ interface ModuleLandingProps {
   hasAssignments?: boolean;
   isLessonAssigned?: (lessonId: string) => boolean;
   getDueDate?: (lessonId: string) => string | null;
+  moduleDueLabel?: string | null;
 }
 
 const ModuleLanding: React.FC<ModuleLandingProps> = ({
@@ -25,6 +26,7 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
   hasAssignments = false,
   isLessonAssigned = () => true,
   getDueDate = () => null,
+  moduleDueLabel = null,
 }) => {
   const totalLessons = module.lessons.length;
   const completedCount = completedLessonIds.length;
@@ -47,7 +49,15 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
               <BookOpen className="w-4 h-4" />
               <span>Module</span>
             </div>
-            <h1 className="text-4xl font-bold tracking-tight mb-3">{module.title}</h1>
+            <div className="flex items-center gap-3 mb-3">
+              <h1 className="text-4xl font-bold tracking-tight">{module.title}</h1>
+              {moduleDueLabel && (
+                <span className="text-sm font-medium text-muted-foreground flex items-center gap-1.5 bg-muted/60 px-3 py-1 rounded-full">
+                  <CalendarClock className="w-3.5 h-3.5" />
+                  {moduleDueLabel}
+                </span>
+              )}
+            </div>
             <p className="text-lg text-muted-foreground max-w-2xl">{module.description}</p>
 
             <div className="flex flex-wrap items-center gap-6 mt-6">
