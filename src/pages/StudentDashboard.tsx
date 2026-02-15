@@ -276,13 +276,12 @@ const StudentDashboard: React.FC = () => {
         {/* Optional / unassigned modules */}
         {optionalModules.length > 0 && (
           <section>
-            <h2 className="text-xl font-semibold mb-1">More Modules</h2>
-            <p className="text-sm text-muted-foreground mb-4">Explore additional learning content</p>
-            <div className="space-y-6">
-              {optionalModules.map((mod) => (
-                <ModuleCard key={mod.id} module={mod} navigate={navigate} variant="optional" />
-              ))}
-            </div>
+            <Card className="border-dashed">
+              <CardContent className="flex items-center justify-center gap-3 py-8 text-center">
+                <Clock className="w-5 h-5 text-muted-foreground/60" />
+                <p className="text-muted-foreground font-medium">More modules coming soon!</p>
+              </CardContent>
+            </Card>
           </section>
         )}
       </div>
