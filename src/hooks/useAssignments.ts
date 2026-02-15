@@ -93,7 +93,7 @@ export function useStudentAssignments(moduleId: string): UseStudentAssignmentsRe
   const hasAssignments = assignments.length > 0;
 
   const isLessonAssigned = (lessonId: string) => {
-    if (!hasAssignments) return true; // no assignments = all visible
+    if (!hasAssignments) return false; // no assignments = nothing visible
     return assignments.some(
       (a) => a.lesson_id === null || a.lesson_id === lessonId
     );
