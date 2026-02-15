@@ -173,13 +173,8 @@ const StudentDashboard: React.FC = () => {
   const totalLessons = allModules.reduce((sum, m) => sum + m.lessons.length, 0);
 
   // Split modules into assigned vs optional
-  const hasAnyAssignments = assignedModuleIds.length > 0;
-  const assignedModules = hasAnyAssignments
-    ? allModules.filter(m => assignedModuleIds.includes(m.id))
-    : allModules; // no assignments = show all
-  const optionalModules = hasAnyAssignments
-    ? allModules.filter(m => !assignedModuleIds.includes(m.id))
-    : [];
+  const assignedModules = allModules.filter(m => assignedModuleIds.includes(m.id));
+  const optionalModules = allModules.filter(m => !assignedModuleIds.includes(m.id));
 
   const initials = profile.display_name
     ? profile.display_name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
@@ -261,11 +256,21 @@ const StudentDashboard: React.FC = () => {
         {/* Assigned module cards */}
         <section>
           <h2 className="text-xl font-semibold mb-4">My Modules</h2>
-          <div className="space-y-6">
-            {assignedModules.map((mod) => (
-              <ModuleCard key={mod.id} module={mod} navigate={navigate} variant="assigned" />
-            ))}
-          </div>
+          {assignedModules.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                <BookOpen className="w-10 h-10 text-muted-foreground/50 mb-3" />
+                <p className="text-muted-foreground font-medium">No modules assigned yet</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Your teacher will assign modules for you to work on.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {assignedModules.map((mod) => (
+                <ModuleCard key={mod.id} module={mod} navigate={navigate} variant="assigned" />
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Optional / unassigned modules */}
