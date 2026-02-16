@@ -3,12 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 
 type EventType = 'step_start' | 'step_complete' | 'check_fail' | 'hint_used';
 
-export function useStepAnalytics(moduleId: string, lessonId: string, userId: string | undefined) {
+export function useStepAnalytics(moduleId: string, lessonId: string, userId: string | undefined, disabled?: boolean) {
   const stepStartTime = useRef<Record<string, number>>({});
 
   const logEvent = useCallback(
     async (stepId: string, eventType: EventType, metadata: Record<string, unknown> = {}) => {
-      if (!userId) return;
+      if (!userId || disabled) return;
 
       // Track start time
       if (eventType === 'step_start') {
@@ -31,7 +31,7 @@ export function useStepAnalytics(moduleId: string, lessonId: string, userId: str
         metadata: metadata as any,
       }]);
     },
-    [moduleId, lessonId, userId],
+    [moduleId, lessonId, userId, disabled],
   );
 
   return { logEvent };
