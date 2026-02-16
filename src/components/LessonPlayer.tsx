@@ -27,7 +27,8 @@ interface LessonPlayerProps {
 
 const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onComplete, onBack }) => {
   const { user } = useAuth();
-  const { logEvent } = useStepAnalytics(moduleId, lesson.id, user?.id);
+  const [lessonAlreadyCompleted, setLessonAlreadyCompleted] = useState(false);
+  const { logEvent } = useStepAnalytics(moduleId, lesson.id, user?.id, lessonAlreadyCompleted);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [progress, setProgress] = useState<LessonProgress>({
     lessonId: lesson.id,
@@ -90,8 +91,9 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
           const idx = lesson.steps.findIndex(s => s.id === saved.current_step_id);
           if (idx >= 0) setCurrentStepIndex(idx);
         } else {
-          // Replaying a completed lesson — award 0 XP throughout
+          // Replaying a completed lesson — award 0 XP throughout and disable analytics
           setIsRedoing(true);
+          setLessonAlreadyCompleted(true);
         }
       }
     });
