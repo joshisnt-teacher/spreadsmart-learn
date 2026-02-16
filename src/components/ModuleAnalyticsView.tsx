@@ -9,7 +9,7 @@ import { allModules } from '@/data/module-registry';
 import type { Module } from '@/types/lesson';
 
 interface ModuleAnalyticsViewProps {
-  classId: string;
+  classId?: string | null;
   customModules?: Module[];
 }
 
@@ -42,7 +42,7 @@ const ModuleAnalyticsView: React.FC<ModuleAnalyticsViewProps> = ({ classId, cust
 
   const { stepStats, totalStarts, totalCompletes, avgTimePerStep, avgAttemptsPerStep, loading } = useModuleAnalytics(
     selectedModuleId,
-    classId,
+    classId ?? null,
     selectedLessonId,
     stepTitleMap,
   );

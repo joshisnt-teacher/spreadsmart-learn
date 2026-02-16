@@ -396,7 +396,7 @@ const TeacherDashboard: React.FC = () => {
                 <AssignmentManager classId={selectedClass.id} students={students} />
               </TabsContent>
               <TabsContent value="analytics">
-                <ModuleAnalyticsView classId={selectedClass.id} />
+                <ModuleAnalyticsView classId={selectedClass.id} customModules={customModules.length > 0 ? customModules.map(m => ({ ...m, lessons: [] as any[], estimatedMinutes: m.estimated_minutes, bannerUrl: m.banner_url || undefined })) : []} />
               </TabsContent>
             </Tabs>
           </motion.div>
