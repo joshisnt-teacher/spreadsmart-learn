@@ -128,3 +128,12 @@
 .fortune-sheet-container .luckysheet-bottom-controll-row {
   display: none !important;
 }
+
+/* Prevent FortuneSheet internal crash when clicking locked cells */
+.fortune-sheet-container .luckysheet-input-box {
+  pointer-events: none !important;
+}
+.fortune-sheet-container .luckysheet-input-box .luckysheet-cell-input {
+  pointer-events: none !important;
+  user-select: none !important;
+}

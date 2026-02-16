@@ -114,7 +114,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
   useEffect(() => {
     const step = lesson.steps[currentStepIndex];
     if (step) {
-      logEvent(step.id, 'step_start');
+      logEvent(step.id, 'step_start', isRedoing ? { revisit: true } : {});
     }
   }, [currentStepIndex, lesson.steps, logEvent]);
 
@@ -472,11 +472,13 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
             answer={quizAnswer}
           />
         ) : isTableTaskStep && currentStep.tableTask ? (
-          <InteractiveTable
-            config={currentStep.tableTask}
-            answer={tableAnswer}
-            onAnswerChange={setTableAnswer}
-          />
+          <div className="flex-1 flex flex-col p-4 min-h-0">
+            <InteractiveTable
+              config={currentStep.tableTask}
+              answer={tableAnswer}
+              onAnswerChange={setTableAnswer}
+            />
+          </div>
         ) : isInstructionStep && !isChallengeStep ? (
           currentStep.initialSheetState ? (
             <div className="flex-1 p-4 min-h-0">

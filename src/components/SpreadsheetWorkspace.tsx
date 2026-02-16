@@ -144,11 +144,12 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
         <Workbook
           key={resetKey}
           data={sheetData}
-          showToolbar={false}
-          showSheetTabs={false}
-          showFormulaBar={true}
-          addRows={0}
-          onChange={handleChange}
+        showToolbar={false}
+        showSheetTabs={false}
+        showFormulaBar={true}
+        addRows={0}
+        onChange={handleChange}
+        allowEdit={false}
           column={initialState.column || 6}
           row={initialState.row || 10}
         />
