@@ -1,9 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Mail, User, KeyRound, LogOut, Loader2 } from 'lucide-react';
+import { ArrowLeft, Mail, User, KeyRound, LogOut, Loader2, Trash2, Pencil, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -13,6 +25,10 @@ const TeacherSettings: React.FC = () => {
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [sendingReset, setSendingReset] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState('');
+  const [savingName, setSavingName] = useState(false);
 
   useEffect(() => {
     if (!authLoading && (!user || role === 'student')) {
@@ -49,6 +65,46 @@ const TeacherSettings: React.FC = () => {
     navigate('/auth');
   };
 
+  const handleStartEditName = () => {
+    setNameInput(displayName || '');
+    setEditingName(true);
+  };
+
+  const handleSaveName = async () => {
+    if (!user || !nameInput.trim()) return;
+    setSavingName(true);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ display_name: nameInput.trim() })
+      .eq('user_id', user.id);
+    setSavingName(false);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      setDisplayName(nameInput.trim());
+      setEditingName(false);
+      toast({ title: 'Display name updated' });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    setDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke('delete-teacher-account', {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (res.error) throw res.error;
+      await supabase.auth.signOut();
+      navigate('/auth');
+      toast({ title: 'Account deleted', description: 'Your account and all associated data have been removed.' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to delete account', variant: 'destructive' });
+      setDeleting(false);
+    }
+  };
+
   if (authLoading) return null;
 
   return (
@@ -72,10 +128,33 @@ const TeacherSettings: React.FC = () => {
             <CardContent className="space-y-4">
               <div className="flex items-center gap-3">
                 <User className="w-4 h-4 text-muted-foreground shrink-0" />
-                <div>
-                  <p className="text-sm font-medium">{displayName || 'Teacher'}</p>
-                  <p className="text-xs text-muted-foreground">Display name</p>
-                </div>
+                {editingName ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <Input
+                      value={nameInput}
+                      onChange={(e) => setNameInput(e.target.value)}
+                      className="h-8 text-sm"
+                      autoFocus
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') setEditingName(false); }}
+                    />
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleSaveName} disabled={savingName || !nameInput.trim()}>
+                      {savingName ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingName(false)}>
+                      <X className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 flex-1">
+                    <div>
+                      <p className="text-sm font-medium">{displayName || 'Teacher'}</p>
+                      <p className="text-xs text-muted-foreground">Display name</p>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 ml-auto" onClick={handleStartEditName}>
+                      <Pencil className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -103,6 +182,46 @@ const TeacherSettings: React.FC = () => {
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
               </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <Card className="border-destructive/30">
+            <CardHeader>
+              <CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
+              <CardDescription>Irreversible actions — proceed with caution</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="w-full justify-start" disabled={deleting}>
+                    {deleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription className="space-y-2">
+                      <p>This action <strong>cannot be undone</strong>. This will permanently delete:</p>
+                      <ul className="list-disc pl-5 space-y-1 text-sm">
+                        <li>Your teacher account</li>
+                        <li><strong>All student accounts</strong> in your classes</li>
+                        <li>All classes, modules, and assignments you created</li>
+                        <li>All student progress and analytics data</li>
+                      </ul>
+                      <p className="font-medium text-destructive pt-1">Every student will lose access immediately.</p>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Delete Everything
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </CardContent>
           </Card>
         </motion.div>
