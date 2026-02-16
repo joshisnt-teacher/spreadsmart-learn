@@ -111,6 +111,7 @@ const ModulePlayer: React.FC = () => {
     return (
       <LessonPlayer
         lesson={activeLesson}
+        moduleId={currentModule.id}
         onComplete={handleLessonComplete}
         onBack={handleBack}
       />
