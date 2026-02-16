@@ -61,7 +61,7 @@ const Auth: React.FC = () => {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 mb-4">
             <BookOpen className="w-6 h-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">ExcelPath</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Excel Academy</h1>
           <p className="text-sm text-muted-foreground mt-1">Learn Excel, step by step</p>
         </div>
 
