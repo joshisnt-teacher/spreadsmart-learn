@@ -3,8 +3,8 @@ import type { Module } from '@/types/lesson';
 export const excelBasicsModule: Module = {
   id: 'excel-basics',
   title: 'Introduction to Excel',
-  description: 'Learn how spreadsheets are structured, enter and edit data, format numbers, write formulas, use built-in functions, and sort and filter data.',
-  estimatedMinutes: 60,
+  description: 'Learn how spreadsheets are structured, enter and edit data, use built-in functions, format numbers, use IF logic, and sort and filter data.',
+  estimatedMinutes: 75,
   bannerUrl: 'https://ctfxhxqhvszadozamqkg.supabase.co/storage/v1/object/public/module-banners/excel-basics-banner.png',
   lessons: [
     // ──────────────────────────────────────────────
@@ -36,11 +36,9 @@ export const excelBasicsModule: Module = {
             row: 5,
             column: 4,
             celldata: [
-              // Header row
               { r: 0, c: 0, v: { v: 'Name', m: 'Name', bl: 1, bg: '#e8f0fe' } },
               { r: 0, c: 1, v: { v: 'Maths', m: 'Maths', bl: 1, bg: '#e8f0fe' } },
               { r: 0, c: 2, v: { v: 'English', m: 'English', bl: 1, bg: '#e8f0fe' } },
-              // Data rows
               { r: 1, c: 0, v: { v: 'Ava', m: 'Ava' } },
               { r: 1, c: 1, v: { v: 75, m: '75' } },
               { r: 1, c: 2, v: { v: 82, m: '82' } },
@@ -329,11 +327,267 @@ export const excelBasicsModule: Module = {
     },
 
     // ──────────────────────────────────────────────
-    // LESSON 2: Cell Formatting & Number Types (6 steps)
+    // LESSON 2: Built-in Functions (5 steps) — MOVED BEFORE FORMATTING
+    // ──────────────────────────────────────────────
+    {
+      id: 'lesson-2',
+      order: 2,
+      title: 'Built-in Functions',
+      description: 'Use SUM, AVERAGE, MIN, MAX, and COUNT to analyse data.',
+      steps: [
+        // Step 1 — Instruction: SUM and AVERAGE
+        {
+          id: 'step-2-1',
+          order: 1,
+          type: 'instruction',
+          title: 'SUM and AVERAGE',
+          instruction:
+            'Functions are built-in shortcuts for common calculations.\n\n' +
+            '**SUM** adds up all the numbers in a range:\n' +
+            '`=SUM(B2:B5)` adds B2 + B3 + B4 + B5.\n\n' +
+            '**AVERAGE** calculates the mean:\n' +
+            '`=AVERAGE(B2:B5)` adds them up and divides by 4.\n\n' +
+            'The **colon** (`:`) means "from this cell **to** that cell".',
+          whyItMatters: 'SUM and AVERAGE are the two most-used functions in the world. They save time and reduce errors.',
+        },
+
+        // Quiz — Formula symbol
+        {
+          id: 'step-2-1q',
+          order: 2,
+          type: 'quiz',
+          title: 'Quick Check: Formulas',
+          instruction: 'What symbol must every formula in a spreadsheet start with?',
+          quiz: {
+            type: 'short-answer',
+            correctAnswer: '=',
+            acceptableAnswers: ['equals', 'equals sign', 'equal sign', 'equal'],
+            explanation: 'The equals sign (=) tells the spreadsheet that you\'re entering a formula, not plain text.',
+          },
+          task: {
+            id: 'task-2-1q',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'It\'s a single character you type before any function name.',
+              'You\'ve seen it in formulas like =SUM(B2:B5).',
+            ],
+            successMessage: 'Correct! Every formula starts with = (equals sign).',
+            incorrectMessage: 'Not quite — look at the start of any formula like =SUM(...).',
+            xpValue: 5,
+          },
+        },
+
+        // Step 2 — Task: Sports Day Totals (replaces "Total Sales")
+        {
+          id: 'step-2-2',
+          order: 2,
+          type: 'task',
+          title: 'Sports Day Totals',
+          instruction:
+            'This table shows points scored by your house team in four Sports Day events.\n\n' +
+            '1. In **B6**, calculate the **total** points using SUM.\n' +
+            '2. In **B7**, calculate the **average** points per event using AVERAGE.\n' +
+            '3. Click **Check**.',
+          whyItMatters: 'Totals and averages are the foundation of data analysis.',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 9,
+            column: 3,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Event', m: 'Event', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Points', m: 'Points', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: '100m Sprint', m: '100m Sprint' } },
+              { r: 1, c: 1, v: { v: 45, m: '45' } },
+              { r: 2, c: 0, v: { v: 'Long Jump', m: 'Long Jump' } },
+              { r: 2, c: 1, v: { v: 38, m: '38' } },
+              { r: 3, c: 0, v: { v: 'Relay Race', m: 'Relay Race' } },
+              { r: 3, c: 1, v: { v: 52, m: '52' } },
+              { r: 4, c: 0, v: { v: 'Shot Put', m: 'Shot Put' } },
+              { r: 4, c: 1, v: { v: 29, m: '29' } },
+              { r: 5, c: 0, v: { v: 'Total', m: 'Total', bl: 1, bg: '#fff3cd' } },
+              { r: 6, c: 0, v: { v: 'Average', m: 'Average', bl: 1, bg: '#fff3cd' } },
+            ],
+          },
+          task: {
+            id: 'task-2-2',
+            expectations: [
+              { cellRef: 'B6', expectedValue: 164, expectedFormula: '=SUM(B2:B5)', checkFormula: true },
+              { cellRef: 'B7', expectedValue: 41, expectedFormula: '=AVERAGE(B2:B5)', checkFormula: true },
+            ],
+            editableCells: ['B6', 'B7'],
+            hints: [
+              'In B6, type =SUM(B2:B5) to add all four event scores.',
+              'In B7, type =AVERAGE(B2:B5) to calculate the mean.',
+              'Make sure you include the colon : between B2 and B5.',
+            ],
+            successMessage: 'Total is 164 and average is 41 points per event — nice work!',
+            almostCorrectMessage: 'Values look right but check you used the SUM and AVERAGE functions.',
+            incorrectMessage: 'Use =SUM(B2:B5) in B6 and =AVERAGE(B2:B5) in B7.',
+            xpValue: 20,
+            bonusXp: 10,
+          },
+        },
+
+        // Step 3 — Instruction: MIN, MAX, and COUNT
+        {
+          id: 'step-2-3',
+          order: 3,
+          type: 'instruction',
+          title: 'MIN, MAX and COUNT',
+          instruction:
+            'Three more useful functions:\n\n' +
+            '**MIN** finds the **smallest** number in a range:\n' +
+            '`=MIN(B2:B5)` → the lowest value.\n\n' +
+            '**MAX** finds the **largest** number:\n' +
+            '`=MAX(B2:B5)` → the highest value.\n\n' +
+            '**COUNT** counts how many **numbers** are in a range:\n' +
+            '`=COUNT(B2:B5)` → 4 (there are 4 numbers).',
+          whyItMatters: 'MIN, MAX, and COUNT help you quickly understand the shape of your data without scrolling through it.',
+        },
+
+        // Step 4 — Task: Sports Day Extremes (replaces "Find the Extremes")
+        {
+          id: 'step-2-4',
+          order: 4,
+          type: 'task',
+          title: 'Sports Day Extremes',
+          instruction:
+            'Using the same Sports Day scores:\n\n' +
+            '1. In **B8**, find the **highest** event score using MAX.\n' +
+            '2. In **B9**, find the **lowest** event score using MIN.\n' +
+            '3. In **B10**, **count** how many events there are using COUNT.\n' +
+            '4. Click **Check**.',
+          whyItMatters: 'Identifying highs, lows, and counts is the first step in any data analysis.',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 12,
+            column: 3,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Event', m: 'Event', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Points', m: 'Points', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: '100m Sprint', m: '100m Sprint' } },
+              { r: 1, c: 1, v: { v: 45, m: '45' } },
+              { r: 2, c: 0, v: { v: 'Long Jump', m: 'Long Jump' } },
+              { r: 2, c: 1, v: { v: 38, m: '38' } },
+              { r: 3, c: 0, v: { v: 'Relay Race', m: 'Relay Race' } },
+              { r: 3, c: 1, v: { v: 52, m: '52' } },
+              { r: 4, c: 0, v: { v: 'Shot Put', m: 'Shot Put' } },
+              { r: 4, c: 1, v: { v: 29, m: '29' } },
+              // Pre-filled from previous task
+              { r: 5, c: 0, v: { v: 'Total', m: 'Total', bl: 1, bg: '#d4edda' } },
+              { r: 5, c: 1, v: { v: 164, m: '164', f: '=SUM(B2:B5)' } },
+              { r: 6, c: 0, v: { v: 'Average', m: 'Average', bl: 1, bg: '#d4edda' } },
+              { r: 6, c: 1, v: { v: 41, m: '41', f: '=AVERAGE(B2:B5)' } },
+              // Labels for new answer cells
+              { r: 7, c: 0, v: { v: 'Highest', m: 'Highest', bl: 1, bg: '#fff3cd' } },
+              { r: 8, c: 0, v: { v: 'Lowest', m: 'Lowest', bl: 1, bg: '#fff3cd' } },
+              { r: 9, c: 0, v: { v: 'Count', m: 'Count', bl: 1, bg: '#fff3cd' } },
+            ],
+          },
+          task: {
+            id: 'task-2-4',
+            expectations: [
+              { cellRef: 'B8', expectedValue: 52, expectedFormula: '=MAX(B2:B5)', checkFormula: true },
+              { cellRef: 'B9', expectedValue: 29, expectedFormula: '=MIN(B2:B5)', checkFormula: true },
+              { cellRef: 'B10', expectedValue: 4, expectedFormula: '=COUNT(B2:B5)', checkFormula: true },
+            ],
+            editableCells: ['B8', 'B9', 'B10'],
+            hints: [
+              'B8 should use =MAX(B2:B5) to find the highest score.',
+              'B9 should use =MIN(B2:B5) to find the lowest score.',
+              'B10 should use =COUNT(B2:B5) to count how many events there are.',
+            ],
+            successMessage: 'Highest is 52 (Relay Race), lowest is 29 (Shot Put), and there are 4 events — well done!',
+            almostCorrectMessage: 'Values are correct but make sure you used the MAX, MIN, and COUNT functions.',
+            incorrectMessage: 'Use =MAX(B2:B5) in B8, =MIN(B2:B5) in B9, and =COUNT(B2:B5) in B10.',
+            xpValue: 20,
+            bonusXp: 10,
+          },
+        },
+
+        // Step 5 — Challenge: Gaming High Scores Analysis (replaces "School Canteen Analysis")
+        {
+          id: 'step-2-5',
+          order: 5,
+          type: 'challenge',
+          title: 'Gaming High Scores',
+          instruction:
+            'Your friend group tracked their high scores across four games this week. Analyse the data!\n\n' +
+            '1. Calculate the **Total Score** for each person (sum of all games):\n' +
+            '   - **E2**: `=SUM(B2:D2)`\n' +
+            '   - **E3**: `=SUM(B3:D3)`\n' +
+            '   - **E4**: `=SUM(B4:D4)`\n' +
+            '   - **E5**: `=SUM(B5:D5)`\n\n' +
+            '2. In **B7**, find the **highest** score in Game 1 using MAX.\n' +
+            '3. In **E7**, calculate the **average** total score using AVERAGE.\n\n' +
+            '💡 **Reflection:** Who is the best all-round gamer?',
+          whyItMatters: 'Combining formulas and functions to answer real questions is what makes spreadsheets so powerful.',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 9,
+            column: 6,
+            celldata: [
+              // Headers
+              { r: 0, c: 0, v: { v: 'Player', m: 'Player', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Game 1', m: 'Game 1', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 2, v: { v: 'Game 2', m: 'Game 2', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 3, v: { v: 'Game 3', m: 'Game 3', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 4, v: { v: 'Total', m: 'Total', bl: 1, bg: '#e8f0fe' } },
+              // Data
+              { r: 1, c: 0, v: { v: 'Ava', m: 'Ava' } },
+              { r: 1, c: 1, v: { v: 1200, m: '1200' } },
+              { r: 1, c: 2, v: { v: 980, m: '980' } },
+              { r: 1, c: 3, v: { v: 1450, m: '1450' } },
+              { r: 2, c: 0, v: { v: 'Liam', m: 'Liam' } },
+              { r: 2, c: 1, v: { v: 850, m: '850' } },
+              { r: 2, c: 2, v: { v: 1100, m: '1100' } },
+              { r: 2, c: 3, v: { v: 920, m: '920' } },
+              { r: 3, c: 0, v: { v: 'Zoe', m: 'Zoe' } },
+              { r: 3, c: 1, v: { v: 1500, m: '1500' } },
+              { r: 3, c: 2, v: { v: 1300, m: '1300' } },
+              { r: 3, c: 3, v: { v: 1100, m: '1100' } },
+              { r: 4, c: 0, v: { v: 'Noah', m: 'Noah' } },
+              { r: 4, c: 1, v: { v: 990, m: '990' } },
+              { r: 4, c: 2, v: { v: 1050, m: '1050' } },
+              { r: 4, c: 3, v: { v: 1200, m: '1200' } },
+              // Summary labels
+              { r: 6, c: 0, v: { v: 'Best Game 1', m: 'Best Game 1', bl: 1, bg: '#fff3cd' } },
+              { r: 6, c: 4, v: { v: 'Avg Total', m: 'Avg Total', bl: 1, bg: '#fff3cd' } },
+            ],
+          },
+          task: {
+            id: 'task-2-5',
+            expectations: [
+              { cellRef: 'E2', expectedValue: 3630, expectedFormula: '=SUM(B2:D2)', checkFormula: true },
+              { cellRef: 'E3', expectedValue: 2870, expectedFormula: '=SUM(B3:D3)', checkFormula: true },
+              { cellRef: 'E4', expectedValue: 3900, expectedFormula: '=SUM(B4:D4)', checkFormula: true },
+              { cellRef: 'E5', expectedValue: 3240, expectedFormula: '=SUM(B5:D5)', checkFormula: true },
+              { cellRef: 'B7', expectedValue: 1500, expectedFormula: '=MAX(B2:B5)', checkFormula: true },
+              { cellRef: 'E7', expectedValue: 3410, expectedFormula: '=AVERAGE(E2:E5)', checkFormula: true },
+            ],
+            editableCells: ['E2', 'E3', 'E4', 'E5', 'B7', 'E7'],
+            hints: [
+              'Total = sum of all three games. In E2, type =SUM(B2:D2).',
+              'For best Game 1 score, use =MAX(B2:B5) in B7.',
+              'Average total uses =AVERAGE(E2:E5) in E7.',
+            ],
+            successMessage: '🎉 Analysis complete! Zoe has the highest total (3,900) — she\'s the best all-round gamer!',
+            almostCorrectMessage: 'Values look right — double-check that you used formulas and functions, not typed numbers.',
+            incorrectMessage: 'Calculate each total with =SUM(B:D), best Game 1 with =MAX(B2:B5), and avg total with =AVERAGE(E2:E5).',
+            xpValue: 40,
+            bonusXp: 20,
+          },
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────
+    // LESSON 3: Cell Formatting & Number Types (6 steps) — MOVED AFTER FUNCTIONS
     // ──────────────────────────────────────────────
     {
       id: 'lesson-formatting',
-      order: 2,
+      order: 3,
       title: 'Cell Formatting & Number Types',
       description: 'Learn how to format numbers as currency, percentages, and decimals — and understand date formats.',
       steps: [
@@ -613,268 +867,228 @@ export const excelBasicsModule: Module = {
     },
 
     // ──────────────────────────────────────────────
-    // LESSON 3: Built-in Functions (5 steps)
+    // LESSON 4: IF Functions (5 steps) — NEW LESSON
     // ──────────────────────────────────────────────
     {
-      id: 'lesson-2',
-      order: 3,
-      title: 'Built-in Functions',
-      description: 'Use SUM, AVERAGE, MIN, MAX, and COUNT to analyse data.',
+      id: 'lesson-if',
+      order: 4,
+      title: 'IF Functions & Logic',
+      description: 'Use the IF function to make decisions in your spreadsheet — from simple pass/fail to grade boundaries.',
       steps: [
-        // Step 1 — Instruction: SUM and AVERAGE
+        // Step 1 — Instruction: What is IF?
         {
-          id: 'step-2-1',
+          id: 'step-if-1',
           order: 1,
           type: 'instruction',
-          title: 'SUM and AVERAGE',
+          title: 'What Does IF Do?',
           instruction:
-            'Functions are built-in shortcuts for common calculations.\n\n' +
-            '**SUM** adds up all the numbers in a range:\n' +
-            '`=SUM(B2:B5)` adds B2 + B3 + B4 + B5.\n\n' +
-            '**AVERAGE** calculates the mean:\n' +
-            '`=AVERAGE(B2:B5)` adds them up and divides by 4.\n\n' +
-            'The **colon** (`:`) means "from this cell **to** that cell".',
-          whyItMatters: 'SUM and AVERAGE are the two most-used functions in the world. They save time and reduce errors.',
+            'The **IF** function lets your spreadsheet **make decisions**.\n\n' +
+            'It checks whether something is true or false, and gives a different answer for each:\n\n' +
+            '`=IF(condition, value_if_true, value_if_false)`\n\n' +
+            'For example:\n' +
+            '`=IF(B2>=50, "Pass", "Fail")`\n\n' +
+            'This checks if B2 is 50 or more:\n' +
+            '- If **yes** → shows **"Pass"**\n' +
+            '- If **no** → shows **"Fail"**\n\n' +
+            'The condition can use: **>** (greater than), **<** (less than), **>=** (greater than or equal), **<=** (less than or equal), **=** (equals).',
+          whyItMatters: 'IF is one of the most powerful functions in any spreadsheet. It lets you automate decisions instead of doing them manually.',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 5,
+            column: 3,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Student', m: 'Student', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Score', m: 'Score', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 2, v: { v: 'Result', m: 'Result', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Ava', m: 'Ava' } },
+              { r: 1, c: 1, v: { v: 72, m: '72' } },
+              { r: 1, c: 2, v: { v: 'Pass', m: 'Pass' } },
+              { r: 2, c: 0, v: { v: 'Liam', m: 'Liam' } },
+              { r: 2, c: 1, v: { v: 38, m: '38' } },
+              { r: 2, c: 2, v: { v: 'Fail', m: 'Fail' } },
+              { r: 3, c: 0, v: { v: 'Zoe', m: 'Zoe' } },
+              { r: 3, c: 1, v: { v: 50, m: '50' } },
+              { r: 3, c: 2, v: { v: 'Pass', m: 'Pass' } },
+            ],
+          },
         },
 
-        // Quiz — Formula symbol
+        // Step 2 — Task: Pass or Fail
         {
-          id: 'step-2-1q',
+          id: 'step-if-2',
           order: 2,
-          type: 'quiz',
-          title: 'Quick Check: Formulas',
-          instruction: 'What symbol must every formula in a spreadsheet start with?',
-          quiz: {
-            type: 'short-answer',
-            correctAnswer: '=',
-            acceptableAnswers: ['equals', 'equals sign', 'equal sign', 'equal'],
-            explanation: 'The equals sign (=) tells the spreadsheet that you\'re entering a formula, not plain text.',
+          type: 'task',
+          title: 'Pass or Fail',
+          instruction:
+            'These students took a science test. The pass mark is **50**.\n\n' +
+            'Use the IF function to show "Pass" or "Fail" for each student:\n\n' +
+            '1. In **C2**, type `=IF(B2>=50,"Pass","Fail")`\n' +
+            '2. In **C3**, type `=IF(B3>=50,"Pass","Fail")`\n' +
+            '3. In **C4**, type `=IF(B4>=50,"Pass","Fail")`\n' +
+            '4. In **C5**, type `=IF(B5>=50,"Pass","Fail")`\n' +
+            '5. Click **Check**.',
+          whyItMatters: 'Automating pass/fail decisions saves time and avoids human error — imagine marking 200 students!',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 7,
+            column: 4,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Student', m: 'Student', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Score', m: 'Score', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 2, v: { v: 'Result', m: 'Result', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Ava', m: 'Ava' } },
+              { r: 1, c: 1, v: { v: 65, m: '65' } },
+              { r: 2, c: 0, v: { v: 'Liam', m: 'Liam' } },
+              { r: 2, c: 1, v: { v: 42, m: '42' } },
+              { r: 3, c: 0, v: { v: 'Zoe', m: 'Zoe' } },
+              { r: 3, c: 1, v: { v: 78, m: '78' } },
+              { r: 4, c: 0, v: { v: 'Noah', m: 'Noah' } },
+              { r: 4, c: 1, v: { v: 49, m: '49' } },
+            ],
           },
           task: {
-            id: 'task-2-1q',
+            id: 'task-if-2',
+            expectations: [
+              { cellRef: 'C2', expectedValue: 'Pass', expectedFormula: '=IF(B2>=50,"Pass","Fail")', checkFormula: true },
+              { cellRef: 'C3', expectedValue: 'Fail', expectedFormula: '=IF(B3>=50,"Pass","Fail")', checkFormula: true },
+              { cellRef: 'C4', expectedValue: 'Pass', expectedFormula: '=IF(B4>=50,"Pass","Fail")', checkFormula: true },
+              { cellRef: 'C5', expectedValue: 'Fail', expectedFormula: '=IF(B5>=50,"Pass","Fail")', checkFormula: true },
+            ],
+            editableCells: ['C2', 'C3', 'C4', 'C5'],
+            hints: [
+              'The formula is =IF(B2>=50,"Pass","Fail") — make sure to include the quote marks around Pass and Fail.',
+              'Ava scored 65 which is ≥ 50, so she passes.',
+              'Noah scored 49 which is < 50, so he fails.',
+            ],
+            successMessage: '🎉 Well done! Ava and Zoe pass, Liam and Noah fail. The IF function checked each score automatically.',
+            almostCorrectMessage: 'The results look right — make sure you used the IF formula, not typed text.',
+            incorrectMessage: 'Use =IF(B2>=50,"Pass","Fail") in C2 and the same pattern for each row.',
+            xpValue: 20,
+            bonusXp: 10,
+          },
+        },
+
+        // Step 3 — Instruction: Nested IF
+        {
+          id: 'step-if-3',
+          order: 3,
+          type: 'instruction',
+          title: 'Nested IF: Multiple Outcomes',
+          instruction:
+            'Sometimes you need **more than two outcomes**. You can put an IF inside another IF — this is called **nesting**.\n\n' +
+            'Example — grade boundaries:\n' +
+            '`=IF(B2>=70, "Distinction", IF(B2>=50, "Merit", "Fail"))`\n\n' +
+            'How it works:\n' +
+            '1. Is the score **70 or more**? → "Distinction"\n' +
+            '2. Otherwise, is it **50 or more**? → "Merit"\n' +
+            '3. Otherwise → "Fail"\n\n' +
+            '⚠️ **Important:** Always check the **highest boundary first** and work downwards. Each IF has its own set of brackets.',
+          whyItMatters: 'Nested IFs let you create grade scales, pricing tiers, and any multi-level decision — a skill used in schools, businesses, and beyond.',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 5,
+            column: 3,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Score', m: 'Score', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Grade', m: 'Grade', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 85, m: '85' } },
+              { r: 1, c: 1, v: { v: 'Distinction', m: 'Distinction' } },
+              { r: 2, c: 0, v: { v: 60, m: '60' } },
+              { r: 2, c: 1, v: { v: 'Merit', m: 'Merit' } },
+              { r: 3, c: 0, v: { v: 35, m: '35' } },
+              { r: 3, c: 1, v: { v: 'Fail', m: 'Fail' } },
+            ],
+          },
+        },
+
+        // Step 4 — Challenge: Grade Boundaries
+        {
+          id: 'step-if-4',
+          order: 4,
+          type: 'challenge',
+          title: 'Grade Boundaries',
+          instruction:
+            'Use a **nested IF** to assign grades based on these boundaries:\n\n' +
+            '| Score | Grade |\n|---|---|\n| 70+ | Distinction |\n| 50–69 | Merit |\n| 40–49 | Pass |\n| Below 40 | Fail |\n\n' +
+            'The formula for each cell is:\n' +
+            '`=IF(B2>=70,"Distinction",IF(B2>=50,"Merit",IF(B2>=40,"Pass","Fail")))`\n\n' +
+            'Enter this formula in **C2**, **C3**, **C4**, and **C5**.',
+          whyItMatters: 'Grade boundaries are used in every school and exam board. Automating them removes human error.',
+          initialSheetState: {
+            name: 'Sheet1',
+            row: 7,
+            column: 4,
+            celldata: [
+              { r: 0, c: 0, v: { v: 'Student', m: 'Student', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 1, v: { v: 'Score', m: 'Score', bl: 1, bg: '#e8f0fe' } },
+              { r: 0, c: 2, v: { v: 'Grade', m: 'Grade', bl: 1, bg: '#e8f0fe' } },
+              { r: 1, c: 0, v: { v: 'Ava', m: 'Ava' } },
+              { r: 1, c: 1, v: { v: 82, m: '82' } },
+              { r: 2, c: 0, v: { v: 'Liam', m: 'Liam' } },
+              { r: 2, c: 1, v: { v: 55, m: '55' } },
+              { r: 3, c: 0, v: { v: 'Zoe', m: 'Zoe' } },
+              { r: 3, c: 1, v: { v: 44, m: '44' } },
+              { r: 4, c: 0, v: { v: 'Noah', m: 'Noah' } },
+              { r: 4, c: 1, v: { v: 31, m: '31' } },
+            ],
+          },
+          task: {
+            id: 'task-if-4',
+            expectations: [
+              { cellRef: 'C2', expectedValue: 'Distinction', expectedFormula: '=IF(B2>=70,"Distinction",IF(B2>=50,"Merit",IF(B2>=40,"Pass","Fail")))', checkFormula: true },
+              { cellRef: 'C3', expectedValue: 'Merit', expectedFormula: '=IF(B3>=70,"Distinction",IF(B3>=50,"Merit",IF(B3>=40,"Pass","Fail")))', checkFormula: true },
+              { cellRef: 'C4', expectedValue: 'Pass', expectedFormula: '=IF(B4>=70,"Distinction",IF(B4>=50,"Merit",IF(B4>=40,"Pass","Fail")))', checkFormula: true },
+              { cellRef: 'C5', expectedValue: 'Fail', expectedFormula: '=IF(B5>=70,"Distinction",IF(B5>=50,"Merit",IF(B5>=40,"Pass","Fail")))', checkFormula: true },
+            ],
+            editableCells: ['C2', 'C3', 'C4', 'C5'],
+            hints: [
+              'Start with the highest boundary: =IF(B2>=70,"Distinction", ...)',
+              'Inside the first IF\'s false branch, add another IF for Merit: IF(B2>=50,"Merit", ...)',
+              'The full formula is: =IF(B2>=70,"Distinction",IF(B2>=50,"Merit",IF(B2>=40,"Pass","Fail")))',
+            ],
+            successMessage: '🎉 Excellent! Ava gets Distinction, Liam gets Merit, Zoe gets Pass, Noah gets Fail. You\'ve mastered nested IFs!',
+            almostCorrectMessage: 'The grades look right — make sure you used the nested IF formula, not typed text.',
+            incorrectMessage: 'Use =IF(B2>=70,"Distinction",IF(B2>=50,"Merit",IF(B2>=40,"Pass","Fail"))) in each cell.',
+            xpValue: 35,
+            bonusXp: 15,
+          },
+        },
+
+        // Step 5 — Quiz: IF concepts
+        {
+          id: 'step-if-5',
+          order: 5,
+          type: 'quiz',
+          title: 'IF Function Check',
+          instruction: 'In the formula =IF(B2>=50,"Pass","Fail"), what does the spreadsheet show if B2 contains 50?',
+          quiz: {
+            type: 'multiple-choice',
+            options: ['Pass', 'Fail', 'Error', '50'],
+            correctAnswer: 'Pass',
+            explanation: 'The condition is B2>=50, which means "greater than or equal to 50". Since B2 is exactly 50, the condition is TRUE, so it shows "Pass".',
+          },
+          task: {
+            id: 'task-if-5',
             expectations: [],
             editableCells: [],
             hints: [
-              'It\'s a single character you type before any function name.',
-              'You\'ve seen it in formulas like =SUM(B2:B5).',
+              'Pay attention to the >= symbol — it means "greater than or equal to".',
+              '50 is equal to 50, so >= is TRUE.',
             ],
-            successMessage: 'Correct! Every formula starts with = (equals sign).',
-            incorrectMessage: 'Not quite — look at the start of any formula like =SUM(...).',
+            successMessage: 'Correct! >= means "greater than or equal to", so 50 meets the condition.',
+            incorrectMessage: 'Remember: >= means "greater than OR equal to". 50 is equal to 50, so the condition is true.',
             xpValue: 5,
-          },
-        },
-
-        // Step 2 — Task: Total Sales
-        {
-          id: 'step-2-2',
-          order: 2,
-          type: 'task',
-          title: 'Total Sales',
-          instruction:
-            'This table shows daily sales from Monday to Thursday.\n\n' +
-            '1. In **B6**, calculate the **total** sales using SUM.\n' +
-            '2. In **B7**, calculate the **average** daily sales using AVERAGE.\n' +
-            '3. Click **Check**.',
-          whyItMatters: 'Totals and averages are the foundation of data analysis.',
-          initialSheetState: {
-            name: 'Sheet1',
-            row: 9,
-            column: 3,
-            celldata: [
-              { r: 0, c: 0, v: { v: 'Day', m: 'Day', bl: 1, bg: '#e8f0fe' } },
-              { r: 0, c: 1, v: { v: 'Sales', m: 'Sales', bl: 1, bg: '#e8f0fe' } },
-              { r: 1, c: 0, v: { v: 'Monday', m: 'Monday' } },
-              { r: 1, c: 1, v: { v: 240, m: '240' } },
-              { r: 2, c: 0, v: { v: 'Tuesday', m: 'Tuesday' } },
-              { r: 2, c: 1, v: { v: 310, m: '310' } },
-              { r: 3, c: 0, v: { v: 'Wednesday', m: 'Wednesday' } },
-              { r: 3, c: 1, v: { v: 275, m: '275' } },
-              { r: 4, c: 0, v: { v: 'Thursday', m: 'Thursday' } },
-              { r: 4, c: 1, v: { v: 290, m: '290' } },
-              // Labels for answer cells
-              { r: 5, c: 0, v: { v: 'Total', m: 'Total', bl: 1, bg: '#fff3cd' } },
-              { r: 6, c: 0, v: { v: 'Average', m: 'Average', bl: 1, bg: '#fff3cd' } },
-            ],
-          },
-          task: {
-            id: 'task-2-2',
-            expectations: [
-              { cellRef: 'B6', expectedValue: 1115, expectedFormula: '=SUM(B2:B5)', checkFormula: true },
-              { cellRef: 'B7', expectedValue: 278.75, expectedFormula: '=AVERAGE(B2:B5)', checkFormula: true },
-            ],
-            editableCells: ['B6', 'B7'],
-            hints: [
-              'In B6, type =SUM(B2:B5) to add all four sales values.',
-              'In B7, type =AVERAGE(B2:B5) to calculate the mean.',
-              'Make sure you include the colon : between B2 and B5.',
-            ],
-            successMessage: 'Total is 1,115 and average is 278.75 — nice work!',
-            almostCorrectMessage: 'Values look right but check you used the SUM and AVERAGE functions.',
-            incorrectMessage: 'Use =SUM(B2:B5) in B6 and =AVERAGE(B2:B5) in B7.',
-            xpValue: 20,
-            bonusXp: 10,
-          },
-        },
-
-        // Step 3 — Instruction: MIN, MAX, and COUNT
-        {
-          id: 'step-2-3',
-          order: 3,
-          type: 'instruction',
-          title: 'MIN, MAX and COUNT',
-          instruction:
-            'Three more useful functions:\n\n' +
-            '**MIN** finds the **smallest** number in a range:\n' +
-            '`=MIN(B2:B5)` → the lowest value.\n\n' +
-            '**MAX** finds the **largest** number:\n' +
-            '`=MAX(B2:B5)` → the highest value.\n\n' +
-            '**COUNT** counts how many **numbers** are in a range:\n' +
-            '`=COUNT(B2:B5)` → 4 (there are 4 numbers).',
-          whyItMatters: 'MIN, MAX, and COUNT help you quickly understand the shape of your data without scrolling through it.',
-        },
-
-        // Step 4 — Task: Find the Extremes
-        {
-          id: 'step-2-4',
-          order: 4,
-          type: 'task',
-          title: 'Find the Extremes',
-          instruction:
-            'Using the same sales data:\n\n' +
-            '1. In **B8**, find the **highest** daily sales using MAX.\n' +
-            '2. In **B9**, find the **lowest** daily sales using MIN.\n' +
-            '3. In **B10**, **count** how many days are listed using COUNT.\n' +
-            '4. Click **Check**.',
-          whyItMatters: 'Identifying highs, lows, and counts is the first step in any data analysis.',
-          initialSheetState: {
-            name: 'Sheet1',
-            row: 12,
-            column: 3,
-            celldata: [
-              { r: 0, c: 0, v: { v: 'Day', m: 'Day', bl: 1, bg: '#e8f0fe' } },
-              { r: 0, c: 1, v: { v: 'Sales', m: 'Sales', bl: 1, bg: '#e8f0fe' } },
-              { r: 1, c: 0, v: { v: 'Monday', m: 'Monday' } },
-              { r: 1, c: 1, v: { v: 240, m: '240' } },
-              { r: 2, c: 0, v: { v: 'Tuesday', m: 'Tuesday' } },
-              { r: 2, c: 1, v: { v: 310, m: '310' } },
-              { r: 3, c: 0, v: { v: 'Wednesday', m: 'Wednesday' } },
-              { r: 3, c: 1, v: { v: 275, m: '275' } },
-              { r: 4, c: 0, v: { v: 'Thursday', m: 'Thursday' } },
-              { r: 4, c: 1, v: { v: 290, m: '290' } },
-              // Pre-filled results from previous task
-              { r: 5, c: 0, v: { v: 'Total', m: 'Total', bl: 1, bg: '#d4edda' } },
-              { r: 5, c: 1, v: { v: 1115, m: '1115', f: '=SUM(B2:B5)' } },
-              { r: 6, c: 0, v: { v: 'Average', m: 'Average', bl: 1, bg: '#d4edda' } },
-              { r: 6, c: 1, v: { v: 278.75, m: '278.75', f: '=AVERAGE(B2:B5)' } },
-              // Labels for new answer cells
-              { r: 7, c: 0, v: { v: 'Highest', m: 'Highest', bl: 1, bg: '#fff3cd' } },
-              { r: 8, c: 0, v: { v: 'Lowest', m: 'Lowest', bl: 1, bg: '#fff3cd' } },
-              { r: 9, c: 0, v: { v: 'Count', m: 'Count', bl: 1, bg: '#fff3cd' } },
-            ],
-          },
-          task: {
-            id: 'task-2-4',
-            expectations: [
-              { cellRef: 'B8', expectedValue: 310, expectedFormula: '=MAX(B2:B5)', checkFormula: true },
-              { cellRef: 'B9', expectedValue: 240, expectedFormula: '=MIN(B2:B5)', checkFormula: true },
-              { cellRef: 'B10', expectedValue: 4, expectedFormula: '=COUNT(B2:B5)', checkFormula: true },
-            ],
-            editableCells: ['B8', 'B9', 'B10'],
-            hints: [
-              'B8 should use =MAX(B2:B5) to find the highest value.',
-              'B9 should use =MIN(B2:B5) to find the lowest value.',
-              'B10 should use =COUNT(B2:B5) to count how many numbers there are.',
-            ],
-            successMessage: 'Highest is 310, lowest is 240, and there are 4 days — well done!',
-            almostCorrectMessage: 'Values are correct but make sure you used the MAX, MIN, and COUNT functions.',
-            incorrectMessage: 'Use =MAX(B2:B5) in B8, =MIN(B2:B5) in B9, and =COUNT(B2:B5) in B10.',
-            xpValue: 20,
-            bonusXp: 10,
-          },
-        },
-
-        // Step 5 — Challenge: School Canteen Analysis
-        {
-          id: 'step-2-5',
-          order: 5,
-          type: 'challenge',
-          title: 'School Canteen Analysis',
-          instruction:
-            'The school canteen tracked sales today. Your job is to analyse the data!\n\n' +
-            '1. Calculate **Revenue** for each item (Sold × Price):\n' +
-            '   - **D2**: `=B2*C2`\n' +
-            '   - **D3**: `=B3*C3`\n' +
-            '   - **D4**: `=B4*C4`\n' +
-            '   - **D5**: `=B5*C5`\n\n' +
-            '2. In **D7**, calculate the **total revenue** using SUM.\n' +
-            '3. In **B8**, find the **most sold** item using MAX.\n' +
-            '4. In **B9**, find the **average** number sold using AVERAGE.\n\n' +
-            '💡 **Reflection:** Which item makes the most money? Is it the same as the most popular item?',
-          whyItMatters: 'Combining formulas and functions to answer real questions is what makes spreadsheets so powerful.',
-          initialSheetState: {
-            name: 'Sheet1',
-            row: 11,
-            column: 5,
-            celldata: [
-              // Headers
-              { r: 0, c: 0, v: { v: 'Item', m: 'Item', bl: 1, bg: '#e8f0fe' } },
-              { r: 0, c: 1, v: { v: 'Sold', m: 'Sold', bl: 1, bg: '#e8f0fe' } },
-              { r: 0, c: 2, v: { v: 'Price', m: 'Price', bl: 1, bg: '#e8f0fe' } },
-              { r: 0, c: 3, v: { v: 'Revenue', m: 'Revenue', bl: 1, bg: '#e8f0fe' } },
-              // Data
-              { r: 1, c: 0, v: { v: 'Burger', m: 'Burger' } },
-              { r: 1, c: 1, v: { v: 25, m: '25' } },
-              { r: 1, c: 2, v: { v: 6, m: '6' } },
-              { r: 2, c: 0, v: { v: 'Wrap', m: 'Wrap' } },
-              { r: 2, c: 1, v: { v: 18, m: '18' } },
-              { r: 2, c: 2, v: { v: 7, m: '7' } },
-              { r: 3, c: 0, v: { v: 'Juice', m: 'Juice' } },
-              { r: 3, c: 1, v: { v: 40, m: '40' } },
-              { r: 3, c: 2, v: { v: 3, m: '3' } },
-              { r: 4, c: 0, v: { v: 'Chips', m: 'Chips' } },
-              { r: 4, c: 1, v: { v: 32, m: '32' } },
-              { r: 4, c: 2, v: { v: 4, m: '4' } },
-              // Labels for summary
-              { r: 6, c: 3, v: { v: 'Total Revenue', m: 'Total Revenue', bl: 1, bg: '#fff3cd' } },
-              // Note: D7 label is on c:3 row 6, answer goes in D7 (r:6, but we label on c:2)
-              { r: 6, c: 2, v: { v: 'Total Revenue →', m: 'Total Revenue →', bl: 1, bg: '#fff3cd' } },
-              { r: 7, c: 0, v: { v: 'Most Sold', m: 'Most Sold', bl: 1, bg: '#fff3cd' } },
-              { r: 8, c: 0, v: { v: 'Avg Sold', m: 'Avg Sold', bl: 1, bg: '#fff3cd' } },
-            ],
-          },
-          task: {
-            id: 'task-2-5',
-            expectations: [
-              { cellRef: 'D2', expectedValue: 150, expectedFormula: '=B2*C2', checkFormula: true },
-              { cellRef: 'D3', expectedValue: 126, expectedFormula: '=B3*C3', checkFormula: true },
-              { cellRef: 'D4', expectedValue: 120, expectedFormula: '=B4*C4', checkFormula: true },
-              { cellRef: 'D5', expectedValue: 128, expectedFormula: '=B5*C5', checkFormula: true },
-              { cellRef: 'D7', expectedValue: 524, expectedFormula: '=SUM(D2:D5)', checkFormula: true },
-              { cellRef: 'B8', expectedValue: 40, expectedFormula: '=MAX(B2:B5)', checkFormula: true },
-              { cellRef: 'B9', expectedValue: 28.75, expectedFormula: '=AVERAGE(B2:B5)', checkFormula: true },
-            ],
-            editableCells: ['D2', 'D3', 'D4', 'D5', 'D7', 'B8', 'B9'],
-            hints: [
-              'Revenue = Sold × Price. In D2, type =B2*C2.',
-              'For total revenue, use =SUM(D2:D5) in D7.',
-              'Most sold uses =MAX(B2:B5) in B8. Average sold uses =AVERAGE(B2:B5) in B9.',
-            ],
-            successMessage: '🎉 Canteen analysis complete! Burger makes the most money (£150) but Juice is the most popular (40 sold).',
-            almostCorrectMessage: 'Values look right — double-check that you used formulas and functions, not typed numbers.',
-            incorrectMessage: 'Calculate each revenue with =B*C, total with =SUM(D2:D5), most sold with =MAX(B2:B5), and average with =AVERAGE(B2:B5).',
-            xpValue: 40,
-            bonusXp: 20,
           },
         },
       ],
     },
 
     // ──────────────────────────────────────────────
-    // LESSON 4: Sorting and Filtering (4 steps)
+    // LESSON 5: Sorting and Filtering (8 steps) — EXPANDED
     // ──────────────────────────────────────────────
     {
       id: 'lesson-3',
-      order: 4,
+      order: 5,
       title: 'Sorting and Filtering',
       description: 'Learn how to sort data in order and filter to show only what you need.',
       steps: [
@@ -1100,10 +1314,148 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 6 — Quiz: Filtering Concept
+        // Step 6 — Table Task: Combined Sort + Filter Challenge (NEW)
+        {
+          id: 'step-3-6-combo',
+          order: 6,
+          type: 'table-task',
+          title: 'Sort & Filter Together',
+          instruction:
+            'Here is a school trip sign-up list. Use **both** sorting and filtering to answer the question.\n\n' +
+            '1. **Filter** the Year Group column to show only **Year 9** students.\n' +
+            '2. Then **sort** the Score column from **highest to lowest**.\n' +
+            '3. Who scored the highest among Year 9 students?',
+          whyItMatters: 'In real life you often need to combine sorting and filtering — for example, finding the top performer in a specific group.',
+          tableTask: {
+            columns: [
+              { key: 'name', label: 'Name', type: 'text' },
+              { key: 'year', label: 'Year Group', type: 'number' },
+              { key: 'score', label: 'Score', type: 'number' },
+              { key: 'diet', label: 'Dietary Req.', type: 'text' },
+            ],
+            data: [
+              { name: 'Ava', year: 9, score: 72, diet: 'None' },
+              { name: 'Liam', year: 10, score: 88, diet: 'Vegetarian' },
+              { name: 'Zoe', year: 9, score: 91, diet: 'None' },
+              { name: 'Noah', year: 10, score: 65, diet: 'None' },
+              { name: 'Mia', year: 9, score: 84, diet: 'Gluten-free' },
+              { name: 'Ethan', year: 11, score: 79, diet: 'None' },
+              { name: 'Olivia', year: 9, score: 68, diet: 'Halal' },
+              { name: 'James', year: 10, score: 77, diet: 'None' },
+              { name: 'Sophie', year: 11, score: 93, diet: 'Vegan' },
+              { name: 'Ryan', year: 9, score: 56, diet: 'None' },
+            ],
+            question: 'Who scored the highest among Year 9 students?',
+            correctAnswer: 'Zoe',
+            acceptableAnswers: ['zoe'],
+            explanation: 'After filtering to Year 9 only, Zoe has the highest score at 91.',
+            enableSort: true,
+            enableFilter: true,
+          },
+          task: {
+            id: 'task-3-6-combo',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'First, filter the Year Group column to show only 9.',
+              'Then sort the Score column from highest to lowest.',
+              'The student at the top after filtering and sorting is the answer.',
+            ],
+            successMessage: '🎉 Correct! Zoe scored 91, the highest among Year 9 students. Great use of filter + sort!',
+            incorrectMessage: 'Filter to Year 9 first, then sort Score from highest to lowest — who\'s at the top?',
+            xpValue: 15,
+            bonusXp: 10,
+          },
+        },
+
+        // Step 7 — Table Task: Dietary Requirements Filter (NEW)
+        {
+          id: 'step-3-7-diet',
+          order: 7,
+          type: 'table-task',
+          title: 'School Trip Catering',
+          instruction:
+            'The school trip organiser needs to know how many students have **special dietary requirements** (anything other than "None").\n\n' +
+            'Use the **Dietary Req.** filter to explore the data, then answer the question.',
+          whyItMatters: 'Filtering text columns is just as useful as filtering numbers — it helps you find specific groups quickly.',
+          tableTask: {
+            columns: [
+              { key: 'name', label: 'Name', type: 'text' },
+              { key: 'year', label: 'Year Group', type: 'number' },
+              { key: 'diet', label: 'Dietary Req.', type: 'text' },
+              { key: 'bus', label: 'Bus', type: 'text' },
+            ],
+            data: [
+              { name: 'Ava', year: 9, diet: 'None', bus: 'Bus A' },
+              { name: 'Liam', year: 10, diet: 'Vegetarian', bus: 'Bus A' },
+              { name: 'Zoe', year: 9, diet: 'None', bus: 'Bus B' },
+              { name: 'Noah', year: 10, diet: 'None', bus: 'Bus A' },
+              { name: 'Mia', year: 9, diet: 'Gluten-free', bus: 'Bus B' },
+              { name: 'Ethan', year: 11, diet: 'None', bus: 'Bus A' },
+              { name: 'Olivia', year: 9, diet: 'Halal', bus: 'Bus B' },
+              { name: 'James', year: 10, diet: 'None', bus: 'Bus A' },
+              { name: 'Sophie', year: 11, diet: 'Vegan', bus: 'Bus B' },
+              { name: 'Ryan', year: 9, diet: 'None', bus: 'Bus A' },
+            ],
+            question: 'How many students have a special dietary requirement (not "None")?',
+            correctAnswer: '4',
+            acceptableAnswers: ['four', '4'],
+            explanation: 'Liam (Vegetarian), Mia (Gluten-free), Olivia (Halal), and Sophie (Vegan) — 4 students have special dietary needs.',
+            enableSort: true,
+            enableFilter: true,
+          },
+          task: {
+            id: 'task-3-7-diet',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'Try filtering the Dietary Req. column to different values.',
+              'Count all students whose dietary requirement is NOT "None".',
+              'Liam, Mia, Olivia, and Sophie each have a different dietary need.',
+            ],
+            successMessage: '🎉 Correct! 4 students need special meals. Filtering makes trip planning much easier!',
+            incorrectMessage: 'Look through the Dietary Req. column — count everyone who isn\'t "None".',
+            xpValue: 10,
+            bonusXp: 5,
+          },
+        },
+
+        // Step 8 — Quiz: Sort vs Filter (NEW)
+        {
+          id: 'step-3-8-reflection',
+          order: 8,
+          type: 'quiz',
+          title: 'Sort vs Filter',
+          instruction: 'What is the main difference between sorting and filtering?',
+          quiz: {
+            type: 'multiple-choice',
+            options: [
+              'Sorting changes the data; filtering doesn\'t',
+              'Sorting rearranges all rows; filtering hides some rows',
+              'Filtering is faster than sorting',
+              'There is no difference',
+            ],
+            correctAnswer: 'Sorting rearranges all rows; filtering hides some rows',
+            explanation: 'Sorting changes the order of all rows (nothing is hidden). Filtering hides rows that don\'t match your condition — the data is still there, just not visible.',
+          },
+          task: {
+            id: 'task-3-8-reflection',
+            expectations: [],
+            editableCells: [],
+            hints: [
+              'Think about what happens to rows you can\'t see — are they rearranged or hidden?',
+              'Sorting keeps all rows visible; filtering hides some.',
+            ],
+            successMessage: 'Correct! Sorting = rearrange, Filtering = hide. Both are non-destructive — your data is always safe.',
+            incorrectMessage: 'Think carefully: sorting changes the order of ALL rows, while filtering HIDES rows that don\'t match.',
+            xpValue: 5,
+          },
+        },
+
+        // Step 9 — Quiz: Filtering Concept (original)
         {
           id: 'step-3-6',
-          order: 6,
+          order: 9,
           type: 'quiz',
           title: 'Filtering Concept Check',
           instruction: 'What happens to data that doesn\'t match a filter?',
