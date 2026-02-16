@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BookOpen, Mail, Lock, User, ArrowRight, ArrowLeft, GraduationCap, Users, KeyRound } from 'lucide-react';
@@ -113,6 +114,28 @@ const Auth: React.FC = () => {
                       {loading ? 'Please wait...' : 'Sign In'}
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
+                    <div className="text-right">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!email) {
+                            toast({ title: 'Enter your email first', variant: 'destructive' });
+                            return;
+                          }
+                          const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                            redirectTo: `${window.location.origin}/reset-password`,
+                          });
+                          if (error) {
+                            toast({ title: 'Error', description: error.message, variant: 'destructive' });
+                          } else {
+                            toast({ title: 'Check your email', description: 'We sent you a password reset link.' });
+                          }
+                        }}
+                        className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
                   </form>
                 </TabsContent>
               </Tabs>
