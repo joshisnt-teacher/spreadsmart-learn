@@ -13,6 +13,7 @@ import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import StudentProgressView from '@/components/StudentProgressView';
 import AssignmentManager from '@/components/AssignmentManager';
+import ModuleAnalyticsView from '@/components/ModuleAnalyticsView';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { allModules } from '@/data/module-registry';
 import { useTeacherModules } from '@/hooks/useCustomModules';
@@ -382,6 +383,7 @@ const TeacherDashboard: React.FC = () => {
               <TabsList>
                 <TabsTrigger value="students">Students</TabsTrigger>
                 <TabsTrigger value="assignments">Modules</TabsTrigger>
+                <TabsTrigger value="analytics">Analytics</TabsTrigger>
               </TabsList>
               <TabsContent value="students">
                 <StudentProgressView
@@ -392,6 +394,9 @@ const TeacherDashboard: React.FC = () => {
               </TabsContent>
               <TabsContent value="assignments">
                 <AssignmentManager classId={selectedClass.id} students={students} />
+              </TabsContent>
+              <TabsContent value="analytics">
+                <ModuleAnalyticsView classId={selectedClass.id} />
               </TabsContent>
             </Tabs>
           </motion.div>

@@ -14,15 +14,20 @@ import QuizStep from '@/components/QuizStep';
 import InteractiveTable from '@/components/InteractiveTable';
 import { checkTask, checkChartTask, checkQuizAnswer, checkTableTaskAnswer, getHint } from '@/lib/marking-engine';
 import { useLessonProgress } from '@/hooks/useProgress';
+import { useStepAnalytics } from '@/hooks/useStepAnalytics';
+import { useAuth } from '@/hooks/useAuth';
 import type { Lesson, Step, CheckResult, LessonProgress, ChartType } from '@/types/lesson';
 
 interface LessonPlayerProps {
   lesson: Lesson;
+  moduleId?: string;
   onComplete?: (xpEarned: number) => void;
   onBack?: () => void;
 }
 
-const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack }) => {
+const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onComplete, onBack }) => {
+  const { user } = useAuth();
+  const { logEvent } = useStepAnalytics(moduleId, lesson.id, user?.id);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [progress, setProgress] = useState<LessonProgress>({
     lessonId: lesson.id,
@@ -105,6 +110,14 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
     }
   }, [progress.completedStepIds, progress.totalXp, progress.attempts]);
 
+  // Log step_start when step changes
+  useEffect(() => {
+    const step = lesson.steps[currentStepIndex];
+    if (step) {
+      logEvent(step.id, 'step_start');
+    }
+  }, [currentStepIndex, lesson.steps, logEvent]);
+
   const currentStep = lesson.steps[currentStepIndex];
   const isChallengeStep = currentStep?.type === 'challenge';
   const isChartStep = currentStep?.type === 'chart';
@@ -155,6 +168,8 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
       const alreadyDone = progress.completedStepIds.includes(currentStep.id);
       const xp = (isRedoing || alreadyDone) ? 0 : (currentStep.task?.xpValue ?? 0) + (isFirstAttempt ? (currentStep.task?.bonusXp || 0) : 0);
 
+      logEvent(currentStep.id, 'step_complete', { attempt_count: attemptCount + 1 });
+
       // Fire confetti for challenge steps
       if (isChallengeStep) {
         fireConfetti();
@@ -168,6 +183,8 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
       }));
       setIsRedoing(false);
     } else {
+      logEvent(currentStep.id, 'check_fail', { attempt: attemptCount + 1, feedback_type: result.type });
+
       setProgress((prev) => ({
         ...prev,
         attempts: newAttempts,
@@ -188,6 +205,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
     if (!currentStep) return;
     const alreadyDone = progress.completedStepIds.includes(currentStep.id);
     const xp = (isRedoing || alreadyDone) ? 0 : (currentStep.task?.xpValue ?? 5);
+    logEvent(currentStep.id, 'step_complete', { attempt_count: 1 });
     setProgress((prev) => ({
       ...prev,
       completedStepIds: [...new Set([...prev.completedStepIds, currentStep.id])],
@@ -246,11 +264,13 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onComplete, onBack 
     if (hint) {
       setCurrentHint(hint);
       setShowHint(true);
+      logEvent(currentStep.id, 'hint_used', { hint_index: Math.min(attemptCount, currentStep.task.hints.length - 1) });
     } else if (currentStep.task.hints.length > 0) {
       setCurrentHint(currentStep.task.hints[0]);
       setShowHint(true);
+      logEvent(currentStep.id, 'hint_used', { hint_index: 0 });
     }
-  }, [currentStep, attemptCount]);
+  }, [currentStep, attemptCount, logEvent]);
 
   if (!currentStep) return null;
 
