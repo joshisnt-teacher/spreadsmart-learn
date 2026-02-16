@@ -86,9 +86,9 @@ const InteractiveTable: React.FC<InteractiveTableProps> = ({ config, answer, onA
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
   return (
-    <div className="flex-1 flex flex-col p-6 gap-4 overflow-auto">
-      <Card>
-        <CardContent className="p-0">
+    <div className="flex-1 flex flex-col p-4 md:p-6 gap-4 min-h-0 overflow-hidden">
+      <Card className="flex-1 min-h-0 flex flex-col">
+        <CardContent className="p-0 flex-1 min-h-0 overflow-auto">
           {/* Filter bar */}
           {config.enableFilter && (
             <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/30">
