@@ -1,112 +1,98 @@
 
 
-## Pre-Launch Security and Auth Hardening
+## Step-Level Analytics for Teachers
 
-### Current State Summary
+### Overview
+Add granular event tracking to the lesson player so teachers can see which steps students struggle with most, where they drop off, how long they spend, and how often they use hints. This data powers a new "Module Analytics" tab in the teacher dashboard.
 
-Your app is in good shape. RLS is enabled on every table with restrictive (not permissive) policies. Edge functions validate teacher ownership server-side. Here's what needs attention:
+### 1. New Database Table: `step_events`
 
----
+A single append-only events table captures all analytics signals:
 
-### 1. Security and Permissions Fixes
-
-**Already solid:**
-- RLS enabled on all 8 tables with restrictive policies
-- Student progress scoped to own user ID
-- Teacher queries scoped to own classes/modules
-- Edge functions (create-student, delete-student, bulk-create-students) verify teacher role and class ownership server-side
-
-**Fixes needed:**
-
-| Issue | What to do |
-|-------|-----------|
-| Students can't view their own class info | Add a SELECT policy on `classes` so students enrolled via `class_students` can see their class name |
-| Module banner uploads not teacher-scoped | Tighten the `module-banners` storage policy to check `has_role(auth.uid(), 'teacher')` instead of just `auth.uid() IS NOT NULL` (currently any logged-in student could upload/delete banners) |
-| Leaked password protection disabled | Enable it via the authentication settings to prevent users from using known compromised passwords |
-| No admin role needed for MVP | Skip admin-level access for now -- teacher + student roles are sufficient. Can add later as Phase 2. |
-
----
-
-### 2. Authentication Improvements
-
-**Current state:** Email+password for teachers, username+PIN for students. No password reset, no session management, no SSO.
-
-**MVP plan:**
-
-| Feature | Implementation |
-|---------|---------------|
-| Password reset for teachers | Add a "Forgot password?" link on the login form, create a `/reset-password` page that handles the recovery token and lets teachers set a new password |
-| Session timeout | Not critical for MVP -- Supabase sessions auto-refresh. Revisit if schools require it. |
-| "Log out everywhere" | Not available without custom session tracking. The existing sign-out clears the current session, which is sufficient for MVP. |
-| Google/Microsoft SSO | Mark as Phase 1.1 -- not needed for launch. Lovable Cloud supports Google OAuth out of the box when you're ready. |
-| Account linking (email + SSO) | Only relevant once SSO is added. Phase 1.1. |
-
----
-
-### 3. Route Protection
-
-Currently, routes are "soft-protected" via `useEffect` redirects. This works but briefly flashes content before redirecting. For MVP this is acceptable, but we can tighten it by showing a loading spinner until auth state is confirmed.
-
----
-
-### Implementation Steps
-
-1. **Database migration** -- Add `classes` SELECT policy for students
-2. **Database migration** -- Tighten `module-banners` storage policies to require teacher role
-3. **Enable leaked password protection** via auth settings
-4. **Add password reset flow:**
-   - "Forgot password?" link on the teacher login tab
-   - New `/reset-password` page that reads the recovery token and calls `updateUser({ password })`
-   - Add route in `App.tsx`
-5. **Minor:** Ensure loading states prevent content flash on protected routes
-
-### What's deferred to Phase 1.1
-- Google/Microsoft SSO for school accounts
-- Account linking rules
-- "Log out everywhere" / session management
-- Admin role with full access
-- Signed URLs for storage (public buckets are fine for avatars and module banners since they contain no sensitive data)
-
-### Technical Details
-
-**New SELECT policy on `classes`:**
-```sql
-CREATE POLICY "Students can view enrolled classes"
-ON public.classes FOR SELECT
-USING (
-  EXISTS (
-    SELECT 1 FROM public.class_students
-    WHERE class_students.class_id = classes.id
-    AND class_students.student_user_id = auth.uid()
-  )
-);
+```text
+step_events
+-----------
+id            uuid (PK, default gen_random_uuid())
+user_id       uuid (NOT NULL)
+module_id     text (NOT NULL)
+lesson_id     text (NOT NULL)
+step_id       text (NOT NULL)
+event_type    text (NOT NULL)  -- 'step_start', 'step_complete', 'check_fail', 'hint_used'
+metadata      jsonb (default '{}')  -- e.g. { attempt: 2, time_spent_seconds: 45 }
+created_at    timestamptz (default now())
 ```
 
-**Tightened storage policies for module-banners:**
-```sql
--- Drop overly permissive policies
-DROP POLICY "Teachers can upload module banners" ON storage.objects;
-DROP POLICY "Teachers can update module banners" ON storage.objects;
-DROP POLICY "Teachers can delete module banners" ON storage.objects;
+RLS policies:
+- Students can INSERT their own events (`auth.uid() = user_id`)
+- Students can SELECT their own events
+- Teachers can SELECT all events (for analytics)
 
--- Recreate with role check
-CREATE POLICY "Teachers can upload module banners" ON storage.objects
-FOR INSERT WITH CHECK (
-  bucket_id = 'module-banners' AND has_role(auth.uid(), 'teacher')
-);
-CREATE POLICY "Teachers can update module banners" ON storage.objects
-FOR UPDATE USING (
-  bucket_id = 'module-banners' AND has_role(auth.uid(), 'teacher')
-);
-CREATE POLICY "Teachers can delete module banners" ON storage.objects
-FOR DELETE USING (
-  bucket_id = 'module-banners' AND has_role(auth.uid(), 'teacher')
-);
+Index on `(module_id, lesson_id, step_id, event_type)` for fast aggregation queries.
+
+### 2. Client-Side Event Logging
+
+Modify `LessonPlayer.tsx` to emit events at key moments:
+
+| Trigger | Event Type | Metadata |
+|---------|-----------|----------|
+| Step becomes active (index changes) | `step_start` | `{}` |
+| Step marked complete (correct answer or instruction continue) | `step_complete` | `{ time_spent_seconds, attempt_count }` |
+| Check returns incorrect/almost | `check_fail` | `{ attempt: N, feedback_type }` |
+| Hint shown | `hint_used` | `{ hint_index }` |
+
+Time tracking: record `Date.now()` when a step starts, compute duration on complete.
+
+A lightweight `useStepAnalytics` hook will handle this:
+- Accepts `moduleId`, `lessonId`, `userId`
+- Exposes `logEvent(stepId, eventType, metadata)` 
+- Batches inserts or fires individually (individual is fine for MVP given low volume)
+
+### 3. Teacher Analytics View
+
+Add a new "Analytics" tab inside the class-specific view (alongside "Students" and "Modules" tabs).
+
+**Components:**
+
+**ModuleAnalyticsView** -- the main analytics panel with:
+- Module and lesson selector dropdowns
+- Three data cards at the top:
+  - Total step starts vs completes (drop-off indicator)
+  - Average time per step
+  - Average attempts per step
+
+**MostFailedSteps table** -- sorted by failure count descending:
+
+```text
+| Step Title          | Lesson       | Fail Count | Avg Attempts | Avg Time | Hint Usage |
+|---------------------|-------------|------------|-------------|----------|------------|
+| Enter SUM formula   | Lesson 1    | 47         | 3.2         | 2m 15s   | 68%        |
+| Create bar chart    | Lesson 3    | 31         | 2.8         | 1m 45s   | 52%        |
 ```
 
-**Password reset page (`/reset-password`):**
-- Reads `type=recovery` from URL hash
-- Shows a "Set new password" form
-- Calls `supabase.auth.updateUser({ password })`
-- Redirects to `/auth` on success
+**Drop-off funnel** -- a simple bar chart (using Recharts, already installed) showing how many students reached each step in a lesson. Steep drops indicate problem areas.
+
+### 4. Data Fetching
+
+A new hook `useModuleAnalytics(moduleId, classId?)` will:
+1. Query `step_events` aggregated by step_id and event_type
+2. Optionally filter by class (join through `class_students` to scope by user_ids in that class)
+3. Return structured data for the UI components
+
+### 5. File Changes Summary
+
+| File | Change |
+|------|--------|
+| **New migration** | Create `step_events` table with RLS policies and index |
+| **New: `src/hooks/useStepAnalytics.ts`** | Hook to log events from the lesson player |
+| **`src/components/LessonPlayer.tsx`** | Wire up the analytics hook -- log step_start, step_complete, check_fail, hint_used |
+| **New: `src/hooks/useModuleAnalytics.ts`** | Hook to fetch and aggregate step events for the teacher view |
+| **New: `src/components/ModuleAnalyticsView.tsx`** | Teacher-facing analytics panel with failed steps table and drop-off chart |
+| **`src/pages/TeacherDashboard.tsx`** | Add "Analytics" tab in the class view |
+
+### 6. Privacy and Performance Notes
+
+- Events are scoped by RLS -- students can only write their own, teachers can read all
+- The events table is append-only (no UPDATE/DELETE for students) to preserve data integrity
+- For MVP, direct queries are fine. If event volume grows large, a database view or materialized aggregation can be added later
+- No personally identifiable information beyond user_id is stored in events
 
