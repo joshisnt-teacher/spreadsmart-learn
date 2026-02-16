@@ -149,7 +149,6 @@ const SpreadsheetWorkspace: React.FC<SpreadsheetWorkspaceProps> = ({
         showFormulaBar={true}
         addRows={0}
         onChange={handleChange}
-        allowEdit={false}
           column={initialState.column || 6}
           row={initialState.row || 10}
         />
