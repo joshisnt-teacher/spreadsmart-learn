@@ -23,6 +23,9 @@ export const useProgress = (moduleId: string) => {
       return;
     }
 
+    let ignore = false;
+    setState(prev => ({ ...prev, loading: true }));
+
     const load = async () => {
       const { data } = await supabase
         .from('module_progress')
@@ -30,6 +33,8 @@ export const useProgress = (moduleId: string) => {
         .eq('user_id', user.id)
         .eq('module_id', moduleId)
         .maybeSingle();
+
+      if (ignore) return;
 
       setState({
         completedLessonIds: data?.completed_lesson_ids ?? [],
@@ -39,6 +44,7 @@ export const useProgress = (moduleId: string) => {
     };
 
     load();
+    return () => { ignore = true; };
   }, [user, moduleId]);
 
   const markLessonComplete = useCallback(async (lessonId: string, xpEarned: number) => {
