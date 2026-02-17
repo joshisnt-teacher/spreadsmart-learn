@@ -1,53 +1,64 @@
 
 
-## Two Bugs: Root Causes and Fixes
+## Bug: Module Progress Shows 0 XP / No Completed Lessons
 
-### Bug 1: Completed Lessons No Longer Show as Completed
+### Root Cause: Race Condition in `useProgress`
 
-**Root Cause:** The sorting/filtering lesson was recently expanded from 6 steps to 9 steps (three new steps were added: `step-3-6-combo`, `step-3-7-diet`, `step-3-8-reflection`). The student had already completed the original 6 steps, so their `lesson_progress` record shows `completed_step_ids` with 6 entries. However, the lesson completion check on line 110-111 of `LessonPlayer.tsx` compares `completedStepIds.length === lesson.steps.length` -- since 6 !== 9, the lesson is now marked incomplete. This also means `module_progress.completed_lesson_ids` no longer includes it.
+The `useProgress` hook has a classic async race condition:
 
-The "Continue Learning" button on the module landing page finds the first lesson whose ID is NOT in `completed_lesson_ids`, so it correctly points to the sorting lesson. But when the student enters that lesson, they see all 6 original steps ticked off and get dumped at step 1 (because the saved `current_step_id` is `step-3-5`, which was the old last step, so the player jumps there, but the lesson is "not completed" so it resumes from the saved position). The 3 new steps at the end are not yet completed.
+1. `ModulePlayer` initially renders with `currentModule = undefined`, so `useProgress('')` is called
+2. The hook fires an async query with `module_id = ''` (Query A)
+3. A moment later, `currentModule` loads, so `useProgress('excel-basics')` is called
+4. The hook fires a new async query with `module_id = 'excel-basics'` (Query B)
+5. **Query B resolves first** with the correct progress data and updates state
+6. **Query A resolves second** with `null` (no module with id '') and **overwrites the correct data** with empty arrays and 0 XP
 
-**Fix:** Make the lesson completion logic resilient to content changes. Instead of checking `completedStepIds.length === lesson.steps.length`, check whether every step ID in the current lesson definition exists in the completed set. Additionally, when a student re-enters a lesson where some steps are already done but new steps were added, resume at the first incomplete step rather than step 1 or the old saved position.
+Additionally, `loading` is never reset to `true` when `moduleId` changes, so the loading screen is skipped and the user briefly sees empty data even in the best case.
 
-Changes in `LessonPlayer.tsx`:
-- Line 110-111: Change `progress.completedStepIds.length === lesson.steps.length` to `lesson.steps.every(s => progress.completedStepIds.includes(s.id))`
-- Line 90-92: When loading saved progress and the lesson is NOT marked completed, find the first step whose ID is NOT in `completed_step_ids` and jump there (instead of using `current_step_id` which may point to a step that no longer exists or is in the wrong position)
+The database confirms josh (user `ccaeef26`) has 4/5 lessons completed with 420 XP -- the data is there, it's just being overwritten by a stale query response.
 
-Changes in `useProgress.ts` (data repair):
-- No code changes needed -- the `completed` flag will be correctly recomputed next time the student finishes the lesson
+### Fix (single file: `src/hooks/useProgress.ts`)
 
-**Database Fix:** Update the student's existing `lesson_progress` so they don't have to redo the 6 steps they already finished. This is a one-time data concern; the code fix prevents it from happening again.
+Add a stale-query guard using an `ignore` flag in the useEffect cleanup, and reset loading when the moduleId changes:
 
----
+```typescript
+useEffect(() => {
+  if (!user) {
+    setState({ completedLessonIds: [], totalXp: 0, loading: false });
+    return;
+  }
 
-### Bug 2: Table Filters Persisting Between Steps
+  let ignore = false;                    // <-- guard flag
+  setState(prev => ({ ...prev, loading: true }));  // <-- reset loading
 
-**Root Cause:** The `InteractiveTable` component (line 20-23 of `InteractiveTable.tsx`) stores sort/filter state in `useState`. When the student moves from one `table-task` step to the next, React reuses the same `InteractiveTable` component instance because:
-1. Both consecutive steps render `InteractiveTable` in the same position in the component tree
-2. No `key` prop is provided to force React to unmount and remount the component
-3. The `resetKey` (which IS incremented on step change) is never passed to `InteractiveTable`
+  const load = async () => {
+    const { data } = await supabase
+      .from('module_progress')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('module_id', moduleId)
+      .maybeSingle();
 
-So filters set on Step 4 (e.g. "filter Year Group to Year 9") carry over to Step 5, which has completely different data, resulting in zero matching rows.
+    if (ignore) return;                  // <-- discard stale result
 
-**Fix:** Add a `key` prop to the `InteractiveTable` component in `LessonPlayer.tsx` so React creates a fresh instance on each step change. This is a one-line fix.
+    setState({
+      completedLessonIds: data?.completed_lesson_ids ?? [],
+      totalXp: data?.total_xp ?? 0,
+      loading: false,
+    });
+  };
 
-Change in `LessonPlayer.tsx` line 478:
+  load();
+  return () => { ignore = true; };      // <-- cleanup cancels stale query
+}, [user, moduleId]);
 ```
-<InteractiveTable
-  key={currentStep.id}    // <-- forces remount on step change
-  config={currentStep.tableTask}
-  answer={tableAnswer}
-  onAnswerChange={setTableAnswer}
-/>
-```
 
----
+This is a 3-line addition to the existing code. No other files need to change.
 
-### Summary of Code Changes
+### Why This Fully Fixes the Issue
 
-| File | Change |
-|------|--------|
-| `src/components/LessonPlayer.tsx` | 1. Add `key={currentStep.id}` to `InteractiveTable` (line 478) to fix filter persistence. 2. Change the completion check (line 110-111) from length comparison to `every()` check. 3. Fix resume logic (line 90-92) to jump to the first incomplete step when re-entering an in-progress lesson. |
+- When `moduleId` changes from `''` to `'excel-basics'`, the cleanup runs and sets `ignore = true` for the old query
+- If the old query resolves after the new one, its `setState` is skipped
+- `loading` is reset to `true` so the loading screen shows until the correct data arrives
+- The student sees their actual progress (420 XP, 4/5 lessons) immediately when the page loads
 
-Both fixes are small and surgical -- no new files, no schema changes, no new dependencies.
