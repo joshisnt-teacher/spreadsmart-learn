@@ -88,8 +88,13 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
         });
         // Jump to saved step only for in-progress lessons; completed lessons start at step 1
         if (!saved.completed) {
-          const idx = lesson.steps.findIndex(s => s.id === saved.current_step_id);
-          if (idx >= 0) setCurrentStepIndex(idx);
+          // Jump to first incomplete step (handles new steps added after student started)
+          const firstIncompleteIdx = lesson.steps.findIndex(s => !saved.completed_step_ids.includes(s.id));
+          if (firstIncompleteIdx >= 0) setCurrentStepIndex(firstIncompleteIdx);
+          else {
+            const idx = lesson.steps.findIndex(s => s.id === saved.current_step_id);
+            if (idx >= 0) setCurrentStepIndex(idx);
+          }
         } else {
           // Replaying a completed lesson — award 0 XP throughout and disable analytics
           setIsRedoing(true);
@@ -107,7 +112,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
         progress.currentStepId,
         progress.totalXp,
         progress.attempts,
-        progress.completedStepIds.length === lesson.steps.length,
+        lesson.steps.every(s => progress.completedStepIds.includes(s.id)),
       );
     }
   }, [progress.completedStepIds, progress.totalXp, progress.attempts]);
@@ -128,7 +133,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
   const isInstructionStep = currentStep?.type === 'instruction' || (!currentStep?.task && !isChallengeStep && !isChartStep && !isQuizStep && !isTableTaskStep);
   const isStepComplete = progress.completedStepIds.includes(currentStep?.id || '');
   const isLastStep = currentStepIndex === lesson.steps.length - 1;
-  const isLessonComplete = progress.completedStepIds.length === lesson.steps.length;
+  const isLessonComplete = lesson.steps.every(s => progress.completedStepIds.includes(s.id));
   const attemptCount = progress.attempts[currentStep?.id || ''] || 0;
   const progressPercent = (progress.completedStepIds.length / lesson.steps.length) * 100;
 
@@ -476,6 +481,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
         ) : isTableTaskStep && currentStep.tableTask ? (
           <div className="flex-1 flex flex-col p-4 min-h-0">
             <InteractiveTable
+              key={currentStep.id}
               config={currentStep.tableTask}
               answer={tableAnswer}
               onAnswerChange={setTableAnswer}
