@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-type EventType = 'step_start' | 'step_complete' | 'check_fail' | 'hint_used';
+type EventType = 'step_start' | 'step_complete' | 'check_fail' | 'hint_used' | 'stuck';
 
 export function useStepAnalytics(moduleId: string, lessonId: string, userId: string | undefined, disabled?: boolean) {
   const stepStartTime = useRef<Record<string, number>>({});

@@ -161,11 +161,14 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
           isLastStep={player.isLastStep}
           isRedoing={player.isRedoing}
           isMobile={player.isMobile}
+          showStuckButton={player.showStuckButton}
+          stuckTriggered={player.stuckTriggered}
           onCheck={player.handleCheck}
           onInstructionContinue={player.handleInstructionContinue}
           onNext={player.handleNext}
           onReset={player.handleReset}
           onHint={player.handleHint}
+          onStuck={player.handleStuck}
         />
       </div>
     </div>

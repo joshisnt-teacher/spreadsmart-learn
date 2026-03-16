@@ -151,7 +151,11 @@ export function checkChartTask(
   const errors: string[] = [];
 
   if (chartTask.expectedChartType && selectedType !== chartTask.expectedChartType) {
-    errors.push(`Chart type should be ${chartTask.expectedChartType}, not ${selectedType || 'empty'}.`);
+    const acceptable = chartTask.acceptableChartTypes ?? [];
+    if (!acceptable.includes(selectedType as any)) {
+      const allowed = [chartTask.expectedChartType, ...acceptable].join(' or ');
+      errors.push(`Chart type should be ${allowed}, not ${selectedType || 'empty'}.`);
+    }
   }
   if (chartTask.expectedXKey && selectedXKey !== chartTask.expectedXKey) {
     errors.push(`X-axis should be "${chartTask.expectedXKey}".`);

@@ -816,6 +816,7 @@ export const chartsModule: Module = {
           },
           chartTask: {
             expectedChartType: 'area',
+            acceptableChartTypes: ['line'],
             expectedXKey: 'Week',
             expectedYKey: 'Downloads',
           },
