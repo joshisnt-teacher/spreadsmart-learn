@@ -80,11 +80,11 @@ export function useModuleAnalytics(
     }
 
     // Aggregate by step_id
-    const map = new Map<string, { starts: number; completes: number; fails: number; hints: number; totalTime: number; timeCount: number; totalAttempts: number; attemptCount: number; uniqueUsers: Set<string>; lessonId: string }>();
+    const map = new Map<string, { starts: number; completes: number; fails: number; hints: number; stuck: number; totalTime: number; timeCount: number; totalAttempts: number; attemptCount: number; uniqueUsers: Set<string>; lessonId: string }>();
 
     for (const evt of data as StepEvent[]) {
       if (!map.has(evt.step_id)) {
-        map.set(evt.step_id, { starts: 0, completes: 0, fails: 0, hints: 0, totalTime: 0, timeCount: 0, totalAttempts: 0, attemptCount: 0, uniqueUsers: new Set(), lessonId: evt.lesson_id });
+        map.set(evt.step_id, { starts: 0, completes: 0, fails: 0, hints: 0, stuck: 0, totalTime: 0, timeCount: 0, totalAttempts: 0, attemptCount: 0, uniqueUsers: new Set(), lessonId: evt.lesson_id });
       }
       const s = map.get(evt.step_id)!;
       switch (evt.event_type) {
