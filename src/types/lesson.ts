@@ -79,6 +79,7 @@ export interface ChartConfig {
 
 export interface ChartTaskExpectation {
   expectedChartType?: ChartType;
+  acceptableChartTypes?: ChartType[];
   expectedXKey?: string;
   expectedYKey?: string;
 }

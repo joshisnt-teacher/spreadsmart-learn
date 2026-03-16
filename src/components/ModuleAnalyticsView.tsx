@@ -204,6 +204,7 @@ const ModuleAnalyticsView: React.FC<ModuleAnalyticsViewProps> = ({ classId, cust
                         <TableCell className="font-medium">{s.stepTitle}</TableCell>
                         <TableCell className="text-muted-foreground">{s.lessonTitle}</TableCell>
                         <TableCell className="text-right text-destructive font-semibold">{s.fails}</TableCell>
+                        <TableCell className="text-right">{s.stuckCount > 0 ? <span className="text-warning font-semibold">{s.stuckCount}</span> : '—'}</TableCell>
                         <TableCell className="text-right">{s.avgAttempts || '—'}</TableCell>
                         <TableCell className="text-right">{s.avgTimeSeconds > 0 ? formatTime(s.avgTimeSeconds) : '—'}</TableCell>
                         <TableCell className="text-right">{s.hintUsagePercent}%</TableCell>

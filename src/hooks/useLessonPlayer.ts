@@ -32,6 +32,10 @@ export function useLessonPlayer(lesson: Lesson, moduleId: string, onComplete?: (
   const [tableAnswer, setTableAnswer] = useState('');
   const { saveProgress, loadProgress } = useLessonProgress(lesson.id);
 
+  // "I'm stuck" feature state
+  const [stepElapsed, setStepElapsed] = useState(0);
+  const [stuckTriggered, setStuckTriggered] = useState(false);
+
   const fireConfetti = useCallback(() => {
     confetti({ particleCount: 120, spread: 80, origin: { y: 0.7 }, colors: ['#FFD700', '#FF6B6B', '#4CAF50', '#2196F3', '#9C27B0'] });
     setTimeout(() => {
@@ -80,6 +84,14 @@ export function useLessonPlayer(lesson: Lesson, moduleId: string, onComplete?: (
     if (isMobile) setSidebarOpen(false);
   }, [currentStepIndex, isMobile]);
 
+  // Step elapsed timer — reset on step change, tick every second
+  useEffect(() => {
+    setStepElapsed(0);
+    setStuckTriggered(false);
+    const interval = setInterval(() => setStepElapsed(prev => prev + 1), 1000);
+    return () => clearInterval(interval);
+  }, [currentStepIndex]);
+
   const currentStep = lesson.steps[currentStepIndex];
   const isChallengeStep = currentStep?.type === 'challenge';
   const isChartStep = currentStep?.type === 'chart';
@@ -91,6 +103,9 @@ export function useLessonPlayer(lesson: Lesson, moduleId: string, onComplete?: (
   const isLessonComplete = lesson.steps.every(s => progress.completedStepIds.includes(s.id));
   const attemptCount = progress.attempts[currentStep?.id || ''] || 0;
   const progressPercent = (progress.completedStepIds.length / lesson.steps.length) * 100;
+
+  // Show "I'm stuck" after 60s on a non-instruction task step that isn't complete
+  const showStuckButton = !isInstructionStep && !isStepComplete && !stuckTriggered && stepElapsed >= 60;
 
   const handleDataChange = useCallback((celldata: any[]) => setCurrentCellData(celldata), []);
 
@@ -164,6 +179,18 @@ export function useLessonPlayer(lesson: Lesson, moduleId: string, onComplete?: (
     else if (currentStep.task.hints.length > 0) { setCurrentHint(currentStep.task.hints[0]); setShowHint(true); logEvent(currentStep.id, 'hint_used', { hint_index: 0 }); }
   }, [currentStep, attemptCount, logEvent]);
 
+  const handleStuck = useCallback(() => {
+    if (!currentStep) return;
+    logEvent(currentStep.id, 'stuck', { time_on_step_seconds: stepElapsed, attempt_count: attemptCount });
+    setStuckTriggered(true);
+    // Auto-show a hint
+    if (currentStep.task) {
+      const hint = getHint(currentStep.task, Math.max(attemptCount, 2));
+      if (hint) { setCurrentHint(hint); setShowHint(true); }
+      else if (currentStep.task.hints.length > 0) { setCurrentHint(currentStep.task.hints[0]); setShowHint(true); }
+    }
+  }, [currentStep, stepElapsed, attemptCount, logEvent]);
+
   const handleStepClick = useCallback((idx: number) => {
     const step = lesson.steps[idx];
     const isComplete = progress.completedStepIds.includes(step.id);
@@ -179,12 +206,14 @@ export function useLessonPlayer(lesson: Lesson, moduleId: string, onComplete?: (
     currentStepIndex, currentStep, progress, feedback, showHint, currentHint,
     resetKey, currentCellData, isRedoing, chartSelection, quizAnswer, tableAnswer,
     sidebarOpen, isMobile, progressPercent,
+    // Stuck feature
+    showStuckButton, stuckTriggered,
     // Derived
     isChallengeStep, isChartStep, isQuizStep, isTableTaskStep, isInstructionStep,
     isStepComplete, isLastStep, isLessonComplete, attemptCount,
     // Actions
     handleDataChange, handleCheck, handleInstructionContinue, handleNext,
-    handleReset, handleHint, handleStepClick,
+    handleReset, handleHint, handleStuck, handleStepClick,
     setSidebarOpen, setChartSelection, setQuizAnswer, setTableAnswer,
   };
 }
