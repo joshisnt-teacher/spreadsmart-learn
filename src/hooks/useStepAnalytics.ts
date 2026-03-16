@@ -22,7 +22,7 @@ export function useStepAnalytics(moduleId: string, lessonId: string, userId: str
         delete stepStartTime.current[stepId];
       }
 
-      await supabase.from('step_events').insert([{
+      const { error } = await supabase.from('step_events').insert([{
         user_id: userId,
         module_id: moduleId,
         lesson_id: lessonId,
@@ -30,6 +30,10 @@ export function useStepAnalytics(moduleId: string, lessonId: string, userId: str
         event_type: eventType,
         metadata: metadata as any,
       }]);
+
+      if (error) {
+        console.warn('Failed to log step event:', error.message);
+      }
     },
     [moduleId, lessonId, userId, disabled],
   );

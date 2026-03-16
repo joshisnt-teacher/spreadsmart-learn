@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Check, HelpCircle, RotateCcw, ChevronRight, ChevronLeft, Trophy, Star, Lightbulb, BookOpen, Award, BarChart3, MessageCircle, TableIcon } from 'lucide-react';
+import { Check, HelpCircle, RotateCcw, ChevronRight, ChevronLeft, Trophy, Star, Lightbulb, BookOpen, Award, BarChart3, MessageCircle, TableIcon, Menu, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import { checkTask, checkChartTask, checkQuizAnswer, checkTableTaskAnswer, getHi
 import { useLessonProgress } from '@/hooks/useProgress';
 import { useStepAnalytics } from '@/hooks/useStepAnalytics';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { Lesson, Step, CheckResult, LessonProgress, ChartType } from '@/types/lesson';
 
 interface LessonPlayerProps {
@@ -27,6 +28,8 @@ interface LessonPlayerProps {
 
 const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onComplete, onBack }) => {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [lessonAlreadyCompleted, setLessonAlreadyCompleted] = useState(false);
   const { logEvent } = useStepAnalytics(moduleId, lesson.id, user?.id, lessonAlreadyCompleted);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -55,7 +58,6 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
       origin: { y: 0.7 },
       colors: ['#FFD700', '#FF6B6B', '#4CAF50', '#2196F3', '#9C27B0'],
     });
-    // Second burst for extra celebration
     setTimeout(() => {
       confetti({
         particleCount: 60,
@@ -86,9 +88,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
           totalXp: saved.total_xp,
           attempts,
         });
-        // Jump to saved step only for in-progress lessons; completed lessons start at step 1
         if (!saved.completed) {
-          // Jump to first incomplete step (handles new steps added after student started)
           const firstIncompleteIdx = lesson.steps.findIndex(s => !saved.completed_step_ids.includes(s.id));
           if (firstIncompleteIdx >= 0) setCurrentStepIndex(firstIncompleteIdx);
           else {
@@ -96,7 +96,6 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
             if (idx >= 0) setCurrentStepIndex(idx);
           }
         } else {
-          // Replaying a completed lesson — award 0 XP throughout and disable analytics
           setIsRedoing(true);
           setLessonAlreadyCompleted(true);
         }
@@ -125,6 +124,11 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
     }
   }, [currentStepIndex, lesson.steps, logEvent]);
 
+  // Close sidebar on mobile when navigating steps
+  useEffect(() => {
+    if (isMobile) setSidebarOpen(false);
+  }, [currentStepIndex, isMobile]);
+
   const currentStep = lesson.steps[currentStepIndex];
   const isChallengeStep = currentStep?.type === 'challenge';
   const isChartStep = currentStep?.type === 'chart';
@@ -151,7 +155,6 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
 
     let result: CheckResult;
 
-    // Chart builder task — check chart selections
     if (isChartStep && currentStep.chartTask) {
       result = checkChartTask(
         currentStep.chartTask,
@@ -177,7 +180,6 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
 
       logEvent(currentStep.id, 'step_complete', { attempt_count: attemptCount + 1 });
 
-      // Fire confetti for challenge steps
       if (isChallengeStep) {
         fireConfetti();
       }
@@ -197,7 +199,6 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
         attempts: newAttempts,
       }));
 
-      // Auto-show hint after 2+ failures
       if (currentStep.task) {
         const hint = getHint(currentStep.task, attemptCount + 1);
         if (hint) {
@@ -218,7 +219,6 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
       completedStepIds: [...new Set([...prev.completedStepIds, currentStep.id])],
       totalXp: prev.totalXp + xp,
     }));
-    // Auto-advance after marking complete
     setTimeout(() => {
       if (isLastStep) {
         onComplete?.(progress.totalXp + xp);
@@ -281,89 +281,116 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
 
   if (!currentStep) return null;
 
+  // Sidebar content (shared between mobile overlay and desktop sidebar)
+  const sidebarContent = (
+    <>
+      <div className="p-4 border-b">
+        {onBack && (
+          <Button variant="ghost" size="sm" onClick={onBack} className="mb-2 -ml-2 text-muted-foreground">
+            <ChevronLeft className="h-4 w-4 mr-1" /> Back
+          </Button>
+        )}
+        <h2 className="font-semibold text-lg leading-tight">{lesson.title}</h2>
+        <p className="text-xs text-muted-foreground mt-1">{lesson.description}</p>
+        <div className="mt-3">
+          <div className="flex justify-between text-xs text-muted-foreground mb-1">
+            <span>Progress</span>
+            <span>{Math.round(progressPercent)}%</span>
+          </div>
+          <Progress value={progressPercent} className="h-2" />
+        </div>
+      </div>
+
+      <ScrollArea className="flex-1">
+        <div className="p-2">
+          {lesson.steps.map((step, idx) => {
+            const isComplete = progress.completedStepIds.includes(step.id);
+            const isCurrent = idx === currentStepIndex;
+            const isLocked = idx > currentStepIndex && !progress.completedStepIds.includes(lesson.steps[idx - 1]?.id);
+
+            return (
+              <button
+                key={step.id}
+                onClick={() => {
+                  if (!isLocked) {
+                    const goingBack = isComplete && idx !== currentStepIndex;
+                    setCurrentStepIndex(idx);
+                    setFeedback(null);
+                    setShowHint(false);
+                    setResetKey((k) => k + 1);
+                    setIsRedoing(goingBack);
+                  }
+                }}
+                disabled={isLocked}
+                className={`w-full text-left px-3 py-2.5 rounded-lg mb-1 text-sm transition-colors flex items-center gap-2 ${
+                  isCurrent
+                    ? 'bg-primary/10 text-primary font-medium'
+                    : isComplete
+                    ? 'text-muted-foreground hover:bg-muted/50'
+                    : isLocked
+                    ? 'text-muted-foreground/40 cursor-not-allowed'
+                    : 'text-foreground hover:bg-muted/50'
+                }`}
+              >
+                <span className={`flex items-center justify-center w-5 h-5 rounded-full text-xs shrink-0 ${
+                  isComplete
+                    ? 'bg-accent text-accent-foreground'
+                    : isCurrent
+                    ? step.type === 'challenge' ? 'bg-warning text-warning-foreground' : 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  {isComplete ? <Check className="w-3 h-3" /> : step.type === 'challenge' ? <Trophy className="w-3 h-3" /> : step.type === 'chart' ? <BarChart3 className="w-3 h-3" /> : step.type === 'quiz' ? <MessageCircle className="w-3 h-3" /> : step.type === 'table-task' ? <TableIcon className="w-3 h-3" /> : idx + 1}
+                </span>
+                <span className="truncate">{step.title}</span>
+              </button>
+            );
+          })}
+        </div>
+      </ScrollArea>
+
+      {/* XP counter */}
+      <div className="p-4 border-t bg-muted/30">
+        <div className="flex items-center gap-2">
+          <Star className="w-4 h-4 text-warning" />
+          <span className="text-sm font-medium">{progress.totalXp} XP</span>
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Left sidebar — Step list */}
-      <aside className="w-64 border-r bg-card flex flex-col shrink-0">
-        <div className="p-4 border-b">
-          {onBack && (
-            <Button variant="ghost" size="sm" onClick={onBack} className="mb-2 -ml-2 text-muted-foreground">
-              <ChevronLeft className="h-4 w-4 mr-1" /> Back
+      {/* Mobile sidebar overlay */}
+      {isMobile && sidebarOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+          <aside className="relative w-72 bg-card flex flex-col z-10 shadow-xl">
+            <Button variant="ghost" size="icon" className="absolute top-2 right-2 z-10" onClick={() => setSidebarOpen(false)}>
+              <X className="w-4 h-4" />
             </Button>
-          )}
-          <h2 className="font-semibold text-lg leading-tight">{lesson.title}</h2>
-          <p className="text-xs text-muted-foreground mt-1">{lesson.description}</p>
-          <div className="mt-3">
-            <div className="flex justify-between text-xs text-muted-foreground mb-1">
-              <span>Progress</span>
-              <span>{Math.round(progressPercent)}%</span>
-            </div>
-            <Progress value={progressPercent} className="h-2" />
-          </div>
+            {sidebarContent}
+          </aside>
         </div>
+      )}
 
-        <ScrollArea className="flex-1">
-          <div className="p-2">
-            {lesson.steps.map((step, idx) => {
-              const isComplete = progress.completedStepIds.includes(step.id);
-              const isCurrent = idx === currentStepIndex;
-              const isLocked = idx > currentStepIndex && !progress.completedStepIds.includes(lesson.steps[idx - 1]?.id);
-
-              return (
-                <button
-                  key={step.id}
-                  onClick={() => {
-                    if (!isLocked) {
-                      const goingBack = isComplete && idx !== currentStepIndex;
-                      setCurrentStepIndex(idx);
-                      setFeedback(null);
-                      setShowHint(false);
-                      setResetKey((k) => k + 1);
-                      setIsRedoing(goingBack);
-                    }
-                  }}
-                  disabled={isLocked}
-                  className={`w-full text-left px-3 py-2.5 rounded-lg mb-1 text-sm transition-colors flex items-center gap-2 ${
-                    isCurrent
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : isComplete
-                      ? 'text-muted-foreground hover:bg-muted/50'
-                      : isLocked
-                      ? 'text-muted-foreground/40 cursor-not-allowed'
-                      : 'text-foreground hover:bg-muted/50'
-                  }`}
-                >
-                  <span className={`flex items-center justify-center w-5 h-5 rounded-full text-xs shrink-0 ${
-                    isComplete
-                      ? 'bg-accent text-accent-foreground'
-                      : isCurrent
-                      ? step.type === 'challenge' ? 'bg-warning text-warning-foreground' : 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {isComplete ? <Check className="w-3 h-3" /> : step.type === 'challenge' ? <Trophy className="w-3 h-3" /> : step.type === 'chart' ? <BarChart3 className="w-3 h-3" /> : step.type === 'quiz' ? <MessageCircle className="w-3 h-3" /> : step.type === 'table-task' ? <TableIcon className="w-3 h-3" /> : idx + 1}
-                  </span>
-                  <span className="truncate">{step.title}</span>
-                </button>
-              );
-            })}
-          </div>
-        </ScrollArea>
-
-        {/* XP counter */}
-        <div className="p-4 border-t bg-muted/30">
-          <div className="flex items-center gap-2">
-            <Star className="w-4 h-4 text-warning" />
-            <span className="text-sm font-medium">{progress.totalXp} XP</span>
-          </div>
-        </div>
-      </aside>
+      {/* Desktop sidebar */}
+      {!isMobile && (
+        <aside className="w-64 border-r bg-card flex flex-col shrink-0">
+          {sidebarContent}
+        </aside>
+      )}
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Instruction panel */}
-        <div className={`p-6 border-b ${isChallengeStep ? 'bg-gradient-to-r from-warning/10 via-accent/10 to-primary/10' : 'bg-card'}`}>
+        <div className={`p-4 md:p-6 border-b ${isChallengeStep ? 'bg-gradient-to-r from-warning/10 via-accent/10 to-primary/10' : 'bg-card'}`}>
           <div className="max-w-2xl">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+              {isMobile && (
+                <Button variant="ghost" size="icon" className="h-6 w-6 -ml-1" onClick={() => setSidebarOpen(true)}>
+                  <Menu className="w-4 h-4" />
+                </Button>
+              )}
               {isChallengeStep ? <Award className="w-3.5 h-3.5 text-warning" /> : <BookOpen className="w-3.5 h-3.5" />}
               <span>Step {currentStepIndex + 1} of {lesson.steps.length}</span>
               {isChallengeStep && (
@@ -372,7 +399,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
                 </Badge>
               )}
             </div>
-            <h3 className="text-xl font-semibold mb-3">{currentStep.title}</h3>
+            <h3 className="text-lg md:text-xl font-semibold mb-3">{currentStep.title}</h3>
             <div className="prose prose-sm max-w-none text-foreground/90">
               {(() => {
                 const lines = currentStep.instruction.split('\n');
@@ -388,7 +415,6 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
                 }
 
                 const renderInline = (text: string) => {
-                  // Split by **bold** and `code`
                   const tokens = text.split(/(\*\*.*?\*\*|`[^`]+`)/g);
                   return tokens.map((tok, i) => {
                     if (tok.startsWith('**') && tok.endsWith('**')) {
@@ -408,16 +434,18 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
                       .filter(cells => !cells.every(c => /^-+$/.test(c)));
                     const [header, ...body] = rows;
                     return (
-                      <table key={bi} className="my-2 text-sm border-collapse w-auto">
-                        <thead>
-                          <tr>{header.map((h, hi) => <th key={hi} className="border border-border px-3 py-1.5 bg-muted font-semibold text-left">{renderInline(h)}</th>)}</tr>
-                        </thead>
-                        <tbody>
-                          {body.map((row, ri) => (
-                            <tr key={ri}>{row.map((cell, ci) => <td key={ci} className="border border-border px-3 py-1.5">{renderInline(cell)}</td>)}</tr>
-                          ))}
-                        </tbody>
-                      </table>
+                      <div key={bi} className="overflow-x-auto my-2">
+                        <table className="text-sm border-collapse w-auto">
+                          <thead>
+                            <tr>{header.map((h, hi) => <th key={hi} className="border border-border px-3 py-1.5 bg-muted font-semibold text-left">{renderInline(h)}</th>)}</tr>
+                          </thead>
+                          <tbody>
+                            {body.map((row, ri) => (
+                              <tr key={ri}>{row.map((cell, ci) => <td key={ci} className="border border-border px-3 py-1.5">{renderInline(cell)}</td>)}</tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     );
                   }
                   const line = block.lines[0];
@@ -438,10 +466,9 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
 
         {/* Spreadsheet & Chart area */}
         {isChartStep ? (
-          <div className="flex-1 flex min-h-0">
-            {/* Spreadsheet side */}
+          <div className={`flex-1 flex ${isMobile ? 'flex-col' : ''} min-h-0`}>
             {currentStep.initialSheetState && (
-              <div className="w-1/2 p-4 min-h-0">
+              <div className={`${isMobile ? 'h-1/2' : 'w-1/2'} p-2 md:p-4 min-h-0`}>
                 <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm">
                   <SpreadsheetWorkspace
                     initialState={currentStep.initialSheetState}
@@ -452,8 +479,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
                 </div>
               </div>
             )}
-            {/* Chart side */}
-            <div className={`${currentStep.initialSheetState ? 'w-1/2' : 'flex-1'} p-4 min-h-0`}>
+            <div className={`${currentStep.initialSheetState ? (isMobile ? 'h-1/2' : 'w-1/2') : 'flex-1'} p-2 md:p-4 min-h-0`}>
               <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm">
                 {currentStep.chartTask ? (
                   <ChartBuilder
@@ -479,7 +505,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
             answer={quizAnswer}
           />
         ) : isTableTaskStep && currentStep.tableTask ? (
-          <div className="flex-1 flex flex-col p-4 min-h-0">
+          <div className="flex-1 flex flex-col p-2 md:p-4 min-h-0">
             <InteractiveTable
               key={currentStep.id}
               config={currentStep.tableTask}
@@ -489,7 +515,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
           </div>
         ) : isInstructionStep && !isChallengeStep ? (
           currentStep.initialSheetState ? (
-            <div className="flex-1 p-4 min-h-0">
+            <div className="flex-1 p-2 md:p-4 min-h-0">
               <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm opacity-80">
                 <SpreadsheetWorkspace
                   initialState={currentStep.initialSheetState}
@@ -503,7 +529,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
             <div className="flex-1" />
           )
         ) : (currentStep.initialSheetState && currentStep.task) || isChallengeStep ? (
-          <div className="flex-1 p-4 min-h-0">
+          <div className="flex-1 p-2 md:p-4 min-h-0">
             <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm">
               <SpreadsheetWorkspace
                 initialState={currentStep.initialSheetState!}
@@ -518,15 +544,15 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
         )}
 
         {/* Feedback & Controls */}
-        <div className="p-4 border-t bg-card">
-          <div className="flex items-center gap-3 max-w-4xl">
+        <div className="p-3 md:p-4 border-t bg-card">
+          <div className="flex items-center gap-2 md:gap-3 max-w-4xl flex-wrap">
             <AnimatePresence mode="wait">
               {feedback && (
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className={`flex-1 flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm ${
+                  className={`flex-1 min-w-0 flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-sm ${
                     feedback.type === 'correct'
                       ? 'bg-accent/10 text-accent'
                       : feedback.type === 'almost'
@@ -539,7 +565,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
                   ) : (
                     <HelpCircle className="w-4 h-4 shrink-0" />
                   )}
-                  <span>{feedback.message}</span>
+                  <span className="truncate">{feedback.message}</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -548,10 +574,10 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm bg-primary/5 text-primary border border-primary/20"
+                className="flex-1 min-w-0 flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-sm bg-primary/5 text-primary border border-primary/20"
               >
                 <Lightbulb className="w-4 h-4 shrink-0" />
-                <span>{currentHint}</span>
+                <span className="truncate">{currentHint}</span>
               </motion.div>
             )}
 
@@ -573,10 +599,10 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
               ) : (
                 <>
                   <Button variant="outline" size="sm" onClick={handleHint}>
-                    <HelpCircle className="w-4 h-4 mr-1" /> Hint
+                    <HelpCircle className="w-4 h-4 mr-1" /> {!isMobile && 'Hint'}
                   </Button>
                   <Button variant="outline" size="sm" onClick={handleReset}>
-                    <RotateCcw className="w-4 h-4 mr-1" /> Reset
+                    <RotateCcw className="w-4 h-4 mr-1" /> {!isMobile && 'Reset'}
                   </Button>
                   {(!isStepComplete || isRedoing) ? (
                     <Button size="sm" onClick={handleCheck}>

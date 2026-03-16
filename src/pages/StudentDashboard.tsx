@@ -11,11 +11,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProgress, useAggregatedProgress } from '@/hooks/useProgress';
 import { useStudentAssignments, useAllStudentAssignments } from '@/hooks/useAssignments';
 import { allModules } from '@/data/module-registry';
+import { useStudentCustomModules } from '@/hooks/useCustomModules';
 import { supabase } from '@/integrations/supabase/client';
 import StudentProfileDialog from '@/components/StudentProfileDialog';
+import type { Module } from '@/types/lesson';
 
 /** Small component per module card to encapsulate hooks */
-const ModuleCard: React.FC<{ module: typeof allModules[0]; navigate: ReturnType<typeof useNavigate>; variant?: 'assigned' | 'optional' }> = ({ module, navigate, variant = 'assigned' }) => {
+const ModuleCard: React.FC<{ module: Module; navigate: ReturnType<typeof useNavigate>; variant?: 'assigned' | 'optional' }> = ({ module, navigate, variant = 'assigned' }) => {
   const { completedLessonIds, totalXp, loading: progressLoading } = useProgress(module.id);
   const { assignments, hasAssignments, isLessonAssigned, loading: assignLoading } = useStudentAssignments(module.id);
   const [lessonsOpen, setLessonsOpen] = useState(false);
@@ -146,6 +148,17 @@ const StudentDashboard: React.FC = () => {
   const { totalXp, totalCompleted, loading: progressLoading } = useAggregatedProgress();
   const { assignedModuleIds, upcomingDueCount, loading: assignLoading } = useAllStudentAssignments();
 
+  // Fetch custom modules that are assigned
+  const builtInIds = new Set(allModules.map(m => m.id));
+  const customAssignedIds = assignedModuleIds.filter(id => !builtInIds.has(id));
+  const { modules: customModules, loading: customLoading } = useStudentCustomModules(customAssignedIds);
+
+  // Merge built-in + custom modules
+  const allAvailableModules: Module[] = [
+    ...allModules,
+    ...customModules,
+  ];
+
   // Load profile
   useEffect(() => {
     if (!user) return;
@@ -160,7 +173,7 @@ const StudentDashboard: React.FC = () => {
     if (!authLoading && user && role === 'teacher') navigate('/dashboard');
   }, [authLoading, user, role, navigate]);
 
-  if (authLoading || progressLoading || assignLoading) {
+  if (authLoading || progressLoading || assignLoading || customLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <p className="text-muted-foreground">Loading...</p>
@@ -170,11 +183,11 @@ const StudentDashboard: React.FC = () => {
 
   if (!user) return null;
 
-  const totalLessons = allModules.reduce((sum, m) => sum + m.lessons.length, 0);
+  const totalLessons = allAvailableModules.reduce((sum, m) => sum + m.lessons.length, 0);
 
   // Split modules into assigned vs optional
-  const assignedModules = allModules.filter(m => assignedModuleIds.includes(m.id));
-  const optionalModules = allModules.filter(m => !assignedModuleIds.includes(m.id));
+  const assignedModules = allAvailableModules.filter(m => assignedModuleIds.includes(m.id));
+  const optionalModules = allAvailableModules.filter(m => !assignedModuleIds.includes(m.id));
 
   const initials = profile.display_name
     ? profile.display_name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
