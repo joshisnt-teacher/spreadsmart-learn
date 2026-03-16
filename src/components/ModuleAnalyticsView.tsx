@@ -192,6 +192,7 @@ const ModuleAnalyticsView: React.FC<ModuleAnalyticsViewProps> = ({ classId, cust
                       <TableHead>Step</TableHead>
                       <TableHead>Lesson</TableHead>
                       <TableHead className="text-right">Fail Count</TableHead>
+                      <TableHead className="text-right">Stuck Signals</TableHead>
                       <TableHead className="text-right">Avg Attempts</TableHead>
                       <TableHead className="text-right">Avg Time</TableHead>
                       <TableHead className="text-right">Hint Usage</TableHead>
