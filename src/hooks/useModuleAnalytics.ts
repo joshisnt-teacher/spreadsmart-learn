@@ -108,6 +108,9 @@ export function useModuleAnalytics(
         case 'hint_used':
           s.hints++;
           break;
+        case 'stuck':
+          s.stuck++;
+          break;
       }
     }
 
