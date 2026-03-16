@@ -125,6 +125,7 @@ export function useModuleAnalytics(
         completes: s.completes,
         fails: s.fails,
         hintUses: s.hints,
+        stuckCount: s.stuck,
         avgTimeSeconds: s.timeCount > 0 ? Math.round(s.totalTime / s.timeCount) : 0,
         avgAttempts: s.attemptCount > 0 ? Math.round((s.totalAttempts / s.attemptCount) * 10) / 10 : 0,
         hintUsagePercent: s.starts > 0 ? Math.round((s.hints / s.starts) * 100) : 0,
