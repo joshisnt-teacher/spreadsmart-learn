@@ -11,6 +11,10 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { BookOpen, Trophy, ChevronDown, ChevronRight, Trash2, UserPlus, Users, TrendingUp, Award, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
@@ -74,6 +78,7 @@ const StudentProgressView: React.FC<Props> = ({ classId, students, onStudentDele
   const [loading, setLoading] = useState(true);
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
   const [moduleFilter, setModuleFilter] = useState('all');
+  const [deleteTarget, setDeleteTarget] = useState<StudentData | null>(null);
 
   const fetchProgress = useCallback(async () => {
     if (students.length === 0) {
@@ -128,10 +133,10 @@ const StudentProgressView: React.FC<Props> = ({ classId, students, onStudentDele
     fetchProgress();
   }, [fetchProgress]);
 
-  const handleDelete = async (student: StudentData, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     const { data, error } = await supabase.functions.invoke('delete-student', {
-      body: { student_user_id: student.student_user_id, class_id: classId },
+      body: { student_user_id: deleteTarget.student_user_id, class_id: classId },
     });
     if (error || (data && data.error)) {
       toast({ title: 'Error', description: data?.error || error?.message || 'Failed to delete student', variant: 'destructive' });
@@ -139,6 +144,7 @@ const StudentProgressView: React.FC<Props> = ({ classId, students, onStudentDele
       toast({ title: 'Student removed from class' });
       onStudentDeleted();
     }
+    setDeleteTarget(null);
   };
 
   // Class summary stats
@@ -306,7 +312,7 @@ const StudentProgressView: React.FC<Props> = ({ classId, students, onStudentDele
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 text-destructive"
-                        onClick={(e) => handleDelete(sp.student, e)}
+                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(sp.student); }}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
@@ -371,6 +377,24 @@ const StudentProgressView: React.FC<Props> = ({ classId, students, onStudentDele
           </TableBody>
         </Table>
       </div>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove student?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove <strong>{deleteTarget?.username}</strong> from the class and delete all their progress. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remove Student
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

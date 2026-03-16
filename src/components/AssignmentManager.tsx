@@ -11,10 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { allModules, getModuleById } from '@/data/module-registry';
 import { useClassAssignments, type Assignment } from '@/hooks/useAssignments';
 import { toast } from '@/hooks/use-toast';
+import type { Module } from '@/types/lesson';
 
 interface StudentData {
   id: string;
@@ -22,15 +27,25 @@ interface StudentData {
   student_user_id: string;
 }
 
+interface CustomModuleRow {
+  id: string;
+  title: string;
+  description: string;
+  estimated_minutes: number;
+  status: string;
+  banner_url: string | null;
+}
+
 interface Props {
   classId: string;
   students: StudentData[];
+  customModules?: CustomModuleRow[];
 }
 
-const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
+const AssignmentManager: React.FC<Props> = ({ classId, students, customModules = [] }) => {
   const { assignments, loading, createAssignment, deleteAssignment } = useClassAssignments(classId);
 
-  // Module card state — track per module
+  // Module card state
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [selectedLessons, setSelectedLessons] = useState<Map<string, Set<string>>>(new Map());
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
@@ -42,6 +57,25 @@ const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
   const [liveDate, setLiveDate] = useState<Date>(new Date());
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [creating, setCreating] = useState(false);
+
+  // Delete confirmation
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
+  // Published custom modules for assignment
+  const publishedCustomModules = customModules.filter(m => m.status === 'published');
+
+  // All modules available for assignment
+  const assignableModules: { id: string; title: string; description: string; estimatedMinutes: number; lessons: { id: string; title: string; description: string; steps: any[] }[]; bannerUrl?: string }[] = [
+    ...allModules,
+    ...publishedCustomModules.map(m => ({
+      id: m.id,
+      title: m.title,
+      description: m.description,
+      estimatedMinutes: m.estimated_minutes,
+      lessons: [] as any[], // Custom modules don't expose lessons for per-lesson assignment yet
+      bannerUrl: m.banner_url || undefined,
+    })),
+  ];
 
   const toggleExpanded = (moduleId: string) => {
     setExpandedModules((prev) => {
@@ -107,18 +141,25 @@ const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
     setCreating(false);
   };
 
-  const handleDelete = async (id: string) => {
-    const ok = await deleteAssignment(id);
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return;
+    const ok = await deleteAssignment(deleteTargetId);
     if (ok) toast({ title: 'Assignment deleted' });
     else toast({ title: 'Error', variant: 'destructive' });
+    setDeleteTargetId(null);
   };
 
   const getAssignmentLabel = (a: Assignment) => {
-    const mod = getModuleById(a.module_id);
-    const modTitle = mod?.title ?? a.module_id;
-    if (!a.lesson_id) return modTitle + ' (Full Module)';
-    const lesson = mod?.lessons.find((l) => l.id === a.lesson_id);
-    return lesson ? `${modTitle} › ${lesson.title}` : a.lesson_id;
+    // Check built-in modules first, then custom
+    const builtIn = getModuleById(a.module_id);
+    if (builtIn) {
+      if (!a.lesson_id) return builtIn.title + ' (Full Module)';
+      const lesson = builtIn.lessons.find((l) => l.id === a.lesson_id);
+      return lesson ? `${builtIn.title} › ${lesson.title}` : a.lesson_id;
+    }
+    const custom = customModules.find(m => m.id === a.module_id);
+    const title = custom?.title ?? a.module_id;
+    return a.lesson_id ? title : title + ' (Full Module)';
   };
 
   const getTargetLabel = (a: Assignment) => {
@@ -134,7 +175,7 @@ const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
     return { label: 'Live', variant: 'default' };
   };
 
-  const activeModule = activeModuleId ? getModuleById(activeModuleId) : null;
+  const activeModule = activeModuleId ? assignableModules.find(m => m.id === activeModuleId) : null;
   const activeSelected = activeModuleId ? getModuleSelectedLessons(activeModuleId) : new Set<string>();
   const scopeSummary = activeModule
     ? (activeSelected.size === 0
@@ -147,22 +188,26 @@ const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
   return (
      <div className="space-y-6">
       {/* Module Cards */}
-      {allModules.map((mod) => {
+      {assignableModules.map((mod) => {
         const modSelected = getModuleSelectedLessons(mod.id);
         const isExpanded = expandedModules.has(mod.id);
         const modScopeSummary = modSelected.size === 0
           ? 'All lessons'
           : `${modSelected.size} of ${mod.lessons.length} lessons selected`;
+        const isCustom = !allModules.some(m => m.id === mod.id);
 
         return (
           <Card key={mod.id}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle className="text-lg">{mod.title}</CardTitle>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    {mod.title}
+                    {isCustom && <Badge variant="secondary" className="text-xs">Custom</Badge>}
+                  </CardTitle>
                   <CardDescription className="mt-1">{mod.description}</CardDescription>
                   <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                    <span>{mod.lessons.length} lessons</span>
+                    {mod.lessons.length > 0 && <span>{mod.lessons.length} lessons</span>}
                     <span>~{mod.estimatedMinutes} min</span>
                   </div>
                 </div>
@@ -171,42 +216,44 @@ const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="pt-0">
-              <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(mod.id)}>
-                <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-1.5 px-2 text-muted-foreground">
-                    {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                    {isExpanded ? 'Hide lessons' : 'Show lessons'}
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-2 space-y-1">
-                  {mod.lessons.map((lesson) => (
-                    <label
-                      key={lesson.id}
-                      className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted/50 cursor-pointer"
-                    >
-                      <Checkbox
-                        checked={modSelected.has(lesson.id)}
-                        onCheckedChange={() => toggleLesson(mod.id, lesson.id)}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{lesson.title}</p>
-                        <p className="text-xs text-muted-foreground truncate">{lesson.description}</p>
+            {mod.lessons.length > 0 && (
+              <CardContent className="pt-0">
+                <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(mod.id)}>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="gap-1.5 px-2 text-muted-foreground">
+                      {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                      {isExpanded ? 'Hide lessons' : 'Show lessons'}
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2 space-y-1">
+                    {mod.lessons.map((lesson) => (
+                      <label
+                        key={lesson.id}
+                        className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                      >
+                        <Checkbox
+                          checked={modSelected.has(lesson.id)}
+                          onCheckedChange={() => toggleLesson(mod.id, lesson.id)}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium">{lesson.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{lesson.description}</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs shrink-0">{lesson.steps.length} steps</Badge>
+                      </label>
+                    ))}
+                    {modSelected.size > 0 && (
+                      <div className="flex items-center gap-2 pt-2 px-3">
+                        <p className="text-xs text-muted-foreground flex-1">{modScopeSummary}</p>
+                        <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => setSelectedLessons((prev) => { const next = new Map(prev); next.delete(mod.id); return next; })}>
+                          Clear selection
+                        </Button>
                       </div>
-                      <Badge variant="outline" className="text-xs shrink-0">{lesson.steps.length} steps</Badge>
-                    </label>
-                  ))}
-                  {modSelected.size > 0 && (
-                    <div className="flex items-center gap-2 pt-2 px-3">
-                      <p className="text-xs text-muted-foreground flex-1">{modScopeSummary}</p>
-                      <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => setSelectedLessons((prev) => { const next = new Map(prev); next.delete(mod.id); return next; })}>
-                        Clear selection
-                      </Button>
-                    </div>
-                  )}
-                </CollapsibleContent>
-              </Collapsible>
-            </CardContent>
+                    )}
+                  </CollapsibleContent>
+                </Collapsible>
+              </CardContent>
+            )}
           </Card>
         );
       })}
@@ -254,7 +301,7 @@ const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
                         <Badge variant={status.variant} className="text-xs">{status.label}</Badge>
                       </td>
                       <td className="py-2 px-4 text-right">
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(a.id)}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteTargetId(a.id)}>
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </td>
@@ -267,6 +314,24 @@ const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
         )}
       </div>
 
+      {/* Delete assignment confirmation */}
+      <AlertDialog open={!!deleteTargetId} onOpenChange={(open) => !open && setDeleteTargetId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete assignment?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the assignment. Students will no longer see this module in their dashboard.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Assign Dialog */}
       <Dialog open={showAssign} onOpenChange={setShowAssign}>
         <DialogContent className="max-w-md">
@@ -275,7 +340,6 @@ const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
             <DialogDescription>{activeModule?.title ?? 'Module'} — {scopeSummary}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Target */}
             <div className="space-y-2">
               <Label>Target</Label>
               <Select value={target} onValueChange={(v) => { setTarget(v as 'class' | 'student'); setSelectedStudentId(''); }}>
@@ -301,7 +365,6 @@ const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
               </div>
             )}
 
-            {/* Live Date */}
             <div className="space-y-2">
               <Label>Live Date</Label>
               <Popover>
@@ -317,7 +380,6 @@ const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
               </Popover>
             </div>
 
-            {/* Due Date */}
             <div className="space-y-2">
               <Label>Due Date (optional)</Label>
               <Popover>

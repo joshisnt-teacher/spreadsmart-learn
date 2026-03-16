@@ -139,3 +139,40 @@ export async function fetchCustomModule(moduleId: string): Promise<Module | null
   if (!data) return null;
   return transformDbModule(data as any);
 }
+
+/** Fetch all custom modules assigned to the current student */
+export function useStudentCustomModules(assignedModuleIds: string[]) {
+  const [modules, setModules] = useState<Module[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (assignedModuleIds.length === 0) {
+      setModules([]);
+      setLoading(false);
+      return;
+    }
+
+    let ignore = false;
+
+    const load = async () => {
+      // Fetch custom modules that are published and assigned
+      // RLS ensures students can only see assigned published modules
+      const { data } = await supabase
+        .from('custom_modules')
+        .select('*, custom_lessons(*, custom_steps(*))')
+        .in('id', assignedModuleIds)
+        .eq('status', 'published');
+
+      if (ignore) return;
+
+      const transformed = (data ?? []).map((d: any) => transformDbModule(d));
+      setModules(transformed);
+      setLoading(false);
+    };
+
+    load();
+    return () => { ignore = true; };
+  }, [assignedModuleIds.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return { modules, loading };
+}

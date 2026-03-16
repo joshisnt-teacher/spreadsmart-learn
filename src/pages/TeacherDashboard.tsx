@@ -131,12 +131,10 @@ const TeacherDashboard: React.FC = () => {
       .map((line) => line.trim())
       .filter((line) => line.length > 0)
       .map((line) => {
-        // Support CSV (comma or tab separated): username,pin
         const parts = line.split(/[,\t]+/).map((p) => p.trim());
         if (parts.length >= 2) {
           return { username: parts[0], pin: parts[1] };
         }
-        // Single value: auto-generate a 4-digit PIN
         return { username: parts[0], pin: String(Math.floor(1000 + Math.random() * 9000)) };
       });
   };
@@ -164,6 +162,11 @@ const TeacherDashboard: React.FC = () => {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const handleCreateModule = async () => {
+    const id = await createModule();
+    if (id) navigate(`/dashboard/module-builder/${id}`);
   };
 
   return (
@@ -243,7 +246,79 @@ const TeacherDashboard: React.FC = () => {
               </div>
             )}
 
-            {/* Your Custom Modules - hidden for now, will be re-enabled later */}
+            {/* Your Custom Modules */}
+            <div className="pt-4">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold">Your Custom Modules</h2>
+                  <p className="text-sm text-muted-foreground">Create and manage your own teaching modules</p>
+                </div>
+                <Button onClick={handleCreateModule}>
+                  <Plus className="w-4 h-4 mr-2" /> New Module
+                </Button>
+              </div>
+
+              {customLoading ? (
+                <Card>
+                  <CardContent className="py-8 text-center text-muted-foreground">Loading…</CardContent>
+                </Card>
+              ) : customModules.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <BookOpen className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+                    <p className="text-muted-foreground">No custom modules yet. Create one to get started.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {customModules.map((mod) => (
+                    <Card key={mod.id} className="overflow-hidden">
+                      {mod.banner_url && (
+                        <div className="h-32 overflow-hidden">
+                          <img src={mod.banner_url} alt="" className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      <CardHeader className="pb-2">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-base flex items-center gap-2">
+                              <BookOpen className="w-4 h-4 text-primary" />
+                              {mod.title}
+                              <Badge variant={mod.status === 'published' ? 'default' : 'secondary'} className="text-xs">
+                                {mod.status === 'published' ? 'Published' : 'Draft'}
+                              </Badge>
+                            </CardTitle>
+                            <CardDescription className="mt-1">{mod.description || 'No description'}</CardDescription>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigate(`/dashboard/module-builder/${mod.id}`)}
+                            >
+                              <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive"
+                              onClick={() => deleteModule(mod.id)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> ~{mod.estimated_minutes} min</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Built-in Modules Overview */}
             <div className="pt-4">
@@ -334,7 +409,7 @@ const TeacherDashboard: React.FC = () => {
                 />
               </TabsContent>
               <TabsContent value="assignments">
-                <AssignmentManager classId={selectedClass.id} students={students} />
+                <AssignmentManager classId={selectedClass.id} students={students} customModules={customModules} />
               </TabsContent>
               <TabsContent value="analytics">
                 <ModuleAnalyticsView classId={selectedClass.id} customModules={customModules.length > 0 ? customModules.map(m => ({ ...m, lessons: [] as any[], estimatedMinutes: m.estimated_minutes, bannerUrl: m.banner_url || undefined })) : []} />
