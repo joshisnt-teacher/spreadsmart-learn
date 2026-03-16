@@ -17,6 +17,7 @@ export interface StepStats {
   completes: number;
   fails: number;
   hintUses: number;
+  stuckCount: number;
   avgTimeSeconds: number;
   avgAttempts: number;
   hintUsagePercent: number;
