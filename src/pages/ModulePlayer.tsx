@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import ModuleLanding from '@/components/ModuleLanding';
 import LessonPlayer from '@/components/LessonPlayer';
 import { getModuleById } from '@/data/module-registry';
-import { fetchCustomModule } from '@/hooks/useCustomModules';
+
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import type { Module } from '@/types/lesson';
@@ -28,10 +28,7 @@ const ModulePlayer: React.FC = () => {
       setCurrentModule(builtIn);
       setModuleLoading(false);
     } else {
-      fetchCustomModule(moduleId).then(m => {
-        setCurrentModule(m ?? undefined);
-        setModuleLoading(false);
-      });
+      setModuleLoading(false);
     }
   }, [moduleId]);
 

@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { useTeacherModules } from '@/hooks/useCustomModules';
+
 import ClassListView from '@/components/teacher/ClassListView';
 import ClassDetailView from '@/components/teacher/ClassDetailView';
 import TeacherDialogs from '@/components/teacher/TeacherDialogs';
@@ -54,7 +54,7 @@ const TeacherDashboard: React.FC = () => {
   const [bulkText, setBulkText] = useState('');
   const [bulkResults, setBulkResults] = useState<BulkResult[] | null>(null);
   const [bulkLoading, setBulkLoading] = useState(false);
-  const { modules: customModules, createModule, deleteModule, loading: customLoading } = useTeacherModules();
+
 
   const fetchClasses = useCallback(async () => {
     const { data } = await supabase.from('classes').select('*').order('created_at', { ascending: false });
@@ -124,10 +124,7 @@ const TeacherDashboard: React.FC = () => {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const handleCreateModule = async () => {
-    const id = await createModule();
-    if (id) navigate(`/dashboard/module-builder/${id}`);
-  };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -155,20 +152,15 @@ const TeacherDashboard: React.FC = () => {
         {!selectedClass ? (
           <ClassListView
             classes={classes}
-            customModules={customModules}
-            customLoading={customLoading}
             copiedCode={copiedCode}
             onSelectClass={setSelectedClass}
             onNewClass={() => setShowNewClass(true)}
             onCopyCode={copyJoinCode}
-            onCreateModule={handleCreateModule}
-            onDeleteModule={deleteModule}
           />
         ) : (
           <ClassDetailView
             selectedClass={selectedClass}
             students={students}
-            customModules={customModules}
             copiedCode={copiedCode}
             onCopyCode={copyJoinCode}
             onAddStudent={() => setShowAddStudent(true)}

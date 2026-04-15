@@ -27,22 +27,12 @@ interface StudentData {
   student_user_id: string;
 }
 
-interface CustomModuleRow {
-  id: string;
-  title: string;
-  description: string;
-  estimated_minutes: number;
-  status: string;
-  banner_url: string | null;
-}
-
 interface Props {
   classId: string;
   students: StudentData[];
-  customModules?: CustomModuleRow[];
 }
 
-const AssignmentManager: React.FC<Props> = ({ classId, students, customModules = [] }) => {
+const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
   const { assignments, loading, createAssignment, deleteAssignment } = useClassAssignments(classId);
 
   // Module card state
@@ -61,21 +51,7 @@ const AssignmentManager: React.FC<Props> = ({ classId, students, customModules =
   // Delete confirmation
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
-  // Published custom modules for assignment
-  const publishedCustomModules = customModules.filter(m => m.status === 'published');
-
-  // All modules available for assignment
-  const assignableModules: { id: string; title: string; description: string; estimatedMinutes: number; lessons: { id: string; title: string; description: string; steps: any[] }[]; bannerUrl?: string }[] = [
-    ...allModules,
-    ...publishedCustomModules.map(m => ({
-      id: m.id,
-      title: m.title,
-      description: m.description,
-      estimatedMinutes: m.estimated_minutes,
-      lessons: [] as any[], // Custom modules don't expose lessons for per-lesson assignment yet
-      bannerUrl: m.banner_url || undefined,
-    })),
-  ];
+  const assignableModules = allModules;
 
   const toggleExpanded = (moduleId: string) => {
     setExpandedModules((prev) => {
@@ -157,9 +133,7 @@ const AssignmentManager: React.FC<Props> = ({ classId, students, customModules =
       const lesson = builtIn.lessons.find((l) => l.id === a.lesson_id);
       return lesson ? `${builtIn.title} › ${lesson.title}` : a.lesson_id;
     }
-    const custom = customModules.find(m => m.id === a.module_id);
-    const title = custom?.title ?? a.module_id;
-    return a.lesson_id ? title : title + ' (Full Module)';
+    return a.module_id + ' (Full Module)';
   };
 
   const getTargetLabel = (a: Assignment) => {
@@ -203,11 +177,11 @@ const AssignmentManager: React.FC<Props> = ({ classId, students, customModules =
                 <div>
                   <CardTitle className="text-lg flex items-center gap-2">
                     {mod.title}
-                    {isCustom && <Badge variant="secondary" className="text-xs">Custom</Badge>}
+
                   </CardTitle>
                   <CardDescription className="mt-1">{mod.description}</CardDescription>
                   <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                    {mod.lessons.length > 0 && <span>{mod.lessons.length} lessons</span>}
+                    <span>{mod.lessons.length} lessons</span>
                     <span>~{mod.estimatedMinutes} min</span>
                   </div>
                 </div>
@@ -216,44 +190,42 @@ const AssignmentManager: React.FC<Props> = ({ classId, students, customModules =
                 </Button>
               </div>
             </CardHeader>
-            {mod.lessons.length > 0 && (
-              <CardContent className="pt-0">
-                <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(mod.id)}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm" className="gap-1.5 px-2 text-muted-foreground">
-                      {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                      {isExpanded ? 'Hide lessons' : 'Show lessons'}
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-2 space-y-1">
-                    {mod.lessons.map((lesson) => (
-                      <label
-                        key={lesson.id}
-                        className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted/50 cursor-pointer"
-                      >
-                        <Checkbox
-                          checked={modSelected.has(lesson.id)}
-                          onCheckedChange={() => toggleLesson(mod.id, lesson.id)}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">{lesson.title}</p>
-                          <p className="text-xs text-muted-foreground truncate">{lesson.description}</p>
-                        </div>
-                        <Badge variant="outline" className="text-xs shrink-0">{lesson.steps.length} steps</Badge>
-                      </label>
-                    ))}
-                    {modSelected.size > 0 && (
-                      <div className="flex items-center gap-2 pt-2 px-3">
-                        <p className="text-xs text-muted-foreground flex-1">{modScopeSummary}</p>
-                        <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => setSelectedLessons((prev) => { const next = new Map(prev); next.delete(mod.id); return next; })}>
-                          Clear selection
-                        </Button>
+            <CardContent className="pt-0">
+              <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(mod.id)}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-1.5 px-2 text-muted-foreground">
+                    {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    {isExpanded ? 'Hide lessons' : 'Show lessons'}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2 space-y-1">
+                  {mod.lessons.map((lesson) => (
+                    <label
+                      key={lesson.id}
+                      className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={modSelected.has(lesson.id)}
+                        onCheckedChange={() => toggleLesson(mod.id, lesson.id)}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">{lesson.title}</p>
+                        <p className="text-xs text-muted-foreground truncate">{lesson.description}</p>
                       </div>
-                    )}
-                  </CollapsibleContent>
-                </Collapsible>
-              </CardContent>
-            )}
+                      <Badge variant="outline" className="text-xs shrink-0">{lesson.steps.length} steps</Badge>
+                    </label>
+                  ))}
+                  {modSelected.size > 0 && (
+                    <div className="flex items-center gap-2 pt-2 px-3">
+                      <p className="text-xs text-muted-foreground flex-1">{modScopeSummary}</p>
+                      <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => setSelectedLessons((prev) => { const next = new Map(prev); next.delete(mod.id); return next; })}>
+                        Clear selection
+                      </Button>
+                    </div>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
+            </CardContent>
           </Card>
         );
       })}

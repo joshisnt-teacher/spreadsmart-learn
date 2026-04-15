@@ -9,7 +9,7 @@ import Auth from "./pages/Auth";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import ModulePlayer from "./pages/ModulePlayer";
-import ModuleBuilder from "./pages/ModuleBuilder";
+
 import TeacherSettings from "./pages/TeacherSettings";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -29,7 +29,6 @@ const App = () => (
             <Route path="/dashboard" element={<TeacherDashboard />} />
             <Route path="/student" element={<StudentDashboard />} />
             <Route path="/module/:moduleId" element={<ModulePlayer />} />
-            <Route path="/dashboard/module-builder/:moduleId" element={<ModuleBuilder />} />
             <Route path="/dashboard/settings" element={<TeacherSettings />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

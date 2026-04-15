@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProgress, useAggregatedProgress } from '@/hooks/useProgress';
 import { useStudentAssignments, useAllStudentAssignments } from '@/hooks/useAssignments';
 import { allModules } from '@/data/module-registry';
-import { useStudentCustomModules } from '@/hooks/useCustomModules';
+
 import { supabase } from '@/integrations/supabase/client';
 import StudentProfileDialog from '@/components/StudentProfileDialog';
 import type { Module } from '@/types/lesson';
@@ -148,16 +148,7 @@ const StudentDashboard: React.FC = () => {
   const { totalXp, totalCompleted, loading: progressLoading } = useAggregatedProgress();
   const { assignedModuleIds, upcomingDueCount, loading: assignLoading } = useAllStudentAssignments();
 
-  // Fetch custom modules that are assigned
-  const builtInIds = new Set(allModules.map(m => m.id));
-  const customAssignedIds = assignedModuleIds.filter(id => !builtInIds.has(id));
-  const { modules: customModules, loading: customLoading } = useStudentCustomModules(customAssignedIds);
-
-  // Merge built-in + custom modules
-  const allAvailableModules: Module[] = [
-    ...allModules,
-    ...customModules,
-  ];
+  const allAvailableModules: Module[] = allModules;
 
   // Load profile
   useEffect(() => {
@@ -173,7 +164,7 @@ const StudentDashboard: React.FC = () => {
     if (!authLoading && user && role === 'teacher') navigate('/dashboard');
   }, [authLoading, user, role, navigate]);
 
-  if (authLoading || progressLoading || assignLoading || customLoading) {
+  if (authLoading || progressLoading || assignLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <p className="text-muted-foreground">Loading...</p>

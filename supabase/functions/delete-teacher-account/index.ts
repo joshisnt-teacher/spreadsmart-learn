@@ -20,9 +20,9 @@ serve(async (req) => {
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseUrl = Deno.env.get("SB_URL")!;
+    const serviceRoleKey = Deno.env.get("SB_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SB_ANON_KEY")!;
 
     const callerClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -93,29 +93,9 @@ serve(async (req) => {
       adminClient.from("badges").delete().eq("user_id", caller.id),
     ]);
 
-    // Delete custom modules (cascades to lessons/steps)
+    // Delete classes
     if (classIds.length > 0) {
       await adminClient.from("classes").delete().in("id", classIds);
-    }
-
-    const { data: modules } = await adminClient
-      .from("custom_modules")
-      .select("id")
-      .eq("teacher_id", caller.id);
-
-    if (modules && modules.length > 0) {
-      const moduleIds = modules.map((m: any) => m.id);
-      // Get lessons to delete steps
-      const { data: lessons } = await adminClient
-        .from("custom_lessons")
-        .select("id")
-        .in("module_id", moduleIds);
-      if (lessons && lessons.length > 0) {
-        const lessonIds = lessons.map((l: any) => l.id);
-        await adminClient.from("custom_steps").delete().in("lesson_id", lessonIds);
-      }
-      await adminClient.from("custom_lessons").delete().in("module_id", moduleIds);
-      await adminClient.from("custom_modules").delete().in("id", moduleIds);
     }
 
     await adminClient.from("profiles").delete().eq("user_id", caller.id);

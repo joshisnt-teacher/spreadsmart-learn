@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Users, Copy, Check, BookOpen, Clock, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Users, Copy, Check, BookOpen, Clock, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,19 +25,15 @@ interface CustomModule {
 
 interface ClassListViewProps {
   classes: ClassData[];
-  customModules: CustomModule[];
-  customLoading: boolean;
   copiedCode: string | null;
   onSelectClass: (cls: ClassData) => void;
   onNewClass: () => void;
   onCopyCode: (code: string) => void;
-  onCreateModule: () => void;
-  onDeleteModule: (id: string) => void;
 }
 
 const ClassListView: React.FC<ClassListViewProps> = ({
-  classes, customModules, customLoading, copiedCode,
-  onSelectClass, onNewClass, onCopyCode, onCreateModule, onDeleteModule,
+  classes, copiedCode,
+  onSelectClass, onNewClass, onCopyCode,
 }) => {
   const navigate = useNavigate();
 
@@ -95,71 +91,6 @@ const ClassListView: React.FC<ClassListViewProps> = ({
           ))}
         </div>
       )}
-
-      {/* Custom Modules */}
-      <div className="pt-4">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-xl font-semibold">Your Custom Modules</h2>
-            <p className="text-sm text-muted-foreground">Create and manage your own teaching modules</p>
-          </div>
-          <Button onClick={onCreateModule}>
-            <Plus className="w-4 h-4 mr-2" /> New Module
-          </Button>
-        </div>
-
-        {customLoading ? (
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">Loading…</CardContent>
-          </Card>
-        ) : customModules.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <BookOpen className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-              <p className="text-muted-foreground">No custom modules yet. Create one to get started.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {customModules.map((mod) => (
-              <Card key={mod.id} className="overflow-hidden">
-                {mod.banner_url && (
-                  <div className="h-32 overflow-hidden">
-                    <img src={mod.banner_url} alt="" className="w-full h-full object-cover" />
-                  </div>
-                )}
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-primary" />
-                        {mod.title}
-                        <Badge variant={mod.status === 'published' ? 'default' : 'secondary'} className="text-xs">
-                          {mod.status === 'published' ? 'Published' : 'Draft'}
-                        </Badge>
-                      </CardTitle>
-                      <CardDescription className="mt-1">{mod.description || 'No description'}</CardDescription>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button variant="outline" size="sm" onClick={() => navigate(`/dashboard/module-builder/${mod.id}`)}>
-                        <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDeleteModule(mod.id)}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> ~{mod.estimated_minutes} min</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
 
       {/* Built-in Modules */}
       <div className="pt-4">

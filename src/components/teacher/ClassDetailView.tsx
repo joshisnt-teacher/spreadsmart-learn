@@ -24,7 +24,6 @@ interface StudentData {
 interface ClassDetailViewProps {
   selectedClass: ClassData;
   students: StudentData[];
-  customModules: any[];
   copiedCode: string | null;
   onCopyCode: (code: string) => void;
   onAddStudent: () => void;
@@ -33,7 +32,7 @@ interface ClassDetailViewProps {
 }
 
 const ClassDetailView: React.FC<ClassDetailViewProps> = ({
-  selectedClass, students, customModules, copiedCode,
+  selectedClass, students, copiedCode,
   onCopyCode, onAddStudent, onBulkImport, onStudentDeleted,
 }) => {
   return (
@@ -75,17 +74,12 @@ const ClassDetailView: React.FC<ClassDetailViewProps> = ({
           />
         </TabsContent>
         <TabsContent value="assignments">
-          <AssignmentManager classId={selectedClass.id} students={students} customModules={customModules} />
+          <AssignmentManager classId={selectedClass.id} students={students} />
         </TabsContent>
         <TabsContent value="analytics">
           <ModuleAnalyticsView
             classId={selectedClass.id}
-            customModules={customModules.length > 0 ? customModules.map(m => ({
-              ...m,
-              lessons: [] as any[],
-              estimatedMinutes: m.estimated_minutes,
-              bannerUrl: m.banner_url || undefined,
-            })) : []}
+            customModules={[]}
           />
         </TabsContent>
       </Tabs>
