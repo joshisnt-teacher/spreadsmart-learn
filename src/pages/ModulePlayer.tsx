@@ -88,7 +88,7 @@ const ModulePlayer: React.FC = () => {
 
   if (authLoading || progressLoading || assignLoading || moduleLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-background pb-12">
         <p className="text-muted-foreground">Loading...</p>
       </div>
     );
@@ -98,7 +98,7 @@ const ModulePlayer: React.FC = () => {
 
   if (!currentModule) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-background pb-12">
         <p className="text-muted-foreground">Module not found</p>
       </div>
     );

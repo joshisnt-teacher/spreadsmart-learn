@@ -91,7 +91,7 @@ serve(async (req) => {
     }
 
     const cleanUsername = username.trim().toLowerCase().replace(/[^a-z0-9_.-]/g, "");
-    const fakeEmail = `${cleanUsername}@student.excelpath.local`;
+    const fakeEmail = `${cleanUsername}@student.circuit.local`;
 
     // Check if username already exists
     const { data: existing } = await adminClient

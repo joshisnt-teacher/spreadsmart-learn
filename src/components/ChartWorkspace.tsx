@@ -8,10 +8,10 @@ import type { ChartConfig, ChartType } from '@/types/lesson';
 import { parseCellRef } from '@/lib/marking-engine';
 
 const CHART_COLORS = [
-  'hsl(var(--primary))',
-  'hsl(var(--accent))',
-  'hsl(var(--warning))',
-  'hsl(var(--destructive))',
+  'var(--primary)',
+  'var(--accent)',
+  'var(--warning)',
+  'var(--destructive)',
   '#8884d8',
   '#82ca9d',
   '#ffc658',
@@ -111,7 +111,7 @@ const ChartWorkspace: React.FC<ChartWorkspaceProps> = ({
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="value" name={yKey} fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="value" name={yKey} fill="var(--primary)" radius={[4, 4, 0, 0]} />
             </BarChart>
           ) : chartType === 'line' ? (
             <LineChart data={data}>
@@ -120,7 +120,7 @@ const ChartWorkspace: React.FC<ChartWorkspaceProps> = ({
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="value" name={yKey} stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4 }} />
+              <Line type="monotone" dataKey="value" name={yKey} stroke="var(--primary)" strokeWidth={2} dot={{ r: 4 }} />
             </LineChart>
           ) : chartType === 'area' ? (
             <AreaChart data={data}>
@@ -129,7 +129,7 @@ const ChartWorkspace: React.FC<ChartWorkspaceProps> = ({
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip />
               <Legend />
-              <Area type="monotone" dataKey="value" name={yKey} stroke="hsl(var(--primary))" fill="hsl(var(--primary)/0.2)" strokeWidth={2} />
+              <Area type="monotone" dataKey="value" name={yKey} stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.2} strokeWidth={2} />
             </AreaChart>
           ) : (
             <PieChart>

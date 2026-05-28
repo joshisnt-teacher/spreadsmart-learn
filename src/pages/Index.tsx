@@ -18,7 +18,7 @@ const Index: React.FC = () => {
   }, [authLoading, user, role, navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-background pb-12">
       <p className="text-muted-foreground">Loading...</p>
     </div>
   );

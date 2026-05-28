@@ -5,6 +5,7 @@ import { useLessonProgress } from '@/hooks/useProgress';
 import { useStepAnalytics } from '@/hooks/useStepAnalytics';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 import type { Lesson, CheckResult, LessonProgress, ChartType } from '@/types/lesson';
 
 export function useLessonPlayer(lesson: Lesson, moduleId: string, onComplete?: (xpEarned: number) => void) {
@@ -130,10 +131,20 @@ export function useLessonPlayer(lesson: Lesson, moduleId: string, onComplete?: (
       const isFirstAttempt = attemptCount === 0;
       const alreadyDone = progress.completedStepIds.includes(currentStep.id);
       const xp = (isRedoing || alreadyDone) ? 0 : (currentStep.task?.xpValue ?? 0) + (isFirstAttempt ? (currentStep.task?.bonusXp || 0) : 0);
-      logEvent(currentStep.id, 'step_complete', { attempt_count: attemptCount + 1 });
+      logEvent(currentStep.id, 'step_complete', { attempt_count: attemptCount + 1, xp_earned: xp });
       if (isChallengeStep) fireConfetti();
       setProgress(prev => ({ ...prev, completedStepIds: [...new Set([...prev.completedStepIds, currentStep.id])], totalXp: prev.totalXp + xp, attempts: newAttempts }));
       setIsRedoing(false);
+      // Auto-compress if this was the last step
+      if (isLastStep && user?.id && moduleId) {
+        supabase.rpc('compress_lesson_events', {
+          _user_id: user.id,
+          _module_id: moduleId,
+          _lesson_id: lesson.id,
+        }).then(({ error }) => {
+          if (error) console.warn('Auto-compression failed:', error.message);
+        });
+      }
     } else {
       logEvent(currentStep.id, 'check_fail', { attempt: attemptCount + 1, feedback_type: result.type });
       setProgress(prev => ({ ...prev, attempts: newAttempts }));
@@ -148,16 +159,29 @@ export function useLessonPlayer(lesson: Lesson, moduleId: string, onComplete?: (
     if (!currentStep) return;
     const alreadyDone = progress.completedStepIds.includes(currentStep.id);
     const xp = (isRedoing || alreadyDone) ? 0 : (currentStep.task?.xpValue ?? 5);
-    logEvent(currentStep.id, 'step_complete', { attempt_count: 1 });
+    logEvent(currentStep.id, 'step_complete', { attempt_count: 1, xp_earned: xp });
     setProgress(prev => ({ ...prev, completedStepIds: [...new Set([...prev.completedStepIds, currentStep.id])], totalXp: prev.totalXp + xp }));
     setTimeout(() => {
-      if (isLastStep) { onComplete?.(progress.totalXp + xp); return; }
+      if (isLastStep) {
+        onComplete?.(progress.totalXp + xp);
+        // Auto-compress lesson events in the background
+        if (user?.id && moduleId) {
+          supabase.rpc('compress_lesson_events', {
+            _user_id: user.id,
+            _module_id: moduleId,
+            _lesson_id: lesson.id,
+          }).then(({ error }) => {
+            if (error) console.warn('Auto-compression failed:', error.message);
+          });
+        }
+        return;
+      }
       const nextIdx = currentStepIndex + 1;
       setCurrentStepIndex(nextIdx);
       setFeedback(null); setShowHint(false); setCurrentHint(null); setResetKey(k => k + 1);
       setProgress(prev => ({ ...prev, currentStepId: lesson.steps[nextIdx]?.id || '' }));
     }, 0);
-  }, [currentStep, currentStepIndex, isLastStep, lesson.steps, onComplete, progress.totalXp, progress.completedStepIds, isRedoing, logEvent]);
+  }, [currentStep, currentStepIndex, isLastStep, lesson, moduleId, onComplete, progress.totalXp, progress.completedStepIds, isRedoing, logEvent, user?.id]);
 
   const handleNext = useCallback(() => {
     if (isLastStep) { onComplete?.(progress.totalXp); return; }

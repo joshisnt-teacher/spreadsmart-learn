@@ -233,8 +233,8 @@ serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const AI_API_KEY = Deno.env.get("AI_API_KEY");
+    if (!AI_API_KEY) throw new Error("AI_API_KEY is not configured");
 
     const { action, prompt, context } = await req.json();
 
@@ -260,7 +260,7 @@ serve(async (req) => {
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${AI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Settings } from 'lucide-react';
+import { Settings, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,13 +32,14 @@ interface BulkResult {
 
 const TeacherDashboard: React.FC = () => {
   const { user, role, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+
 
   useEffect(() => {
     if (!authLoading && (!user || role === 'student')) {
       navigate(user ? '/' : '/auth');
     }
-  }, [authLoading, user, role, navigate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user, role]);
 
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
@@ -127,7 +128,7 @@ const TeacherDashboard: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-12">
       <header className="border-b border-border bg-card">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -141,6 +142,10 @@ const TeacherDashboard: React.FC = () => {
             </h1>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/compression-test')}>
+              <Database className="w-4 h-4 mr-2" />
+              Compression Test
+            </Button>
             <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard/settings')}>
               <Settings className="w-4 h-4" />
             </Button>

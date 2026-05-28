@@ -166,7 +166,7 @@ const StudentDashboard: React.FC = () => {
 
   if (authLoading || progressLoading || assignLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-background pb-12">
         <p className="text-muted-foreground">Loading...</p>
       </div>
     );
@@ -185,7 +185,7 @@ const StudentDashboard: React.FC = () => {
     : '?';
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-12">
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/5 via-primary/10 to-accent/5 border-b">
         <div className="max-w-5xl mx-auto px-6 py-8">

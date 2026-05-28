@@ -170,8 +170,8 @@ const ModuleAnalyticsView: React.FC<ModuleAnalyticsViewProps> = ({ classId, cust
                       <XAxis dataKey="name" angle={-35} textAnchor="end" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
                       <YAxis allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
                       <Tooltip />
-                      <Bar dataKey="starts" name="Starts" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="completes" name="Completes" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="starts" name="Starts" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="completes" name="Completes" fill="var(--accent)" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

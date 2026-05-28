@@ -1,4 +1,12 @@
-project_id = "ctfxhxqhvszadozamqkg"
+
+[functions.teacher-sso]
+verify_jwt = false
+
+[functions.get-teacher-apps]
+verify_jwt = false
+
+[functions.mint-teacher-sso]
+verify_jwt = false
 
 [functions.create-student]
 verify_jwt = false
