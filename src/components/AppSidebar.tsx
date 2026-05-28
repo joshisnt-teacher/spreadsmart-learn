@@ -41,8 +41,8 @@ export function AppSidebar() {
 
   const getNavClassName = (path: string) => {
     return isActive(path)
-      ? "bg-white/10 text-sidebar-foreground border-l-[3px] border-primary"
-      : "hover:bg-white/5 text-sidebar-foreground/70";
+      ? "bg-black/8 text-sidebar-foreground border-l-[3px] border-primary"
+      : "hover:bg-black/5 text-sidebar-foreground/70";
   };
 
   const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
@@ -56,7 +56,7 @@ export function AppSidebar() {
   return (
     <Sidebar className="border-sidebar-border/50 bg-sidebar">
       <SidebarHeader className="h-16 border-b border-sidebar-border/50 flex items-center px-4">
-        <EdufiedLogo collapsed={collapsed} className="text-sidebar-foreground" />
+        <EdufiedLogo collapsed={collapsed} className="text-sidebar-foreground" toolName="Circuit" />
       </SidebarHeader>
 
       <SidebarContent className="p-3">

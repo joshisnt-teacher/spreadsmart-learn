@@ -42,13 +42,13 @@
 
     --radius: 0.625rem;
 
-    --sidebar-background: oklch(0.18 0.02 240);
-    --sidebar-foreground: oklch(0.9 0.02 240);
+    --sidebar-background: oklch(0.92 0.02 145);
+    --sidebar-foreground: oklch(0.18 0.02 240);
     --sidebar-primary: oklch(0.42 0.13 155);
     --sidebar-primary-foreground: oklch(1 0 0);
-    --sidebar-accent: oklch(0.22 0.04 240);
-    --sidebar-accent-foreground: oklch(0.9 0.02 240);
-    --sidebar-border: oklch(0.25 0.03 240);
+    --sidebar-accent: oklch(0.86 0.025 145);
+    --sidebar-accent-foreground: oklch(0.18 0.02 240);
+    --sidebar-border: oklch(0.84 0.022 145);
     --sidebar-ring: oklch(0.42 0.13 155);
   }
 

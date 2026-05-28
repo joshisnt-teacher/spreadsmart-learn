@@ -1,8 +1,9 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
@@ -20,6 +21,28 @@ import { TeacherLayout } from "@/components/TeacherLayout";
 
 const queryClient = new QueryClient();
 
+function PageTitle() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const path = location.pathname;
+    let label = "circuit";
+    if (path === "/dashboard") label = "Dashboard";
+    else if (path === "/dashboard/settings") label = "Settings";
+    else if (path === "/dashboard/compression-test") label = "Compression Test";
+    else if (path === "/auth") label = "Auth";
+    else if (path === "/student") label = "Student";
+    else if (path.startsWith("/module/")) label = "Module";
+    else if (path === "/auth/teacher/sso") label = "Signing in...";
+    else if (path === "/reset-password") label = "Reset Password";
+    else if (path === "/") label = "circuit";
+
+    document.title = label === "circuit" ? "circuit - by edufied" : `circuit - ${label}`;
+  }, [location.pathname]);
+
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -28,6 +51,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <PageTitle />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />

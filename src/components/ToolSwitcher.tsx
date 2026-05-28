@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Home, Activity, FileCheck, BookOpen, Briefcase, GraduationCap } from "lucide-react";
+import { Home, Activity, FileCheck, BookOpen, Briefcase, GraduationCap, BarChart2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +9,7 @@ const HUB_URL = import.meta.env.VITE_CENTRAL_HUB_URL || "https://edufied.com.au"
 // Fallback icon mapping based on app slug
 const ICON_MAP: Record<string, React.ElementType> = {
   pulse: Activity,
+  analytics: BarChart2,
   markmaster: FileCheck,
   circuit: BookOpen,
   venture: Briefcase,
@@ -99,7 +100,7 @@ export default function ToolSwitcher({ currentSlug }: ToolSwitcherProps) {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 pointer-events-none">
-      <nav className="pointer-events-auto flex items-center gap-1 rounded-2xl border border-sidebar-border bg-sidebar px-2 py-2 shadow-2xl shadow-black/70 ring-1 ring-white/10">
+      <nav className="pointer-events-auto flex items-center gap-1 rounded-2xl border border-sidebar-border bg-sidebar px-2 py-2 shadow-lg shadow-black/10 ring-1 ring-black/5">
         {/* Home button */}
         <a
           href={`${HUB_URL}/account/overview`}
