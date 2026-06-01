@@ -80,7 +80,7 @@ interface StudentCompressedData {
 
 const eventBadge: Record<string, string> = {
   step_start: 'bg-blue-50 text-blue-700 border-blue-200',
-  step_complete: 'bg-green-50 text-green-700 border-green-200',
+  step_complete: 'bg-amber-50 text-amber-700 border-amber-200',
   check_fail: 'bg-red-50 text-red-700 border-red-200',
   hint_used: 'bg-amber-50 text-amber-700 border-amber-200',
 };
@@ -653,7 +653,7 @@ const CompressionTest: React.FC = () => {
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
                       Compressed Summary ({compressedSteps.length} steps)
-                      {compressedSteps.length > 0 && <CheckCircle className="w-4 h-4 text-green-500" />}
+                      {compressedSteps.length > 0 && <CheckCircle className="w-4 h-4 text-amber-500" />}
                       {compressedSteps.length === 0 && rawEvents.length > 0 && (
                         <AlertCircle className="w-4 h-4 text-muted-foreground" />
                       )}
@@ -668,7 +668,7 @@ const CompressionTest: React.FC = () => {
                           <div className="flex items-center justify-between mb-2">
                             <p className="font-medium text-sm">Step: {s.step_id}</p>
                             {s.completed_at ? (
-                              <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 border-green-200">
+                              <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-700 border-amber-200">
                                 Completed
                               </Badge>
                             ) : (
