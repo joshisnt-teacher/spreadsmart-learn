@@ -30,8 +30,8 @@ Deno.serve(async (req) => {
 
     // Local DB — service role for admin auth operations
     const local = createClient(
-      Deno.env.get('SB_URL')!,
-      Deno.env.get('SB_SERVICE_ROLE_KEY')!,
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
       { auth: { autoRefreshToken: false, persistSession: false } }
     )
 

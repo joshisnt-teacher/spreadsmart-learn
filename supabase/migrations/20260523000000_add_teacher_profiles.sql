@@ -9,7 +9,14 @@ CREATE TABLE IF NOT EXISTS teacher_profiles (
 
 ALTER TABLE teacher_profiles ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Teachers can view their own profile"
-  ON teacher_profiles FOR SELECT
-  TO authenticated
-  USING (id = auth.uid());
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'teacher_profiles' AND policyname = 'Teachers can view their own profile'
+  ) THEN
+    CREATE POLICY "Teachers can view their own profile"
+      ON teacher_profiles FOR SELECT
+      TO authenticated
+      USING (id = auth.uid());
+  END IF;
+END $$;

@@ -33,7 +33,7 @@ const FeedbackBar: React.FC<FeedbackBarProps> = ({
 }) => {
   return (
     <div className="p-3 md:p-4 border-t bg-card">
-      <div className="flex items-center gap-2 md:gap-3 max-w-4xl flex-wrap">
+      <div className="flex items-center gap-2 md:gap-3 w-full flex-wrap">
         <AnimatePresence mode="wait">
           {feedback && (
             <motion.div
