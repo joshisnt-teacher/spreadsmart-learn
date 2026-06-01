@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Award, Lightbulb, Menu, X } from 'lucide-react';
+import { BookOpen, Award, Lightbulb, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLessonPlayer } from '@/hooks/useLessonPlayer';
@@ -116,6 +116,28 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
                   <Trophy className="w-3 h-3 mr-0.5" /> Challenge
                 </Badge>
               )}
+              <div className="flex items-center gap-1 ml-auto">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  disabled={!player.canGoPrevious}
+                  onClick={player.handlePrevious}
+                  title="Previous step"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  disabled={!player.canGoNext}
+                  onClick={player.handleNext}
+                  title="Next step"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
             <h3 className="text-lg md:text-xl font-semibold mb-3">{player.currentStep.title}</h3>
             <div className="prose prose-sm max-w-none text-foreground/90">

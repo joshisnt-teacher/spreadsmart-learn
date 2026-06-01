@@ -242,6 +242,15 @@ export function useLessonPlayer(lesson: Lesson, moduleId: string, onComplete?: (
     setFeedback(null); setShowHint(false); setResetKey(k => k + 1); setIsRedoing(goingBack);
   }, [currentStepIndex, lesson.steps, progress.completedStepIds]);
 
+  const handlePrevious = useCallback(() => {
+    if (currentStepIndex <= 0) return;
+    const prevIdx = currentStepIndex - 1;
+    handleStepClick(prevIdx);
+  }, [currentStepIndex, handleStepClick]);
+
+  const canGoPrevious = currentStepIndex > 0;
+  const canGoNext = isStepComplete || isInstructionStep;
+
   return {
     // State
     currentStepIndex, currentStep, progress, feedback, showHint, currentHint,
@@ -255,8 +264,9 @@ export function useLessonPlayer(lesson: Lesson, moduleId: string, onComplete?: (
     // Assessment
     isAssessment,
     // Actions
-    handleDataChange, handleCheck, handleInstructionContinue, handleNext,
+    handleDataChange, handleCheck, handleInstructionContinue, handleNext, handlePrevious,
     handleReset, handleHint, handleStuck, handleStepClick,
+    canGoPrevious, canGoNext,
     setSidebarOpen, setChartSelection, setQuizAnswer, setTableAnswer,
   };
 }
