@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Settings, Database } from 'lucide-react';
+import { Settings, Database, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,6 +31,7 @@ interface BulkResult {
 }
 
 const TeacherDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { user, role, loading: authLoading } = useAuth();
 
 
