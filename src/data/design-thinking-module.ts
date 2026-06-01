@@ -24,13 +24,15 @@ export const designThinkingModule: Module = {
             'Maybe a water bottle that always leaks in your bag, a locker you can never find things in, or a chair that hurts your back after sitting for an hour.\n\n' +
             '**Design thinking** is how engineers and inventors fix problems like these. It is not about being artistic; it is about being curious and practical.\n\n' +
             'The process has 5 steps:\n' +
-            '1. **Define** - What is the problem?\n' +
-            '2. **Empathise** - Who has this problem?\n' +
-            '3. **Ideate** - What ideas could fix it?\n' +
-            '4. **Prototype** - Build a rough version\n' +
-            '5. **Test** - Try it out and improve\n\n' +
+            '1. **Empathise** - Understand the person who has the problem\n' +
+            '2. **Define** - Clearly state what the problem is\n' +
+            '3. **Ideate** - Brainstorm lots of possible solutions\n' +
+            '4. **Prototype** - Build a rough version to test\n' +
+            '5. **Test** - Try it out, get feedback, and improve\n\n' +
+            '**Note:** Some people swap steps 1 and 2, or use slightly different names. That is fine. The important thing is that you understand the person and the problem before you start building solutions.\n\n' +
             'In this module, you will design a **better reusable water bottle** for a student in your class. Let us get started.',
           whyItMatters: 'Design thinking is used by companies like Apple, Nike, and Tesla to create products people actually want to use.',
+          mediaUrl: 'https://www.youtube.com/embed/_r0VX-aU_T8',
         },
 
         // Step 2: Define
@@ -297,17 +299,17 @@ export const designThinkingModule: Module = {
           order: 5,
           type: 'quiz',
           title: 'Design Thinking Assessment',
-          instruction: 'Put the 5 steps of the design thinking process in the correct order.',
+          instruction: 'Which of the following shows someone using the design thinking process properly?',
           quiz: {
             type: 'multiple-choice',
             options: [
-              'Empathise → Define → Ideate → Prototype → Test',
-              'Define → Empathise → Ideate → Prototype → Test',
-              'Ideate → Prototype → Test → Define → Empathise',
-              'Define → Ideate → Empathise → Prototype → Test',
+              'They build the first idea they think of without talking to anyone.',
+              'They ask their partner questions, sketch ideas, build a rough model, and then ask for feedback.',
+              'They ignore negative feedback because they know their idea is the best.',
+              'They spend weeks making their prototype perfect before showing it to anyone.',
             ],
-            correctAnswer: 'Define → Empathise → Ideate → Prototype → Test',
-            explanation: 'First define the problem, then understand your user (empathise), brainstorm solutions (ideate), build a rough version (prototype), and finally test it. Option A reverses empathise and define; Option C jumps straight to building; Option D brainstorms before understanding the user.',
+            correctAnswer: 'They ask their partner questions, sketch ideas, build a rough model, and then ask for feedback.',
+            explanation: 'This answer shows the full design thinking loop: empathise (ask questions), ideate (sketch ideas), prototype (rough model), and test (ask for feedback). Option A skips empathising; Option C ignores feedback; Option D waits too long to test.',
           },
           task: {
             id: 'task-dt-step-12',

@@ -91,6 +91,31 @@ const StepContentArea: React.FC<StepContentAreaProps> = ({
   }
 
   if (isInstructionStep && !isChallengeStep) {
+    if (currentStep.mediaUrl) {
+      return (
+        <div className="flex-1 flex flex-col p-2 md:p-4 min-h-0 gap-4 overflow-auto">
+          <div className="relative w-full aspect-video rounded-lg overflow-hidden border bg-black shrink-0">
+            <iframe
+              src={currentStep.mediaUrl}
+              title="Embedded video"
+              className="absolute inset-0 w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+          {currentStep.initialSheetState && (
+            <div className="flex-1 border rounded-lg overflow-hidden bg-background shadow-sm opacity-80 min-h-0">
+              <SpreadsheetWorkspace
+                initialState={currentStep.initialSheetState}
+                editableCells={[]}
+                onDataChange={() => {}}
+                resetKey={resetKey}
+              />
+            </div>
+          )}
+        </div>
+      );
+    }
     return currentStep.initialSheetState ? (
       <div className="flex-1 p-2 md:p-4 min-h-0">
         <div className="h-full border rounded-lg overflow-hidden bg-background shadow-sm opacity-80">
