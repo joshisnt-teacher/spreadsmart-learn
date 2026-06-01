@@ -177,3 +177,67 @@ export const useLessonProgress = (lessonId: string) => {
 
   return { saveProgress, loadProgress };
 };
+
+/** Load assessment result for a specific lesson */
+export const useLessonAssessment = (lessonId: string) => {
+  const { user } = useAuth();
+
+  const loadAssessment = useCallback(async () => {
+    if (!user) return null;
+
+    const { data, error } = await supabase
+      .from('lesson_assessments')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('lesson_id', lessonId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('Failed to load assessment:', error.message);
+      return null;
+    }
+
+    return data;
+  }, [user, lessonId]);
+
+  return { loadAssessment };
+};
+
+/** Load all assessment results for a module (teacher view) */
+export const useModuleAssessments = (moduleId: string) => {
+  const { user } = useAuth();
+  const [assessments, setAssessments] = useState<Record<string, { passed: boolean; attemptCount: number }>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setAssessments({});
+      setLoading(false);
+      return;
+    }
+
+    const load = async () => {
+      const { data, error } = await supabase
+        .from('lesson_assessments')
+        .select('lesson_id, passed, attempt_count')
+        .eq('user_id', user.id)
+        .eq('module_id', moduleId);
+
+      if (error) {
+        setLoading(false);
+        return;
+      }
+
+      const map: Record<string, { passed: boolean; attemptCount: number }> = {};
+      (data ?? []).forEach((row) => {
+        map[row.lesson_id] = { passed: row.passed, attemptCount: row.attempt_count };
+      });
+      setAssessments(map);
+      setLoading(false);
+    };
+
+    load();
+  }, [user, moduleId]);
+
+  return { assessments, loading };
+};

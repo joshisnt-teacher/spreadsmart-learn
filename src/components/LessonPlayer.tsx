@@ -163,6 +163,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, moduleId = '', onCo
           isMobile={player.isMobile}
           showStuckButton={player.showStuckButton}
           stuckTriggered={player.stuckTriggered}
+          isAssessment={player.isAssessment}
           onCheck={player.handleCheck}
           onInstructionContinue={player.handleInstructionContinue}
           onNext={player.handleNext}

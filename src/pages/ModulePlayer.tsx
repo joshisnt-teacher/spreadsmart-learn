@@ -8,7 +8,7 @@ import { getModuleById } from '@/data/module-registry';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import type { Module } from '@/types/lesson';
-import { useProgress } from '@/hooks/useProgress';
+import { useProgress, useModuleAssessments } from '@/hooks/useProgress';
 import { useStudentAssignments } from '@/hooks/useAssignments';
 import { Button } from '@/components/ui/button';
 
@@ -33,6 +33,7 @@ const ModulePlayer: React.FC = () => {
   }, [moduleId]);
 
   const { completedLessonIds, totalXp, loading: progressLoading, markLessonComplete } = useProgress(currentModule?.id ?? '');
+  const { assessments, loading: assessmentLoading } = useModuleAssessments(currentModule?.id ?? '');
   const { assignments, hasAssignments, isLessonAssigned, getDueDate, loading: assignLoading } = useStudentAssignments(currentModule?.id ?? '');
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
 
@@ -86,7 +87,7 @@ const ModulePlayer: React.FC = () => {
     setActiveLessonId(null);
   }, []);
 
-  if (authLoading || progressLoading || assignLoading || moduleLoading) {
+  if (authLoading || progressLoading || assignLoading || moduleLoading || assessmentLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background pb-12">
         <p className="text-muted-foreground">Loading...</p>
@@ -131,6 +132,7 @@ const ModulePlayer: React.FC = () => {
         isLessonAssigned={isLessonAssigned}
         getDueDate={getDueDate}
         moduleDueLabel={moduleDueLabel}
+        assessments={assessments}
       />
     </div>
   );

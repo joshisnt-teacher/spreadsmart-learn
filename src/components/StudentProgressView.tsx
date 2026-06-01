@@ -15,7 +15,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { BookOpen, Trophy, ChevronDown, ChevronRight, Trash2, UserPlus, Users, TrendingUp, Award, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Trophy, ChevronDown, ChevronRight, Trash2, UserPlus, Users, TrendingUp, Award, CheckCircle2, ShieldCheck, ShieldX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 
@@ -40,10 +40,17 @@ interface LessonProgressRow {
   attempts: Record<string, number>;
 }
 
+interface AssessmentRow {
+  lesson_id: string;
+  passed: boolean;
+  attempt_count: number;
+}
+
 interface StudentProgressData {
   student: StudentData;
   moduleProgress: Map<string, ModuleProgressRow>;
   lessonProgress: LessonProgressRow[];
+  assessments: Map<string, AssessmentRow>;
 }
 
 interface Props {
@@ -89,9 +96,10 @@ const StudentProgressView: React.FC<Props> = ({ classId, students, onStudentDele
 
     const studentUserIds = students.map((s) => s.student_user_id);
 
-    const [moduleRes, lessonRes] = await Promise.all([
+    const [moduleRes, lessonRes, assessmentRes] = await Promise.all([
       supabase.from('module_progress').select('*').in('user_id', studentUserIds),
       supabase.from('lesson_progress').select('*').in('user_id', studentUserIds),
+      supabase.from('lesson_assessments').select('user_id, lesson_id, passed, attempt_count').in('user_id', studentUserIds),
     ]);
 
     const moduleMap = new Map<string, ModuleProgressRow[]>();
@@ -114,6 +122,13 @@ const StudentProgressView: React.FC<Props> = ({ classId, students, onStudentDele
       lessonMap.set(lp.user_id, existing);
     }
 
+    const assessmentMap = new Map<string, Map<string, AssessmentRow>>();
+    for (const ar of assessmentRes.data ?? []) {
+      const existing = assessmentMap.get(ar.user_id) ?? new Map<string, AssessmentRow>();
+      existing.set(ar.lesson_id, { lesson_id: ar.lesson_id, passed: ar.passed, attempt_count: ar.attempt_count });
+      assessmentMap.set(ar.user_id, existing);
+    }
+
     const data: StudentProgressData[] = students.map((s) => {
       const mps = moduleMap.get(s.student_user_id) ?? [];
       const mpMap = new Map<string, ModuleProgressRow>();
@@ -122,6 +137,7 @@ const StudentProgressView: React.FC<Props> = ({ classId, students, onStudentDele
         student: s,
         moduleProgress: mpMap,
         lessonProgress: lessonMap.get(s.student_user_id) ?? [],
+        assessments: assessmentMap.get(s.student_user_id) ?? new Map(),
       };
     });
 
@@ -341,6 +357,7 @@ const StudentProgressView: React.FC<Props> = ({ classId, students, onStudentDele
                                     )}
                                     {mod.lessons.map((lesson) => {
                                       const lp = sp.lessonProgress.find((l) => l.lesson_id === lesson.id);
+                                      const assessment = sp.assessments.get(lesson.id);
                                       const stepsCompleted = lp?.completed_step_ids.length ?? 0;
                                       const totalLessonSteps = lesson.steps.length;
                                       const lessonPct = totalLessonSteps > 0 ? (stepsCompleted / totalLessonSteps) * 100 : 0;
@@ -358,6 +375,17 @@ const StudentProgressView: React.FC<Props> = ({ classId, students, onStudentDele
                                           </span>
                                           {lp?.completed && (
                                             <Badge variant="default" className="text-[10px] h-4">✓</Badge>
+                                          )}
+                                          {assessment && (
+                                            assessment.passed ? (
+                                              <span className="text-accent flex items-center gap-1" title={`Passed in ${assessment.attempt_count} attempt(s)`}>
+                                                <ShieldCheck className="w-3.5 h-3.5" />
+                                              </span>
+                                            ) : (
+                                              <span className="text-destructive flex items-center gap-1" title={`Failed (${assessment.attempt_count} attempt(s))`}>
+                                                <ShieldX className="w-3.5 h-3.5" />
+                                              </span>
+                                            )
                                           )}
                                         </div>
                                       );

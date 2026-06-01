@@ -1,12 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Clock, ChevronRight, Star, Zap, Lock, CalendarClock, RotateCcw, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Clock, ChevronRight, Star, Zap, Lock, CalendarClock, RotateCcw, CheckCircle2, ShieldCheck, ShieldX } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import type { Module } from '@/types/lesson';
+
+interface AssessmentResult {
+  passed: boolean;
+  attemptCount?: number;
+}
 
 interface ModuleLandingProps {
   module: Module;
@@ -17,6 +22,8 @@ interface ModuleLandingProps {
   isLessonAssigned?: (lessonId: string) => boolean;
   getDueDate?: (lessonId: string) => string | null;
   moduleDueLabel?: string | null;
+  /** Map of lessonId -> assessment result. Used for unlock logic and badges. */
+  assessments?: Record<string, AssessmentResult>;
 }
 
 const ModuleLanding: React.FC<ModuleLandingProps> = ({
@@ -28,6 +35,7 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
   isLessonAssigned = () => true,
   getDueDate = () => null,
   moduleDueLabel = null,
+  assessments = {},
 }) => {
   const totalLessons = module.lessons.length;
   const completedCount = completedLessonIds.length;
@@ -87,6 +95,10 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
                 <Star className="w-4 h-4 text-warning" />
                 <span>{totalXp} XP earned</span>
               </div>
+              <div className="flex items-center gap-2 text-sm">
+                <ShieldCheck className="w-4 h-4 text-accent" />
+                <span>{Object.values(assessments).filter(a => a.passed).length}/{totalLessons} assessments passed</span>
+              </div>
             </div>
 
             {completedCount > 0 && (
@@ -123,8 +135,12 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
         <div className="space-y-3">
           {module.lessons.map((lesson, idx) => {
             const isComplete = completedLessonIds.includes(lesson.id);
+            const hasPassedAssessment = assessments[lesson.id]?.passed === true;
+            const prevLesson = module.lessons[idx - 1];
+            const prevPassed = idx === 0 || assessments[prevLesson?.id]?.passed === true;
             const isCurrent = lesson.id === nextLesson.id;
-            const isLocked = idx > 0 && !completedLessonIds.includes(module.lessons[idx - 1].id) && !isCurrent;
+            // New unlock rule: previous lesson's assessment must be passed (or it's the first lesson)
+            const isLocked = idx > 0 && !prevPassed && !isCurrent;
             const assigned = isLessonAssigned(lesson.id);
             const dueDate = getDueDate(lesson.id);
             const isHidden = hasAssignments && !assigned;
@@ -165,6 +181,16 @@ const ModuleLanding: React.FC<ModuleLandingProps> = ({
                       <p className="text-xs text-muted-foreground mt-0.5">{lesson.description}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-xs text-muted-foreground">{lesson.steps.length} steps</p>
+                        {hasPassedAssessment && (
+                          <span className="text-xs text-accent flex items-center gap-1">
+                            <ShieldCheck className="w-3 h-3" /> Assessment passed
+                          </span>
+                        )}
+                        {isComplete && !hasPassedAssessment && (
+                          <span className="text-xs text-destructive flex items-center gap-1">
+                            <ShieldX className="w-3 h-3" /> Assessment pending
+                          </span>
+                        )}
                         {dueDate && (
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
                             <CalendarClock className="w-3 h-3" />

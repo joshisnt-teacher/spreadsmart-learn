@@ -15,6 +15,8 @@ interface FeedbackBarProps {
   isMobile: boolean;
   showStuckButton?: boolean;
   stuckTriggered?: boolean;
+  /** If true, this is an assessment step — hints are disabled and messaging changes */
+  isAssessment?: boolean;
   onCheck: () => void;
   onInstructionContinue: () => void;
   onNext: () => void;
@@ -26,7 +28,7 @@ interface FeedbackBarProps {
 const FeedbackBar: React.FC<FeedbackBarProps> = ({
   feedback, showHint, currentHint,
   isInstructionStep, isStepComplete, isLastStep, isRedoing, isMobile,
-  showStuckButton, stuckTriggered,
+  showStuckButton, stuckTriggered, isAssessment,
   onCheck, onInstructionContinue, onNext, onReset, onHint, onStuck,
 }) => {
   return (
@@ -50,7 +52,7 @@ const FeedbackBar: React.FC<FeedbackBarProps> = ({
           )}
         </AnimatePresence>
 
-        {showHint && currentHint && (
+        {showHint && currentHint && !isAssessment && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -58,6 +60,17 @@ const FeedbackBar: React.FC<FeedbackBarProps> = ({
           >
             <Lightbulb className="w-4 h-4 shrink-0" />
             <span className="truncate">{currentHint}</span>
+          </motion.div>
+        )}
+
+        {isAssessment && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex-1 min-w-0 flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-sm bg-warning/10 text-warning border border-warning/20"
+          >
+            <Trophy className="w-4 h-4 shrink-0" />
+            <span className="truncate">Assessment — no hints available. Show what you know!</span>
           </motion.div>
         )}
 
@@ -86,11 +99,13 @@ const FeedbackBar: React.FC<FeedbackBarProps> = ({
             )
           ) : (
             <>
-              <Button variant="outline" size="sm" onClick={onHint}>
-                <HelpCircle className="w-4 h-4 mr-1" /> {!isMobile && 'Hint'}
-              </Button>
+              {!isAssessment && (
+                <Button variant="outline" size="sm" onClick={onHint}>
+                  <HelpCircle className="w-4 h-4 mr-1" /> {!isMobile && 'Hint'}
+                </Button>
+              )}
 
-              {showStuckButton && (
+              {showStuckButton && !isAssessment && (
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
                   <Button variant="outline" size="sm" onClick={onStuck} className="border-warning/50 text-warning hover:bg-warning/10">
                     <HandHelping className="w-4 h-4 mr-1" /> {!isMobile && "I'm stuck"}
@@ -103,11 +118,11 @@ const FeedbackBar: React.FC<FeedbackBarProps> = ({
               </Button>
               {(!isStepComplete || isRedoing) ? (
                 <Button size="sm" onClick={onCheck}>
-                  <Check className="w-4 h-4 mr-1" /> {isRedoing ? 'Re-check' : 'Check'}
+                  <Check className="w-4 h-4 mr-1" /> {isRedoing ? 'Re-check' : isAssessment ? 'Submit Assessment' : 'Check'}
                 </Button>
               ) : (
                 <Button size="sm" onClick={onNext} className="bg-accent hover:bg-accent/90 text-accent-foreground">
-                  {isLastStep ? <><Trophy className="w-4 h-4 mr-1" /> Complete</> : <>Continue <ChevronRight className="w-4 h-4 ml-1" /></>}
+                  {isLastStep ? <><Trophy className="w-4 h-4 mr-1" /> {isAssessment ? 'Finish Lesson' : 'Complete'}</> : <>Continue <ChevronRight className="w-4 h-4 ml-1" /></>}
                 </Button>
               )}
             </>

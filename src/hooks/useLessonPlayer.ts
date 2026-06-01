@@ -99,6 +99,7 @@ export function useLessonPlayer(lesson: Lesson, moduleId: string, onComplete?: (
   const isQuizStep = currentStep?.type === 'quiz';
   const isTableTaskStep = currentStep?.type === 'table-task';
   const isInstructionStep = currentStep?.type === 'instruction' || (!currentStep?.task && !isChallengeStep && !isChartStep && !isQuizStep && !isTableTaskStep);
+  const isAssessment = currentStep?.isAssessment === true;
   const isStepComplete = progress.completedStepIds.includes(currentStep?.id || '');
   const isLastStep = currentStepIndex === lesson.steps.length - 1;
   const isLessonComplete = lesson.steps.every(s => progress.completedStepIds.includes(s.id));
@@ -106,7 +107,8 @@ export function useLessonPlayer(lesson: Lesson, moduleId: string, onComplete?: (
   const progressPercent = (progress.completedStepIds.length / lesson.steps.length) * 100;
 
   // Show "I'm stuck" after 60s on a non-instruction task step that isn't complete
-  const showStuckButton = !isInstructionStep && !isStepComplete && !stuckTriggered && stepElapsed >= 60;
+  // Disabled entirely during assessments
+  const showStuckButton = !isAssessment && !isInstructionStep && !isStepComplete && !stuckTriggered && stepElapsed >= 60;
 
   const handleDataChange = useCallback((celldata: any[]) => setCurrentCellData(celldata), []);
 
@@ -131,10 +133,25 @@ export function useLessonPlayer(lesson: Lesson, moduleId: string, onComplete?: (
       const isFirstAttempt = attemptCount === 0;
       const alreadyDone = progress.completedStepIds.includes(currentStep.id);
       const xp = (isRedoing || alreadyDone) ? 0 : (currentStep.task?.xpValue ?? 0) + (isFirstAttempt ? (currentStep.task?.bonusXp || 0) : 0);
-      logEvent(currentStep.id, 'step_complete', { attempt_count: attemptCount + 1, xp_earned: xp });
-      if (isChallengeStep) fireConfetti();
+      logEvent(currentStep.id, 'step_complete', { attempt_count: attemptCount + 1, xp_earned: xp, is_assessment: isAssessment });
+      if (isChallengeStep || isAssessment) fireConfetti();
       setProgress(prev => ({ ...prev, completedStepIds: [...new Set([...prev.completedStepIds, currentStep.id])], totalXp: prev.totalXp + xp, attempts: newAttempts }));
       setIsRedoing(false);
+
+      // Save assessment result if this was an assessment step
+      if (isAssessment && user?.id && moduleId) {
+        supabase.from('lesson_assessments').upsert({
+          user_id: user.id,
+          lesson_id: lesson.id,
+          module_id: moduleId,
+          passed: true,
+          attempt_count: attemptCount + 1,
+          completed_at: new Date().toISOString(),
+        }, { onConflict: 'user_id,lesson_id' }).then(({ error }) => {
+          if (error) console.warn('Failed to save assessment pass:', error.message);
+        });
+      }
+
       // Auto-compress if this was the last step
       if (isLastStep && user?.id && moduleId) {
         supabase.rpc('compress_lesson_events', {
@@ -235,6 +252,8 @@ export function useLessonPlayer(lesson: Lesson, moduleId: string, onComplete?: (
     // Derived
     isChallengeStep, isChartStep, isQuizStep, isTableTaskStep, isInstructionStep,
     isStepComplete, isLastStep, isLessonComplete, attemptCount,
+    // Assessment
+    isAssessment,
     // Actions
     handleDataChange, handleCheck, handleInstructionContinue, handleNext,
     handleReset, handleHint, handleStuck, handleStepClick,

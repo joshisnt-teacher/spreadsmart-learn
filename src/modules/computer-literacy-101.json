@@ -1,0 +1,186 @@
+{
+  "id": "computer-literacy-101",
+  "title": "Computer Literacy Basics",
+  "description": "Learn the fundamentals of using a computer: files, folders, emails, and keyboard shortcuts.",
+  "topic": "computer-literacy",
+  "estimatedMinutes": 45,
+  "bannerUrl": "https://ctfxhxqhvszadozamqkg.supabase.co/storage/v1/object/public/module-banners/computer-literacy-banner.png",
+  "competencies": [
+    {
+      "id": "files.navigate",
+      "name": "Navigate File Explorer",
+      "description": "Open folders, understand paths, and use breadcrumbs."
+    },
+    {
+      "id": "files.create-folder",
+      "name": "Create and Name Folders",
+      "description": "Create new folders and rename them appropriately."
+    },
+    {
+      "id": "email.compose",
+      "name": "Compose an Email",
+      "description": "Write an email with a subject, recipient, and body."
+    },
+    {
+      "id": "email.attach",
+      "name": "Attach a File to an Email",
+      "description": "Browse for and attach a file to an outgoing email."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "lesson-files",
+      "order": 1,
+      "title": "Files & Folders",
+      "description": "Learn how files are organised and how to create folders.",
+      "steps": [
+        {
+          "id": "step-files-1",
+          "order": 1,
+          "title": "What is a File?",
+          "layout": "instruction-full",
+          "blocks": [
+            {
+              "type": "text",
+              "content": "A **file** is a digital document — it could be a photo, a video, a letter, or a spreadsheet.\n\nFiles live inside **folders** (also called directories). Think of a folder like a drawer in a filing cabinet.\n\nEvery file has a **name** and a **type** (shown by the extension, like `.docx` or `.jpg`)."
+            },
+            {
+              "type": "video",
+              "url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+              "caption": "Watch how files and folders work on a computer."
+            },
+            {
+              "type": "callout",
+              "variant": "why-it-matters",
+              "content": "If you can't find your files, you can't finish your homework. Organisation is a superpower."
+            }
+          ]
+        },
+        {
+          "id": "step-files-2",
+          "order": 2,
+          "title": "Navigate the File Explorer",
+          "layout": "workspace-full",
+          "blocks": [
+            {
+              "type": "external-tool",
+              "toolId": "file-explorer",
+              "config": {
+                "scenario": "navigate",
+                "startPath": "/Home",
+                "targetPath": "/Home/Documents/School/Maths",
+                "instruction": "Open the Maths folder inside School."
+              }
+            }
+          ],
+          "outcomes": [
+            { "competencyId": "files.navigate", "level": "practised" }
+          ],
+          "scoring": {
+            "xpValue": 10,
+            "bonusXp": 5,
+            "hints": [
+              "Look for the Documents folder first.",
+              "Then open School, then Maths."
+            ],
+            "successMessage": "Great! You found the Maths folder.",
+            "incorrectMessage": "You need to open Documents → School → Maths."
+          }
+        },
+        {
+          "id": "step-files-3",
+          "order": 3,
+          "title": "Create a New Folder",
+          "layout": "split-left-instruction",
+          "blocks": [
+            {
+              "type": "text",
+              "content": "Your teacher asked you to save all your English work in one place.\n\n1. Right-click in empty space.\n2. Choose **New Folder**.\n3. Name it **English**."
+            },
+            {
+              "type": "external-tool",
+              "toolId": "file-explorer",
+              "config": {
+                "scenario": "create-folder",
+                "startPath": "/Home/Documents",
+                "targetFolderName": "English"
+              }
+            }
+          ],
+          "outcomes": [
+            { "competencyId": "files.create-folder", "level": "practised" }
+          ],
+          "scoring": {
+            "xpValue": 15,
+            "bonusXp": 5,
+            "hints": [
+              "Right-click on empty space in the folder view.",
+              "Select 'New Folder' from the menu.",
+              "Type 'English' and press Enter."
+            ],
+            "successMessage": "Perfect! Your English folder is ready for homework.",
+            "incorrectMessage": "Make sure you created a folder named 'English' inside Documents."
+          }
+        }
+      ]
+    },
+    {
+      "id": "lesson-email",
+      "order": 2,
+      "title": "Sending Emails",
+      "description": "Learn how to write a clear email and attach a file.",
+      "prerequisites": ["lesson-files"],
+      "steps": [
+        {
+          "id": "step-email-1",
+          "order": 1,
+          "title": "Anatomy of an Email",
+          "layout": "instruction-full",
+          "blocks": [
+            {
+              "type": "text",
+              "content": "Every email has four key parts:\n\n- **To:** The person you are writing to.\n- **Subject:** A short summary of what the email is about.\n- **Body:** The main message.\n- **Attachments:** Files you include with the email."
+            },
+            {
+              "type": "callout",
+              "variant": "tip",
+              "content": "Always use a clear subject line. Teachers get lots of emails — make yours easy to find."
+            }
+          ]
+        },
+        {
+          "id": "step-email-2",
+          "order": 2,
+          "title": "Write Your First Email",
+          "layout": "workspace-full",
+          "blocks": [
+            {
+              "type": "external-tool",
+              "toolId": "email-simulator",
+              "config": {
+                "scenario": "compose",
+                "requiredTo": "teacher@school.edu",
+                "requiredSubjectContains": "homework",
+                "requiredBodyMinLength": 20
+              }
+            }
+          ],
+          "outcomes": [
+            { "competencyId": "email.compose", "level": "practised" }
+          ],
+          "scoring": {
+            "xpValue": 20,
+            "bonusXp": 10,
+            "hints": [
+              "The recipient must be teacher@school.edu.",
+              "Include the word 'homework' in the subject.",
+              "Write at least one sentence in the body."
+            ],
+            "successMessage": "Email sent! Clear subject, proper recipient, and a polite body — well done.",
+            "incorrectMessage": "Check the recipient, subject, and that you wrote something in the body."
+          }
+        }
+      ]
+    }
+  ]
+}

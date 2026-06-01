@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Trophy, BarChart3, MessageCircle, TableIcon, ChevronLeft, Star } from 'lucide-react';
+import { Check, Trophy, BarChart3, MessageCircle, TableIcon, ChevronLeft, Star, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -61,7 +61,7 @@ const LessonSidebar: React.FC<LessonSidebarProps> = ({
                     ? step.type === 'challenge' ? 'bg-warning text-warning-foreground' : 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground'
                 }`}>
-                  {isComplete ? <Check className="w-3 h-3" /> : step.type === 'challenge' ? <Trophy className="w-3 h-3" /> : step.type === 'chart' ? <BarChart3 className="w-3 h-3" /> : step.type === 'quiz' ? <MessageCircle className="w-3 h-3" /> : step.type === 'table-task' ? <TableIcon className="w-3 h-3" /> : idx + 1}
+                  {isComplete ? <Check className="w-3 h-3" /> : step.isAssessment ? <ShieldCheck className="w-3 h-3" /> : step.type === 'challenge' ? <Trophy className="w-3 h-3" /> : step.type === 'chart' ? <BarChart3 className="w-3 h-3" /> : step.type === 'quiz' ? <MessageCircle className="w-3 h-3" /> : step.type === 'table-task' ? <TableIcon className="w-3 h-3" /> : idx + 1}
                 </span>
                 <span className="truncate">{step.title}</span>
               </button>

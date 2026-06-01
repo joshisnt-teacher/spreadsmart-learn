@@ -98,6 +98,8 @@ export interface Step {
   chartTask?: ChartTaskExpectation;
   tableTask?: TableTaskConfig;
   quiz?: QuizQuestion;
+  /** If true, this step is the lesson assessment. No hints, result determines mastery. */
+  isAssessment?: boolean;
 }
 
 export interface Lesson {
