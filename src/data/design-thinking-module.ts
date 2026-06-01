@@ -20,16 +20,16 @@ export const designThinkingModule: Module = {
           type: 'instruction',
           title: 'What is Design Thinking?',
           instruction:
-            'Have you ever used something that was annoying or didn\'t work properly?\n\n' +
-            'Maybe a door handle that was tricky to open, or a school bag that hurt your shoulders.\n\n' +
-            '**Design thinking** is a way that engineers and inventors solve problems like these. It\'s not about being "artistic" — it\'s about being **curious** and **practical**.\n\n' +
+            'Have you ever used something that was annoying or did not work properly?\n\n' +
+            'Maybe a water bottle that always leaks in your bag, a locker you can never find things in, or a chair that hurts your back after sitting for an hour.\n\n' +
+            '**Design thinking** is how engineers and inventors fix problems like these. It is not about being artistic; it is about being curious and practical.\n\n' +
             'The process has 5 steps:\n' +
-            '1. **Define** — What is the problem?\n' +
-            '2. **Empathize** — Who has this problem?\n' +
-            '3. **Ideate** — What ideas could fix it?\n' +
-            '4. **Prototype** — Build a rough version\n' +
-            '5. **Test** — Try it out and improve\n\n' +
-            'In this module, you will design the **perfect pet** for a partner in your class. Let\'s get started!',
+            '1. **Define** - What is the problem?\n' +
+            '2. **Empathize** - Who has this problem?\n' +
+            '3. **Ideate** - What ideas could fix it?\n' +
+            '4. **Prototype** - Build a rough version\n' +
+            '5. **Test** - Try it out and improve\n\n' +
+            'In this module, you will design a **better reusable water bottle** for a student in your class. Let us get started.',
           whyItMatters: 'Design thinking is used by companies like Apple, Nike, and Tesla to create products people actually want to use.',
         },
 
@@ -44,13 +44,16 @@ export const designThinkingModule: Module = {
             'Engineers use a simple sentence format:\n\n' +
             '`[Who] needs [what] because [why].`\n\n' +
             '**Example:**\n' +
-            '`A year 7 student needs a water bottle that doesn\'t leak because their books keep getting wet.`\n\n' +
+            '`A year 7 student needs a water bottle that does not leak because their books and laptop keep getting wet in their bag.`\n\n' +
             '**Your task:**\n' +
-            'Think about your partner. What kind of pet would they actually want?\n' +
-            'Are they allergic to fur? Do they live in a small flat? Are they scared of loud noises?\n\n' +
+            'Think about your partner. What is wrong with their current water bottle?\n\n' +
+            '- Does it leak when it tips over?\n' +
+            '- Is it too big to fit in their bag?\n' +
+            '- Does the water get warm by lunchtime?\n' +
+            '- Is the lid hard to open one-handed?\n\n' +
             'A good definition might be:\n' +
-            '`My partner needs a calm, low-maintenance pet because they are busy after school and live in an apartment.`',
-          whyItMatters: 'If you don\'t define the problem clearly, you might build something nobody actually needs.',
+            '`My partner needs a water bottle that stays sealed in their bag because they walk to school and it always tips over.`',
+          whyItMatters: 'If you do not define the problem clearly, you might build something nobody actually needs.',
         },
 
         // Step 3: Quiz on Define
@@ -63,13 +66,13 @@ export const designThinkingModule: Module = {
           quiz: {
             type: 'multiple-choice',
             options: [
-              'My partner wants a cool pet.',
-              'My partner needs a pet that does not shed fur because they have allergies.',
-              'My partner likes animals.',
-              'Pets are fun to have.',
+              'My partner wants a cool water bottle.',
+              'My partner needs a water bottle that does not leak because their books get wet in their bag.',
+              'My partner likes drinking water.',
+              'Water bottles are useful.',
             ],
-            correctAnswer: 'My partner needs a pet that does not shed fur because they have allergies.',
-            explanation: 'This answer clearly states WHO (my partner), WHAT (a pet that does not shed fur), and WHY (they have allergies).',
+            correctAnswer: 'My partner needs a water bottle that does not leak because their books get wet in their bag.',
+            explanation: 'This answer clearly states WHO (my partner), WHAT (a water bottle that does not leak), and WHY (their books get wet).',
           },
           task: {
             id: 'task-dt-step-3',
@@ -77,7 +80,7 @@ export const designThinkingModule: Module = {
             editableCells: [],
             hints: ['Look for the sentence that follows the "Who needs what because why" format.'],
             successMessage: 'Correct! A clear problem definition includes who, what, and why.',
-            incorrectMessage: 'Not quite — the best answer explains who has the problem, what they need, and why it matters.',
+            incorrectMessage: 'Not quite - the best answer explains who has the problem, what they need, and why it matters.',
             xpValue: 5,
           },
         },
@@ -90,13 +93,14 @@ export const designThinkingModule: Module = {
           title: 'Step 2: Empathize',
           instruction:
             '**Empathy** means understanding how someone else feels and what their life is really like.\n\n' +
-            'You are NOT designing a pet for yourself. You are designing it for your partner. So you need to **ask questions** and **listen carefully**.\n\n' +
+            'You are NOT designing a water bottle for yourself. You are designing it for your partner. So you need to **ask questions** and **listen carefully**.\n\n' +
             'Good empathy questions:\n' +
-            '- "Have you ever had a pet before? What happened?"\n' +
-            '- "How much time do you have after school?"\n' +
-            '- "What scares you about owning a pet?"\n' +
-            '- "What would make you really excited to come home?"\n\n' +
-            '**Important:** Don\'t just guess. The best designers talk to real people before they start building.',
+            '- "What annoys you most about your current water bottle?"\n' +
+            '- "How do you carry things to school? Bus, walk, or bike?"\n' +
+            '- "Do you prefer cold water or room temperature?"\n' +
+            '- "Where do you put your bottle during class?"\n' +
+            '- "Have you ever lost a water bottle? How?"\n\n' +
+            '**Important:** Do not just guess. The best designers talk to real people before they start building.',
           whyItMatters: 'The most famous product failures happen when designers assume they know what people want without actually asking them.',
         },
 
@@ -116,7 +120,7 @@ export const designThinkingModule: Module = {
               'So the project takes less time',
             ],
             correctAnswer: 'So you understand the person you are designing for',
-            explanation: 'Empathy helps you understand the real needs, fears, and desires of the person you are designing for.',
+            explanation: 'Empathy helps you understand the real needs, fears, and habits of the person you are designing for.',
           },
           task: {
             id: 'task-dt-step-5',
@@ -124,7 +128,7 @@ export const designThinkingModule: Module = {
             editableCells: [],
             hints: ['Think about what the word "empathy" actually means.'],
             successMessage: 'Exactly! Empathy is all about understanding your partner\'s real needs.',
-            incorrectMessage: 'Empathy is about understanding the other person — not making things easier for yourself.',
+            incorrectMessage: 'Empathy is about understanding the other person; not making things easier for yourself.',
             xpValue: 5,
           },
         },
@@ -136,17 +140,18 @@ export const designThinkingModule: Module = {
           type: 'instruction',
           title: 'Step 3: Ideate',
           instruction:
-            'Now it\'s time to **brainstorm**. This means coming up with as many ideas as possible — even wild ones!\n\n' +
+            'Now it is time to **brainstorm**. This means coming up with as many ideas as possible; even wild ones.\n\n' +
             '**Rules for good brainstorming:**\n' +
             '- No idea is too silly\n' +
-            '- Don\'t judge ideas while you are listing them\n' +
+            '- Do not judge ideas while you are listing them\n' +
             '- Build on other people\'s ideas\n' +
             '- Aim for quantity first, quality second\n\n' +
-            '**Example ideas for your partner\'s pet:**\n' +
-            '- A robot dog that does not shed\n' +
-            '- A pet rock with a personality tracker app\n' +
-            '- A small aquarium with glowing fish\n' +
-            '- A virtual pet projected on the wall\n\n' +
+            '**Example ideas for your partner\'s water bottle:**\n' +
+            '- A bottle with a locking lid that clicks shut\n' +
+            '- A bottle shaped to fit in a locker door\n' +
+            '- A bottle with a built-in filter so you can refill from any tap\n' +
+            '- A bottle that changes colour when the water gets warm\n' +
+            '- A flat bottle that slides into a laptop bag like a book\n\n' +
             'The goal is to have **lots of options** before you pick one. The first idea is rarely the best.',
           whyItMatters: 'Research shows that teams that generate more ideas early on end up with much better final solutions.',
         },
@@ -173,9 +178,9 @@ export const designThinkingModule: Module = {
             id: 'task-dt-step-7',
             expectations: [],
             editableCells: [],
-            hints: ['Think about the word "quantity first, quality second".'],
+            hints: ['Think about the phrase "quantity first, quality second".'],
             successMessage: 'Correct! Brainstorming is about generating lots of ideas first, then choosing later.',
-            incorrectMessage: 'During ideation, you should avoid judging ideas. Just list as many as you can!',
+            incorrectMessage: 'During ideation, you should avoid judging ideas. Just list as many as you can.',
             xpValue: 5,
           },
         },
@@ -195,16 +200,16 @@ export const designThinkingModule: Module = {
           type: 'instruction',
           title: 'Step 4: Prototype',
           instruction:
-            'A **prototype** is a rough, early version of your idea. It is NOT perfect — and it is not supposed to be!\n\n' +
+            'A **prototype** is a rough, early version of your idea. It is NOT perfect; and it is not supposed to be.\n\n' +
             'Prototypes can be:\n' +
             '- A drawing on paper\n' +
-            '- A model made from cardboard or clay\n' +
+            '- A model made from cardboard or plastic bottles\n' +
             '- A storyboard showing how someone would use it\n' +
-            '- A digital mockup or slide\n\n' +
-            '**Example:** If your idea is a "robot dog," your prototype might be:\n' +
-            '- A drawing of what it looks like\n' +
-            '- A list of what it can do\n' +
-            '- A cardboard box with buttons drawn on it to show the controls\n\n' +
+            '- A slide with labels explaining the features\n\n' +
+            '**Example:** If your idea is a "flat water bottle for laptop bags," your prototype might be:\n' +
+            '- A drawing showing the shape next to a laptop\n' +
+            '- A cardboard cutout taped together so you can feel the size\n' +
+            '- Labels showing where the locking lid and rubber seal go\n\n' +
             'The point is to make your idea **real enough that someone can react to it**.',
           whyItMatters: 'Prototypes are cheap to build and cheap to change. If you wait until the "final" version, mistakes become very expensive.',
         },
@@ -233,7 +238,7 @@ export const designThinkingModule: Module = {
             editableCells: [],
             hints: ['Think about why you would build something rough instead of perfect.'],
             successMessage: 'Exactly! Prototypes help you learn early and avoid big mistakes later.',
-            incorrectMessage: 'A prototype is not the final product — it is a rough version you use to get feedback.',
+            incorrectMessage: 'A prototype is not the final product; it is a rough version you use to get feedback.',
             xpValue: 5,
           },
         },
@@ -247,14 +252,14 @@ export const designThinkingModule: Module = {
           instruction:
             'Testing means showing your prototype to your partner and watching their reaction.\n\n' +
             '**Good testing questions:**\n' +
-            '- "What do you like about this idea?"\n' +
+            '- "What do you like about this bottle design?"\n' +
             '- "What confuses you?"\n' +
-            '- "What would you change?"\n' +
-            '- "Would you actually use this? Be honest!"\n\n' +
+            '- "Would this actually fit in your bag? Show me."\n' +
+            '- "What would you change? Be honest."\n\n' +
             '**Important:** Do not defend your idea. Just listen.\n\n' +
-            'If your partner says "I don\'t like that it needs charging every day," that is **great feedback**. Now you can go back and improve your design.\n\n' +
+            'If your partner says "I do not like that the lid needs two hands to open," that is **great feedback**. Now you can go back and improve your design.\n\n' +
             'Design thinking is a **loop**, not a straight line. You might test, redesign, prototype again, and test again.',
-          whyItMatters: 'Every product you love — your phone, your shoes, your favourite app — went through dozens of test-and-redesign loops before you ever saw it.',
+          whyItMatters: 'Every product you love; your phone, your shoes, your favourite app; went through dozens of test-and-redesign loops before you ever saw it.',
         },
 
         // Step 11: Quiz on Test
@@ -273,15 +278,15 @@ export const designThinkingModule: Module = {
               'Change partners until someone likes it',
             ],
             correctAnswer: 'Use the feedback to improve your design',
-            explanation: 'Negative feedback is not a failure — it is valuable information that helps you make your design better.',
+            explanation: 'Negative feedback is not a failure; it is valuable information that helps you make your design better.',
           },
           task: {
             id: 'task-dt-step-11',
             expectations: [],
             editableCells: [],
             hints: ['Think about why testing exists in the first place.'],
-            successMessage: 'Correct! Feedback — even negative feedback — is how great designs get better.',
-            incorrectMessage: 'The whole point of testing is to learn what needs improving. Listen to the feedback!',
+            successMessage: 'Correct! Feedback, even negative feedback, is how great designs get better.',
+            incorrectMessage: 'The whole point of testing is to learn what needs improving. Listen to the feedback.',
             xpValue: 5,
           },
         },
@@ -311,7 +316,7 @@ export const designThinkingModule: Module = {
             hints: [
               'Think about the module: first we figured out the problem, then we understood the person, then we brainstormed, then we built something rough, then we tested it.',
             ],
-            successMessage: '🎉 Assessment passed! You understand the design thinking process.',
+            successMessage: 'Assessment passed! You understand the design thinking process.',
             incorrectMessage: 'Think back through the module: Define → Empathize → Ideate → Prototype → Test.',
             xpValue: 15,
             bonusXp: 10,

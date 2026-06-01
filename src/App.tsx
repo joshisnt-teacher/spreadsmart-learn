@@ -15,6 +15,7 @@ import TeacherSettings from "./pages/TeacherSettings";
 import CompressionTest from "./pages/CompressionTest";
 import ResetPassword from "./pages/ResetPassword";
 import TeacherSSO from "./pages/TeacherSSO";
+import StudentSSO from "./pages/StudentSSO";
 import NotFound from "./pages/NotFound";
 import ToolSwitcher from "@/components/ToolSwitcher";
 import { TeacherLayout } from "@/components/TeacherLayout";
@@ -34,6 +35,7 @@ function PageTitle() {
     else if (path === "/student") label = "Student";
     else if (path.startsWith("/module/")) label = "Module";
     else if (path === "/auth/teacher/sso") label = "Signing in...";
+    else if (path === "/auth/sso") label = "Signing in...";
     else if (path === "/reset-password") label = "Reset Password";
     else if (path === "/") label = "circuit";
 
@@ -82,6 +84,7 @@ const App = () => (
                 }
               />
               <Route path="/auth/teacher/sso" element={<TeacherSSO />} />
+              <Route path="/auth/sso" element={<StudentSSO />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

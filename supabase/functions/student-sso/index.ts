@@ -112,12 +112,17 @@ Deno.serve(async (req) => {
 
     // Ensure user_roles has 'student' for this user
     try {
-      await local.from('user_roles').upsert(
-        { user_id: localUserId, role: 'student' },
-        { onConflict: 'user_id' }
-      )
+      const { data: existingRole } = await local
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', localUserId)
+        .eq('role', 'student')
+        .maybeSingle()
+      if (!existingRole) {
+        await local.from('user_roles').insert({ user_id: localUserId, role: 'student' })
+      }
     } catch (roleErr) {
-      console.warn('user_roles upsert skipped:', roleErr)
+      console.warn('user_roles insert skipped:', roleErr)
     }
 
     // 5. Auto-enrol in Circuit classes based on central assignments

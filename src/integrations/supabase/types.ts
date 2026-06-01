@@ -119,6 +119,7 @@ export type Database = {
       }
       classes: {
         Row: {
+          central_class_id: string | null
           created_at: string
           id: string
           join_code: string
@@ -127,6 +128,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          central_class_id?: string | null
           created_at?: string
           id?: string
           join_code?: string
@@ -135,6 +137,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          central_class_id?: string | null
           created_at?: string
           id?: string
           join_code?: string

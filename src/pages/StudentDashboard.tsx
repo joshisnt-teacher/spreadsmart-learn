@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
+import { useStudentSession } from '@/hooks/useStudentSession';
 import { useProgress, useAggregatedProgress } from '@/hooks/useProgress';
 import { useStudentAssignments, useAllStudentAssignments } from '@/hooks/useAssignments';
 import { allModules } from '@/data/module-registry';
@@ -139,7 +140,8 @@ const ModuleCard: React.FC<{ module: Module; navigate: ReturnType<typeof useNavi
 };
 
 const StudentDashboard: React.FC = () => {
-  const { user, loading: authLoading, role, signOut } = useAuth();
+  const { user, loading: authLoading, role } = useAuth();
+  const { studentSession, isStudent, signOut: ssoSignOut } = useStudentSession();
   const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
   const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null }>({ display_name: null, avatar_url: null });
@@ -150,14 +152,14 @@ const StudentDashboard: React.FC = () => {
 
   const allAvailableModules: Module[] = allModules;
 
-  // Load profile
+  // Load profile (fallback for legacy local students)
   useEffect(() => {
-    if (!user) return;
+    if (!user || studentSession) return;
     supabase.from('profiles').select('display_name, avatar_url').eq('user_id', user.id).maybeSingle()
       .then(({ data }) => {
         if (data) setProfile({ display_name: data.display_name, avatar_url: data.avatar_url });
       });
-  }, [user, profileOpen]);
+  }, [user, profileOpen, studentSession]);
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/auth');
@@ -180,8 +182,12 @@ const StudentDashboard: React.FC = () => {
   const assignedModules = allAvailableModules.filter(m => assignedModuleIds.includes(m.id));
   const optionalModules = allAvailableModules.filter(m => !assignedModuleIds.includes(m.id));
 
-  const initials = profile.display_name
-    ? profile.display_name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+  const displayName = studentSession
+    ? `${studentSession.first_name} ${studentSession.last_name}`.trim()
+    : profile.display_name || '?';
+
+  const initials = displayName && displayName !== '?'
+    ? displayName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
     : '?';
 
   return (
@@ -205,7 +211,14 @@ const StudentDashboard: React.FC = () => {
                   <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                 </Avatar>
               </Button>
-              <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate('/auth'); }}>
+              <Button variant="ghost" size="sm" onClick={async () => {
+                if (isStudent && studentSession) {
+                  await ssoSignOut();
+                } else {
+                  await supabase.auth.signOut();
+                  navigate('/auth');
+                }
+              }}>
                 <LogOut className="w-4 h-4 mr-1" /> Sign Out
               </Button>
             </div>
