@@ -25,7 +25,7 @@ export const designThinkingModule: Module = {
             '**Design thinking** is how engineers and inventors fix problems like these. It is not about being artistic; it is about being curious and practical.\n\n' +
             'The process has 5 steps:\n' +
             '1. **Define** - What is the problem?\n' +
-            '2. **Empathize** - Who has this problem?\n' +
+            '2. **Empathise** - Who has this problem?\n' +
             '3. **Ideate** - What ideas could fix it?\n' +
             '4. **Prototype** - Build a rough version\n' +
             '5. **Test** - Try it out and improve\n\n' +
@@ -66,14 +66,14 @@ export const designThinkingModule: Module = {
           quiz: {
             type: 'multiple-choice',
             options: [
-              'My partner wants a cool water bottle.',
-              'My partner needs a water bottle that does not leak because their books get wet in their bag.',
-              'My partner likes drinking water.',
-              'Water bottles are useful.',
+              'My partner wants a water bottle that looks cool and matches their bag.',
+              'My partner needs a bottle that does not leak because their books get wet.',
+              'My partner needs a bottle with a locking lid because it tips over in their bag.',
+              'My partner needs a water bottle because all of their friends already have one.',
             ],
-            correctAnswer: 'My partner needs a water bottle that does not leak because their books get wet in their bag.',
-            explanation: 'This answer clearly states WHO (my partner), WHAT (a water bottle that does not leak), and WHY (their books get wet).',
-          },
+            correctAnswer: 'My partner needs a bottle that does not leak because their books get wet.',
+            explanation: 'This answer clearly states WHO (my partner), WHAT (a bottle that does not leak), and WHY (their books get wet). Option A focuses on wants instead of needs; Option C jumps to a specific solution; Option D has no meaningful reason.',
+          }
           task: {
             id: 'task-dt-step-3',
             expectations: [],
@@ -90,7 +90,7 @@ export const designThinkingModule: Module = {
           id: 'dt-step-4',
           order: 4,
           type: 'instruction',
-          title: 'Step 2: Empathize',
+          title: 'Step 2: Empathise',
           instruction:
             '**Empathy** means understanding how someone else feels and what their life is really like.\n\n' +
             'You are NOT designing a water bottle for yourself. You are designing it for your partner. So you need to **ask questions** and **listen carefully**.\n\n' +
@@ -109,19 +109,19 @@ export const designThinkingModule: Module = {
           id: 'dt-step-5',
           order: 5,
           type: 'quiz',
-          title: 'Quick Check: Empathize',
-          instruction: 'Why is the "Empathize" step important in design thinking?',
+          title: 'Quick Check: Empathise',
+          instruction: 'Why is the "Empathise" step important in design thinking?',
           quiz: {
             type: 'multiple-choice',
             options: [
-              'So you can build whatever you want',
-              'So you understand the person you are designing for',
-              'So you can skip the testing step',
-              'So the project takes less time',
+              'So you can build a product you would want to use yourself.',
+              'So you understand the person you are designing for.',
+              'So you can list the features your product should have.',
+              'So you can avoid doing research later in the project.',
             ],
             correctAnswer: 'So you understand the person you are designing for',
-            explanation: 'Empathy helps you understand the real needs, fears, and habits of the person you are designing for.',
-          },
+            explanation: 'Empathy helps you understand the real needs, fears, and habits of the person you are designing for. Option A is designing for yourself; Option C confuses empathy with listing features; Option D treats empathy as a shortcut.',
+          }
           task: {
             id: 'task-dt-step-5',
             expectations: [],
@@ -166,14 +166,14 @@ export const designThinkingModule: Module = {
           quiz: {
             type: 'multiple-choice',
             options: [
-              'Pick the first idea that comes to mind',
-              'Judge every idea immediately so you only keep good ones',
-              'Come up with many ideas without judging them',
-              'Ask someone else to come up with all the ideas',
+              'Pick your favourite idea and start building it immediately.',
+              'Come up with many ideas before you start judging them.',
+              'Only keep ideas that you already know will definitely work.',
+              'Let the most creative person in your group pick the idea.',
             ],
-            correctAnswer: 'Come up with many ideas without judging them',
-            explanation: 'Brainstorming works best when you separate idea generation from idea judgement.',
-          },
+            correctAnswer: 'Come up with many ideas before you start judging them',
+            explanation: 'Brainstorming works best when you separate idea generation from idea judgement. Option A rushes to building; Option C filters too early; Option D defers to one person instead of collaborating.',
+          }
           task: {
             id: 'task-dt-step-7',
             expectations: [],
@@ -224,14 +224,14 @@ export const designThinkingModule: Module = {
           quiz: {
             type: 'multiple-choice',
             options: [
-              'To sell the product to customers',
-              'To show your final, perfect design',
-              'To test your idea and get feedback early',
-              'To win a design competition',
+              'To show people exactly what the finished product will look like.',
+              'To learn what works before building the real thing.',
+              'To prove that your first idea was the right one from the start.',
+              'To replace detailed sketches and planning so you can build faster.',
             ],
-            correctAnswer: 'To test your idea and get feedback early',
-            explanation: 'Prototypes let you learn what works and what does not before you invest time in a final version.',
-          },
+            correctAnswer: 'To learn what works before building the real thing',
+            explanation: 'Prototypes let you learn what works and what does not before you invest time in a final version. Option A confuses prototypes with final presentations; Option C assumes the first idea is correct; Option D treats prototyping as a way to skip planning.',
+          }
           task: {
             id: 'task-dt-step-9',
             expectations: [],
@@ -272,14 +272,14 @@ export const designThinkingModule: Module = {
           quiz: {
             type: 'multiple-choice',
             options: [
-              'Argue with them and explain why they are wrong',
-              'Ignore the feedback and finish the project',
-              'Use the feedback to improve your design',
-              'Change partners until someone likes it',
+              'Explain why their feedback is wrong so they understand your design.',
+              'Use the feedback to make your design better.',
+              'Only keep the positive feedback and ignore the criticism.',
+              'Ask a different person until you get the answer you want.',
             ],
-            correctAnswer: 'Use the feedback to improve your design',
-            explanation: 'Negative feedback is not a failure; it is valuable information that helps you make your design better.',
-          },
+            correctAnswer: 'Use the feedback to make your design better',
+            explanation: 'Negative feedback is not a failure; it is valuable information that helps you make your design better. Option A defends instead of listening; Option C cherry-picks praise; Option D seeks confirmation rather than truth.',
+          }
           task: {
             id: 'task-dt-step-11',
             expectations: [],
@@ -301,13 +301,13 @@ export const designThinkingModule: Module = {
           quiz: {
             type: 'multiple-choice',
             options: [
-              'Ideate → Define → Empathize → Prototype → Test',
-              'Define → Empathize → Ideate → Prototype → Test',
-              'Empathize → Define → Ideate → Prototype → Test',
-              'Prototype → Test → Ideate → Define → Empathize',
+              'Empathise → Define → Ideate → Prototype → Test',
+              'Define → Empathise → Ideate → Prototype → Test',
+              'Ideate → Prototype → Test → Define → Empathise',
+              'Define → Ideate → Empathise → Prototype → Test',
             ],
-            correctAnswer: 'Define → Empathize → Ideate → Prototype → Test',
-            explanation: 'First define the problem, then understand your user (empathize), brainstorm solutions (ideate), build a rough version (prototype), and finally test it.',
+            correctAnswer: 'Define → Empathise → Ideate → Prototype → Test',
+            explanation: 'First define the problem, then understand your user (empathise), brainstorm solutions (ideate), build a rough version (prototype), and finally test it. Option A reverses empathise and define; Option C jumps straight to building; Option D brainstorms before understanding the user.',
           },
           task: {
             id: 'task-dt-step-12',
@@ -317,7 +317,7 @@ export const designThinkingModule: Module = {
               'Think about the module: first we figured out the problem, then we understood the person, then we brainstormed, then we built something rough, then we tested it.',
             ],
             successMessage: 'Assessment passed! You understand the design thinking process.',
-            incorrectMessage: 'Think back through the module: Define → Empathize → Ideate → Prototype → Test.',
+            incorrectMessage: 'Think back through the module: Define → Empathise → Ideate → Prototype → Test.'
             xpValue: 15,
             bonusXp: 10,
           },

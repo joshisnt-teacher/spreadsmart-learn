@@ -13,8 +13,8 @@ import { toast } from '@/hooks/use-toast';
 type AuthView = 'login' | 'role-select' | 'student-info' | 'teacher-signup';
 
 const DARK = 'oklch(0.18 0.02 240)';
-const ACCENT_DEEP = 'oklch(0.42 0.13 155)';
-const ACCENT_BRIGHT = 'oklch(0.82 0.18 130)';
+const ACCENT_DEEP = 'oklch(0.55 0.14 58)';
+const ACCENT_BRIGHT = 'oklch(0.82 0.18 58)';
 
 const Auth: React.FC = () => {
   const [view, setView] = useState<AuthView>('login');

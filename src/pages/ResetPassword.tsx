@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
 const DARK = 'oklch(0.18 0.02 240)';
-const ACCENT_BRIGHT = 'oklch(0.82 0.18 130)';
+const ACCENT_BRIGHT = 'oklch(0.82 0.18 58)';
 
 const ResetPassword: React.FC = () => {
   const [password, setPassword] = useState('');
@@ -63,7 +63,7 @@ const ResetPassword: React.FC = () => {
     <div
       className="relative isolate min-h-screen flex items-center justify-center p-4 pb-12 overflow-hidden"
       style={{
-        background: `linear-gradient(125deg, ${DARK} 0%, oklch(0.22 0.04 200) 50%, oklch(0.42 0.13 155) 100%)`,
+        background: `linear-gradient(125deg, ${DARK} 0%, oklch(0.22 0.04 200) 50%, oklch(0.666 0.157 58.3) 100%)`,
       }}
     >
       {/* Decorative background elements */}
