@@ -30,7 +30,7 @@ const StudentSSO = () => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
             },
             body: JSON.stringify({ token }),
           }

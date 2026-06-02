@@ -40,7 +40,7 @@ async function fetchTeacherApps(): Promise<App[]> {
       method: "GET",
       headers: {
         Authorization: `Bearer ${session.access_token}`,
-        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
       },
     }
   );
@@ -70,7 +70,7 @@ async function mintSsoAndRedirect(appSlug: string) {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.access_token}`,
-        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
       },
       body: JSON.stringify({ app_slug: appSlug }),
     }
