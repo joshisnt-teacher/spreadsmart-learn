@@ -46,7 +46,6 @@ Deno.serve(async (req) => {
       .maybeSingle()
 
     if (tokenError || !tokenRow) {
-      console.error('Token lookup failed:', JSON.stringify(tokenError), 'tokenRow:', tokenRow)
       return json({ error: 'Invalid or expired token' }, 401)
     }
 

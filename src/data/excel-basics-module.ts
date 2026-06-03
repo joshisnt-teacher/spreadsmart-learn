@@ -5,7 +5,7 @@ export const excelBasicsModule: Module = {
   title: 'Introduction to Excel',
   description: 'Learn how spreadsheets are structured, enter and edit data, use built-in functions, format numbers, use IF logic, and sort and filter data.',
   estimatedMinutes: 75,
-  bannerUrl: 'https://ctfxhxqhvszadozamqkg.supabase.co/storage/v1/object/public/module-banners/excel-basics-banner.png',
+  bannerUrl: 'https://ribpzkdzvpqyheftxblz.supabase.co/storage/v1/object/public/module-banners/excel-basics-banner.png',
   lessons: [
     // ──────────────────────────────────────────────
     // LESSON 1: Navigating a Spreadsheet (7 steps)

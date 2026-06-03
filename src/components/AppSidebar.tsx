@@ -1,7 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
-  Users,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -21,7 +20,6 @@ import { EdufiedLogo } from "@/components/EdufiedLogo";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Students", url: "/dashboard/students", icon: Users },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 

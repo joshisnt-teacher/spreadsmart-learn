@@ -5,7 +5,7 @@ export const designThinkingModule: Module = {
   title: 'Design Thinking: Solve Problems Like an Engineer',
   description: 'Learn how engineers and designers solve real-world problems by understanding people, brainstorming ideas, building prototypes, and testing their solutions.',
   estimatedMinutes: 30,
-  bannerUrl: 'https://ctfxhxqhvszadozamqkg.supabase.co/storage/v1/object/public/module-banners/design-thinking-banner.png',
+  bannerUrl: 'https://ribpzkdzvpqyheftxblz.supabase.co/storage/v1/object/public/module-banners/data-modelling-banner.jpg',
   lessons: [
     {
       id: 'lesson-understand',
