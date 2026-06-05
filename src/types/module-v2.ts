@@ -1,13 +1,3 @@
-/**
- * Module System v2 Types
- *
- * Decouples steps from spreadsheet-specific concepts.
- * Introduces block-based content, competency tracking, and flexible layouts.
- *
- * This file is a PROPOSAL — not yet wired into the app.
- * Once approved, it replaces src/types/lesson.ts incrementally.
- */
-
 // ═══════════════════════════════════════════════════════════════
 // Base Blocks — Content
 // ═══════════════════════════════════════════════════════════════
@@ -138,11 +128,116 @@ export interface InteractiveTableBlock {
   config: TableTaskConfig;
 }
 
-/** External tools allow the platform to be extended without touching core types */
-export interface ExternalToolBlock {
-  type: 'external-tool';
-  toolId: string; // e.g. 'email-simulator', 'file-explorer'
-  config: Record<string, unknown>;
+// ═══════════════════════════════════════════════════════════════
+// New Interactive Blocks — v2
+// ═══════════════════════════════════════════════════════════════
+
+export interface FillInBlankBlock {
+  type: 'fill-blank';
+  blockId: string;
+  /** Use {{blank}} as placeholder, e.g. "Revenue is {{blank}} minus {{blank}}" */
+  text: string;
+  blanks: Array<{
+    id: string;
+    accepted: string[]; // case-insensitive
+    hint?: string;
+  }>;
+}
+
+export interface WordMatchBlock {
+  type: 'word-match';
+  blockId: string;
+  instruction?: string;
+  pairs: Array<{
+    id: string;
+    term: string;
+    definition: string;
+  }>;
+}
+
+export interface DragSortBlock {
+  type: 'drag-sort';
+  blockId: string;
+  instruction: string;
+  items: Array<{
+    id: string;
+    label: string;
+    correctPosition: number; // 1-based
+    group?: string;
+  }>;
+  mode: 'order' | 'group';
+}
+
+export interface ImageHotspotBlock {
+  type: 'image-hotspot';
+  blockId: string;
+  imageUrl: string;
+  imageAlt: string;
+  hotspots: Array<{
+    id: string;
+    x: number; // percentage from left (0–100)
+    y: number; // percentage from top (0–100)
+    label: string;
+    revealText?: string;
+    question?: string;
+    accepted?: string[];
+  }>;
+}
+
+export interface FlashcardBlock {
+  type: 'flashcard';
+  blockId: string;
+  instruction?: string;
+  cards: Array<{
+    id: string;
+    front: string;
+    back: string;
+  }>;
+}
+
+export interface TrueFalseBlock {
+  type: 'true-false';
+  blockId: string;
+  statement: string;
+  correct: boolean;
+  explanation: string;
+}
+
+export interface LabelDiagramBlock {
+  type: 'label-diagram';
+  blockId: string;
+  imageUrl: string;
+  imageAlt: string;
+  labels: Array<{ id: string; text: string }>;
+  slots: Array<{
+    id: string;
+    x: number; // percentage from left
+    y: number; // percentage from top
+    correctLabelId: string;
+  }>;
+}
+
+export interface SequenceBlock {
+  type: 'sequence';
+  blockId: string;
+  instruction: string;
+  items: Array<{
+    id: string;
+    label: string;
+    correctIndex: number; // 0-based
+  }>;
+}
+
+export interface CrosswordBlock {
+  type: 'crossword';
+  blockId: string;
+  clues: Array<{
+    word: string;    // uppercase, no spaces
+    clue: string;
+    direction: 'across' | 'down';
+    row: number;     // 0-based grid row for first letter
+    col: number;     // 0-based grid col for first letter
+  }>;
 }
 
 export type StepBlock =
@@ -154,7 +249,15 @@ export type StepBlock =
   | QuizBlock
   | ChartBuilderBlock
   | InteractiveTableBlock
-  | ExternalToolBlock;
+  | FillInBlankBlock
+  | WordMatchBlock
+  | DragSortBlock
+  | ImageHotspotBlock
+  | FlashcardBlock
+  | TrueFalseBlock
+  | LabelDiagramBlock
+  | SequenceBlock
+  | CrosswordBlock;
 
 // ═══════════════════════════════════════════════════════════════
 // Scoring & Feedback
@@ -239,7 +342,7 @@ export interface Module {
   id: string;
   title: string;
   description: string;
-  topic: string; // e.g. 'excel', 'computer-literacy', 'charts'
+  topic?: string; // e.g. 'excel', 'computer-literacy', 'charts'
   estimatedMinutes: number;
   bannerUrl?: string;
   lessons: Lesson[];
