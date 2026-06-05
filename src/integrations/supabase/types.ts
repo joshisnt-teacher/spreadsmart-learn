@@ -61,6 +61,39 @@ export type Database = {
           },
         ]
       }
+      block_responses: {
+        Row: {
+          id: string
+          user_id: string
+          module_id: string
+          lesson_id: string
+          step_id: string
+          block_id: string
+          block_type: string
+          correct: boolean
+          answer: Json | null
+          attempt_number: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          module_id: string
+          lesson_id: string
+          step_id: string
+          block_id: string
+          block_type: string
+          correct: boolean
+          answer?: Json | null
+          attempt_number?: number
+          created_at?: string
+        }
+        Update: {
+          correct?: boolean
+          answer?: Json | null
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           badge_id: string
@@ -224,6 +257,7 @@ export type Database = {
           created_at: string
           id: string
           instruction: string
+          layout: string
           lesson_id: string
           order: number
           title: string
@@ -235,6 +269,7 @@ export type Database = {
           created_at?: string
           id?: string
           instruction?: string
+          layout?: string
           lesson_id: string
           order?: number
           title?: string
@@ -246,6 +281,7 @@ export type Database = {
           created_at?: string
           id?: string
           instruction?: string
+          layout?: string
           lesson_id?: string
           order?: number
           title?: string
