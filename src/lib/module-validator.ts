@@ -194,7 +194,7 @@ export const ModuleSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
   description: z.string(),
-  topic: z.string().min(1),
+  topic: z.string().min(1).optional(),
   estimatedMinutes: z.number().int().min(1),
   bannerUrl: z.string().url().optional(),
   lessons: z.array(LessonSchema).min(1),

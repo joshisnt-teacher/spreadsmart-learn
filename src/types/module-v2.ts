@@ -240,6 +240,12 @@ export interface CrosswordBlock {
   }>;
 }
 
+export interface ExternalToolBlock {
+  type: 'external-tool';
+  toolId: string; // e.g. 'email-simulator', 'file-explorer'
+  config: Record<string, unknown>;
+}
+
 export type StepBlock =
   | TextBlock
   | VideoBlock
@@ -257,7 +263,8 @@ export type StepBlock =
   | TrueFalseBlock
   | LabelDiagramBlock
   | SequenceBlock
-  | CrosswordBlock;
+  | CrosswordBlock
+  | ExternalToolBlock;
 
 // ═══════════════════════════════════════════════════════════════
 // Scoring & Feedback
