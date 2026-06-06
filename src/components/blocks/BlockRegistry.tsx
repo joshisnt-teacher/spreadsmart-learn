@@ -14,6 +14,7 @@ import { SpreadsheetBlockRenderer } from './SpreadsheetBlockRenderer';
 import { QuizBlockRenderer } from './QuizBlockRenderer';
 import { TrueFalseRenderer } from './TrueFalseRenderer';
 import { FillInBlankRenderer } from './FillInBlankRenderer';
+import { WordMatchRenderer } from './WordMatchRenderer';
 
 export interface BlockResponseParams {
   blockId: string;
@@ -46,6 +47,7 @@ const registry: Record<string, BlockRendererEntry> = {
   quiz: { component: QuizBlockRenderer },
   'true-false': { component: TrueFalseRenderer, isWorkspace: true },
   'fill-blank': { component: FillInBlankRenderer, isWorkspace: true },
+  'word-match': { component: WordMatchRenderer, isWorkspace: true },
   // TODO: chart-builder, interactive-table, external-tool
 };
 
