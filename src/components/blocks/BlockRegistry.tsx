@@ -18,6 +18,8 @@ import { WordMatchRenderer } from './WordMatchRenderer';
 import { FlashcardRenderer } from './FlashcardRenderer';
 import { DragSortRenderer } from './DragSortRenderer';
 import { SequenceRenderer } from './SequenceRenderer';
+import { ImageHotspotRenderer } from './ImageHotspotRenderer';
+import { LabelDiagramRenderer } from './LabelDiagramRenderer';
 
 export interface BlockResponseParams {
   blockId: string;
@@ -54,6 +56,8 @@ const registry: Record<string, BlockRendererEntry> = {
   'flashcard': { component: FlashcardRenderer, isWorkspace: true },
   'drag-sort': { component: DragSortRenderer, isWorkspace: true },
   'sequence': { component: SequenceRenderer, isWorkspace: true },
+  'image-hotspot': { component: ImageHotspotRenderer, isWorkspace: true },
+  'label-diagram': { component: LabelDiagramRenderer, isWorkspace: true },
   // TODO: chart-builder, interactive-table, external-tool
 };
 
