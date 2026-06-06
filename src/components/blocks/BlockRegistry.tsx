@@ -15,6 +15,8 @@ import { QuizBlockRenderer } from './QuizBlockRenderer';
 import { TrueFalseRenderer } from './TrueFalseRenderer';
 import { FillInBlankRenderer } from './FillInBlankRenderer';
 import { WordMatchRenderer } from './WordMatchRenderer';
+import { FlashcardRenderer } from './FlashcardRenderer';
+import { DragSortRenderer } from './DragSortRenderer';
 
 export interface BlockResponseParams {
   blockId: string;
@@ -48,6 +50,8 @@ const registry: Record<string, BlockRendererEntry> = {
   'true-false': { component: TrueFalseRenderer, isWorkspace: true },
   'fill-blank': { component: FillInBlankRenderer, isWorkspace: true },
   'word-match': { component: WordMatchRenderer, isWorkspace: true },
+  'flashcard': { component: FlashcardRenderer, isWorkspace: true },
+  'drag-sort': { component: DragSortRenderer, isWorkspace: true },
   // TODO: chart-builder, interactive-table, external-tool
 };
 
