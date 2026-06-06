@@ -13,6 +13,7 @@ import { CalloutBlockRenderer } from './CalloutBlockRenderer';
 import { SpreadsheetBlockRenderer } from './SpreadsheetBlockRenderer';
 import { QuizBlockRenderer } from './QuizBlockRenderer';
 import { TrueFalseRenderer } from './TrueFalseRenderer';
+import { FillInBlankRenderer } from './FillInBlankRenderer';
 
 export interface BlockResponseParams {
   blockId: string;
@@ -44,6 +45,7 @@ const registry: Record<string, BlockRendererEntry> = {
   spreadsheet: { component: SpreadsheetBlockRenderer, isWorkspace: true },
   quiz: { component: QuizBlockRenderer },
   'true-false': { component: TrueFalseRenderer, isWorkspace: true },
+  'fill-blank': { component: FillInBlankRenderer, isWorkspace: true },
   // TODO: chart-builder, interactive-table, external-tool
 };
 
