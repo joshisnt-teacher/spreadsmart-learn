@@ -19,7 +19,7 @@ export function useBlockResponse() {
   const submitResponse = useCallback(async (params: SubmitParams) => {
     if (!user?.id) return;
 
-    await supabase.from('block_responses').insert({
+    const { error: responseError } = await supabase.from('block_responses').insert({
       user_id: user.id,
       module_id: params.moduleId,
       lesson_id: params.lessonId,
@@ -30,8 +30,9 @@ export function useBlockResponse() {
       answer: params.answer as Record<string, unknown>,
       attempt_number: params.attemptNumber,
     });
+    if (responseError) throw responseError;
 
-    await supabase.from('step_events').insert({
+    const { error: eventError } = await supabase.from('step_events').insert({
       user_id: user.id,
       module_id: params.moduleId,
       lesson_id: params.lessonId,
@@ -44,6 +45,7 @@ export function useBlockResponse() {
         attempt_number: params.attemptNumber,
       },
     });
+    if (eventError) throw eventError;
   }, [user?.id]);
 
   return { submitResponse };
