@@ -12,6 +12,7 @@ import { ImageBlockRenderer } from './ImageBlockRenderer';
 import { CalloutBlockRenderer } from './CalloutBlockRenderer';
 import { SpreadsheetBlockRenderer } from './SpreadsheetBlockRenderer';
 import { QuizBlockRenderer } from './QuizBlockRenderer';
+import { TrueFalseRenderer } from './TrueFalseRenderer';
 
 export interface BlockResponseParams {
   blockId: string;
@@ -42,6 +43,7 @@ const registry: Record<string, BlockRendererEntry> = {
   callout: { component: CalloutBlockRenderer },
   spreadsheet: { component: SpreadsheetBlockRenderer, isWorkspace: true },
   quiz: { component: QuizBlockRenderer },
+  'true-false': { component: TrueFalseRenderer, isWorkspace: true },
   // TODO: chart-builder, interactive-table, external-tool
 };
 
