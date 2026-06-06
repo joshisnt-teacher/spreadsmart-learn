@@ -20,6 +20,7 @@ import { DragSortRenderer } from './DragSortRenderer';
 import { SequenceRenderer } from './SequenceRenderer';
 import { ImageHotspotRenderer } from './ImageHotspotRenderer';
 import { LabelDiagramRenderer } from './LabelDiagramRenderer';
+import { CrosswordRenderer } from './CrosswordRenderer';
 
 export interface BlockResponseParams {
   blockId: string;
@@ -58,6 +59,7 @@ const registry: Record<string, BlockRendererEntry> = {
   'sequence': { component: SequenceRenderer, isWorkspace: true },
   'image-hotspot': { component: ImageHotspotRenderer, isWorkspace: true },
   'label-diagram': { component: LabelDiagramRenderer, isWorkspace: true },
+  'crossword': { component: CrosswordRenderer, isWorkspace: true },
   // TODO: chart-builder, interactive-table, external-tool
 };
 
