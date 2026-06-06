@@ -17,6 +17,7 @@ import { FillInBlankRenderer } from './FillInBlankRenderer';
 import { WordMatchRenderer } from './WordMatchRenderer';
 import { FlashcardRenderer } from './FlashcardRenderer';
 import { DragSortRenderer } from './DragSortRenderer';
+import { SequenceRenderer } from './SequenceRenderer';
 
 export interface BlockResponseParams {
   blockId: string;
@@ -52,6 +53,7 @@ const registry: Record<string, BlockRendererEntry> = {
   'word-match': { component: WordMatchRenderer, isWorkspace: true },
   'flashcard': { component: FlashcardRenderer, isWorkspace: true },
   'drag-sort': { component: DragSortRenderer, isWorkspace: true },
+  'sequence': { component: SequenceRenderer, isWorkspace: true },
   // TODO: chart-builder, interactive-table, external-tool
 };
 
