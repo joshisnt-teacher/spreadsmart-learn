@@ -13,11 +13,19 @@ import { CalloutBlockRenderer } from './CalloutBlockRenderer';
 import { SpreadsheetBlockRenderer } from './SpreadsheetBlockRenderer';
 import { QuizBlockRenderer } from './QuizBlockRenderer';
 
+export interface BlockResponseParams {
+  blockId: string;
+  blockType: string;
+  correct: boolean;
+  answer: unknown;
+}
+
 export interface BlockContext {
   stepId: string;
   lessonId: string;
   moduleId: string;
-  onCheck?: (result: CheckResult) => void;
+  onCheck?: (result: CheckResult) => void;        // v1 compat
+  onResponse?: (params: BlockResponseParams) => void; // v2
   scoring?: StepScoringConfig;
 }
 
