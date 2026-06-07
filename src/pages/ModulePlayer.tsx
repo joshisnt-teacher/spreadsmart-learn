@@ -5,6 +5,7 @@ import ModuleLanding from '@/components/ModuleLanding';
 import LessonPlayer from '@/components/LessonPlayer';
 import { V2LessonPlayer } from '@/components/V2LessonPlayer';
 import { getModuleById } from '@/data/module-registry';
+import { getV2ModuleById } from '@/data/v2/module-registry-v2';
 import { useCustomModule } from '@/hooks/useCustomModule';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,20 +24,25 @@ const ModulePlayer: React.FC = () => {
   // Try DB-first, then fall back to hardcoded
   const { module: dbModule, loading: dbLoading } = useCustomModule(moduleId);
   const [legacyModule, setLegacyModule] = useState<LegacyModule | undefined>(undefined);
+  const [v2Module, setV2Module] = useState<V2Module | undefined>(undefined);
   const [moduleLoading, setModuleLoading] = useState(true);
 
   useEffect(() => {
     if (dbLoading) return;
     if (dbModule) { setModuleLoading(false); return; }
-    // DB miss — try hardcoded registry
+    // DB miss — try v2 hardcoded registry
+    const v2 = moduleId ? getV2ModuleById(moduleId) : undefined;
+    if (v2) { setV2Module(v2); setModuleLoading(false); return; }
+    // v2 miss — try legacy registry
     const builtin = moduleId ? getModuleById(moduleId) : undefined;
     setLegacyModule(builtin);
     setModuleLoading(false);
   }, [dbLoading, dbModule, moduleId]);
 
-  const isV2 = !!dbModule;
+  const isV2 = !!dbModule || !!v2Module;
+  const activeV2Module = (dbModule as V2Module | undefined) ?? v2Module;
   const displayModule = isV2
-    ? { id: dbModule!.id, title: dbModule!.title, description: dbModule!.description, estimatedMinutes: dbModule!.estimatedMinutes, bannerUrl: dbModule!.bannerUrl, lessons: dbModule!.lessons }
+    ? { id: activeV2Module!.id, title: activeV2Module!.title, description: activeV2Module!.description, estimatedMinutes: activeV2Module!.estimatedMinutes, bannerUrl: activeV2Module!.bannerUrl, lessons: activeV2Module!.lessons }
     : legacyModule;
 
   const { completedLessonIds, totalXp, loading: progressLoading, markLessonComplete } = useProgress(displayModule?.id ?? '');
@@ -95,7 +101,7 @@ const ModulePlayer: React.FC = () => {
 
   // V2 active lesson — use V2LessonPlayer
   if (activeLessonId && isV2) {
-    const v2Lesson = (dbModule as V2Module).lessons.find(l => l.id === activeLessonId) as V2Lesson | undefined;
+    const v2Lesson = activeV2Module?.lessons.find(l => l.id === activeLessonId) as V2Lesson | undefined;
     if (v2Lesson) {
       return (
         <V2LessonPlayer
