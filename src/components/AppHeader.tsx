@@ -2,6 +2,22 @@ import { Moon, Sun } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { AppBreadcrumb } from "@/components/AppBreadcrumb";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAIUsage } from "@/hooks/useAIUsage";
+
+function AIUsageMeter() {
+  const { data, isLoading } = useAIUsage();
+
+  return (
+    <div className="hidden md:flex items-center gap-2 px-2 text-xs opacity-70">
+      <span>AI</span>
+      {isLoading || !data ? (
+        <span>…</span>
+      ) : (
+        <span className="tabular-nums">{data.used}/{data.cap}</span>
+      )}
+    </div>
+  );
+}
 
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -25,6 +41,7 @@ export function AppHeader() {
         <AppBreadcrumb />
       </div>
       <div className="flex items-center gap-2 ml-auto">
+        <AIUsageMeter />
         <ThemeToggle />
       </div>
     </header>
