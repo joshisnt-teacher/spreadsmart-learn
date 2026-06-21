@@ -190,7 +190,7 @@ const TeacherSettings: React.FC = () => {
           <Card className="border-destructive/30">
             <CardHeader>
               <CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
-              <CardDescription>Irreversible actions — proceed with caution</CardDescription>
+              <CardDescription>These actions are irreversible, so proceed with caution.</CardDescription>
             </CardHeader>
             <CardContent>
               <AlertDialog>

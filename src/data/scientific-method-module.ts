@@ -27,13 +27,13 @@ export const scientificMethodModule: Module = {
           instruction:
             'Scientists do not just guess. They follow a process called the **scientific method** to test ideas and discover how the world works.\n\n' +
             'The steps are:\n' +
-            '1. **Ask a question** — What do you want to find out?\n' +
-            '2. **Research** — What is already known?\n' +
-            '3. **Form a hypothesis** — Make a testable prediction\n' +
-            '4. **Test with an experiment** — Collect data carefully\n' +
-            '5. **Analyse the results** — Look for patterns\n' +
-            '6. **Draw a conclusion** — Was your hypothesis right?\n\n' +
-            'In this module, you will learn how to use a **digital lab book** — a spreadsheet — to plan, record, and analyse experiments just like real scientists do.',
+            '1. **Ask a question**: What do you want to find out?\n' +
+            '2. **Research**: What is already known?\n' +
+            '3. **Form a hypothesis**: Make a testable prediction\n' +
+            '4. **Test with an experiment**: Collect data carefully\n' +
+            '5. **Analyse the results**: Look for patterns\n' +
+            '6. **Draw a conclusion**: Was your hypothesis right?\n\n' +
+            'In this module, you will learn how to use a **digital lab book**: a spreadsheet, to plan, record, and analyse experiments just like real scientists do.',
           whyItMatters:
             'Following a structured method makes your results reliable and believable. It also helps other people repeat your work.',
         },
@@ -43,11 +43,11 @@ export const scientificMethodModule: Module = {
           type: 'instruction',
           title: 'Variables Everywhere',
           instruction:
-            'Every experiment has **variables** — things that can change.\n\n' +
+            'Every experiment has **variables**: things that can change.\n\n' +
             'There are three types you must know:\n\n' +
-            '- **Independent variable** — the thing YOU deliberately change (e.g. amount of fertiliser)\n' +
-            '- **Dependent variable** — the thing YOU measure or observe (e.g. plant height)\n' +
-            '- **Controlled variables** — the things you KEEP THE SAME so the test is fair (e.g. type of plant, amount of water, amount of light)\n\n' +
+            '- **Independent variable**: the thing YOU deliberately change (e.g. amount of fertiliser)\n' +
+            '- **Dependent variable**: the thing YOU measure or observe (e.g. plant height)\n' +
+            '- **Controlled variables**: the things you KEEP THE SAME so the test is fair (e.g. type of plant, amount of water, amount of light)\n\n' +
             '**Example:**\n' +
             'If you test whether music volume affects test scores:\n' +
             '- Independent = music volume\n' +
@@ -232,7 +232,7 @@ export const scientificMethodModule: Module = {
               'For music volume: you change the volume, you measure the test score. Keep the test and room the same.',
             ],
             successMessage:
-              'Great work! Identifying variables is the first step to any fair experiment.',
+              'Identifying variables is the first step to any fair experiment.',
             incorrectMessage:
               'Make sure every yellow cell has an answer. Remember: Independent = what you change, Dependent = what you measure.',
             xpValue: 15,
@@ -633,7 +633,7 @@ export const scientificMethodModule: Module = {
             '- MIN = 11\n' +
             '- Range = 4\n\n' +
             'A **small range** means your measurements are consistent and reliable. A **large range** means there is more uncertainty.\n\n' +
-            'If one reading is very different from the others, it might be an **outlier** — a value caused by a mistake or unusual event.',
+            'If one reading is very different from the others, it might be an **outlier**: a value caused by a mistake or unusual event.',
           whyItMatters:
             'Range helps you judge how much you can trust your average. Two experiments can have the same mean but very different reliability.',
         },
@@ -934,11 +934,11 @@ export const scientificMethodModule: Module = {
           title: 'Charts in Science',
           instruction:
             'Scientists use charts to make patterns visible. Choosing the wrong chart can hide the story your data is trying to tell.\n\n' +
-            '**Bar charts** — best for **comparing categories**\n' +
+            '**Bar charts**: best for **comparing categories**\n' +
             '- Example: average plant height for different fertilisers\n\n' +
-            '**Line charts** — best for **trends over a continuous variable**\n' +
+            '**Line charts**: best for **trends over a continuous variable**\n' +
             '- Example: solubility as temperature increases\n\n' +
-            '**Pie charts** — best for **parts of a whole**\n' +
+            '**Pie charts**: best for **parts of a whole**\n' +
             '- Example: proportions of different gases in air\n\n' +
             '**In science, line charts are especially useful** because they show how one continuous variable affects another. The slope of the line tells you how strong the relationship is.',
           whyItMatters:
@@ -1224,8 +1224,8 @@ export const scientificMethodModule: Module = {
           instruction:
             'A conclusion is not just a guess. It is a statement backed by the numbers you collected.\n\n' +
             'A good conclusion has two parts:\n' +
-            '1. **What the data shows** — state the trend or comparison clearly\n' +
-            '2. **Whether the hypothesis is supported** — did the results match your prediction?\n\n' +
+            '1. **What the data shows**: state the trend or comparison clearly\n' +
+            '2. **Whether the hypothesis is supported**: did the results match your prediction?\n\n' +
             '**Example:**\n' +
             '"The data shows that plants under high light grew to an average of 18 cm, while plants under low light only reached 8 cm. This supports the hypothesis that more light leads to taller plants."\n\n' +
             '**Warning: Correlation is not causation!**\n' +

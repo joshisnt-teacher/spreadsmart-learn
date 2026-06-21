@@ -124,7 +124,7 @@ export function checkTask(
 
   return {
     type: 'incorrect',
-    message: task.incorrectMessage || 'Not quite right — check the highlighted cells.',
+    message: task.incorrectMessage || 'Not quite right. Check the highlighted cells.',
     details: wrongCells.map((c) => `Cell ${c} needs attention.`),
   };
 }
@@ -203,7 +203,7 @@ export function checkQuizAnswer(
 
   return {
     type: 'incorrect',
-    message: task.incorrectMessage || 'Not quite — try again!',
+    message: task.incorrectMessage || 'Not quite. Try again!',
   };
 }
 
@@ -231,6 +231,6 @@ export function checkTableTaskAnswer(
 
   return {
     type: 'incorrect',
-    message: task.incorrectMessage || 'Not quite — try again!',
+    message: task.incorrectMessage || 'Not quite. Try again!',
   };
 }

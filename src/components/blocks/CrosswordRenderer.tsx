@@ -110,7 +110,7 @@ export const CrosswordRenderer: React.FC<Props> = ({ block, context }) => {
         )}
         {submitted && (
           <p className={`mt-2 text-sm font-medium ${correct?.every(r => r.every(Boolean)) ? 'text-green-700' : 'text-amber-700'}`}>
-            {correct?.every(r => r.every(Boolean)) ? 'Solved!' : 'Some letters are wrong — check the red cells.'}
+            {correct?.every(r => r.every(Boolean)) ? 'Solved!' : 'Some letters are wrong. Check the red cells.'}
           </p>
         )}
       </div>

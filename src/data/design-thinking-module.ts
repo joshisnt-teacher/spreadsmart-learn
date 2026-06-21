@@ -3,7 +3,7 @@ import type { Module } from '@/types/lesson';
 export const designThinkingModule: Module = {
   id: 'design-thinking-101',
   title: 'Design Thinking: Solve Problems Like an Engineer',
-  description: 'Learn how engineers and designers solve real-world problems by understanding people, brainstorming ideas, building prototypes, and testing their solutions.',
+  description: 'Learn how engineers and designers solve practical problems by understanding people, brainstorming ideas, building prototypes, and testing their solutions.',
   estimatedMinutes: 30,
   bannerUrl: 'https://ribpzkdzvpqyheftxblz.supabase.co/storage/v1/object/public/module-banners/data-modelling-banner.jpg',
   lessons: [
@@ -280,7 +280,7 @@ export const designThinkingModule: Module = {
               'Ask a different person until you get the answer you want.',
             ],
             correctAnswer: 'Use the feedback to make your design better.',
-            explanation: 'Negative feedback is not a failure; it is valuable information that helps you make your design better. Option A defends instead of listening; Option C cherry-picks praise; Option D seeks confirmation rather than truth.',
+            explanation: 'Negative feedback is not a failure; it is useful information that helps you make your design better. Option A defends instead of listening; Option C cherry-picks praise; Option D seeks confirmation rather than truth.',
           },
           task: {
             id: 'task-dt-step-11',

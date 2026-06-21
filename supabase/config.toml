@@ -25,3 +25,6 @@ verify_jwt = false
 
 [functions.ai-module-assist]
 verify_jwt = false
+
+[functions.get-ai-usage]
+verify_jwt = false

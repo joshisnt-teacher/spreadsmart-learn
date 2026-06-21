@@ -42,7 +42,7 @@
           "blocks": [
             {
               "type": "text",
-              "content": "A **file** is a digital document — it could be a photo, a video, a letter, or a spreadsheet.\n\nFiles live inside **folders** (also called directories). Think of a folder like a drawer in a filing cabinet.\n\nEvery file has a **name** and a **type** (shown by the extension, like `.docx` or `.jpg`)."
+              "content": "A **file** is a digital document. It could be a photo, a video, a letter, or a spreadsheet.\n\nFiles live inside **folders** (also called directories). Think of a folder like a drawer in a filing cabinet.\n\nEvery file has a **name** and a **type** (shown by the extension, like `.docx` or `.jpg`)."
             },
             {
               "type": "video",
@@ -144,7 +144,7 @@
             {
               "type": "callout",
               "variant": "tip",
-              "content": "Always use a clear subject line. Teachers get lots of emails — make yours easy to find."
+              "content": "Always use a clear subject line. Teachers get lots of emails: make yours easy to find."
             }
           ]
         },
@@ -176,7 +176,7 @@
               "Include the word 'homework' in the subject.",
               "Write at least one sentence in the body."
             ],
-            "successMessage": "Email sent! Clear subject, proper recipient, and a polite body — well done.",
+            "successMessage": "Email sent! Clear subject, proper recipient, and a polite body.",
             "incorrectMessage": "Check the recipient, subject, and that you wrote something in the body."
           }
         }

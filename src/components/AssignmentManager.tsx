@@ -268,7 +268,7 @@ const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
                         </span>
                       </td>
                       <td className="py-2 px-4 text-xs">{format(new Date(a.live_date), 'dd MMM yyyy')}</td>
-                      <td className="py-2 px-4 text-xs">{a.due_date ? format(new Date(a.due_date), 'dd MMM yyyy') : '—'}</td>
+                      <td className="py-2 px-4 text-xs">{a.due_date ? format(new Date(a.due_date), 'dd MMM yyyy') : 'No due date'}</td>
                       <td className="py-2 px-4 text-center">
                         <Badge variant={status.variant} className="text-xs">{status.label}</Badge>
                       </td>
@@ -309,7 +309,7 @@ const AssignmentManager: React.FC<Props> = ({ classId, students }) => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Assign to Class</DialogTitle>
-            <DialogDescription>{activeModule?.title ?? 'Module'} — {scopeSummary}</DialogDescription>
+            <DialogDescription>{activeModule?.title ?? 'Module'}: {scopeSummary}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">

@@ -16,7 +16,7 @@ export const excelBasicsModule: Module = {
       title: 'Navigating a Spreadsheet',
       description: 'Learn how spreadsheets are structured, enter data, write basic formulas, and use the fill handle.',
       steps: [
-        // Step 1 — Instruction: What Is a Spreadsheet?
+        // Step 1: Instruction: What Is a Spreadsheet?
         {
           id: 'step-1-1',
           order: 1,
@@ -30,7 +30,7 @@ export const excelBasicsModule: Module = {
             '- Every cell has an address (e.g. **A1**, **B3**, **C7**).\n\n' +
             'Spreadsheets are used to **organise data**, **perform calculations**, and **analyse patterns**.\n\n' +
             'Look at the example table below. Cell **B2** contains the value **75**.',
-          whyItMatters: 'Understanding the grid is essential — every piece of data lives in a cell, and every formula references cells by their address.',
+          whyItMatters: 'Understanding the grid is useful: every piece of data lives in a cell, and every formula references cells by their address.',
           initialSheetState: {
             name: 'Sheet1',
             row: 5,
@@ -52,7 +52,7 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Quiz — Vocabulary check
+        // Quiz: Vocabulary check
         {
           id: 'step-1-1q',
           order: 2,
@@ -74,12 +74,12 @@ export const excelBasicsModule: Module = {
               'They are labelled with letters: A, B, C…',
             ],
             successMessage: 'Correct! Columns run vertically and are labelled with letters.',
-            incorrectMessage: 'Not quite — think about what runs vertically in a spreadsheet.',
+            incorrectMessage: 'Not quite. Think about what runs vertically in a spreadsheet.',
             xpValue: 5,
           },
         },
 
-        // Step 2 — Task: Resizing Rows and Columns
+        // Step 2: Task: Resizing Rows and Columns
         {
           id: 'step-1-2',
           order: 2,
@@ -90,7 +90,7 @@ export const excelBasicsModule: Module = {
             'To widen a column, hover your mouse over the **border between two column letters** (e.g. between A and B) at the top. Your cursor will change to a resize arrow. Then **click and drag** to the right.\n\n' +
             'You can do the same for rows by dragging the border between row numbers.\n\n' +
             'Column A below is too narrow to read the full message. Widen it, then type the hidden message into cell **B2**.',
-          whyItMatters: 'Being able to adjust column widths helps you view and work with data of all sizes — a skill you\'ll use constantly.',
+          whyItMatters: 'Being able to adjust column widths helps you view and work with data of all sizes: a skill you\'ll use constantly.',
           initialSheetState: {
             name: 'Sheet1',
             row: 4,
@@ -120,7 +120,7 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 3 — Task: Identifying Cells
+        // Step 3: Task: Identifying Cells
         {
           id: 'step-1-3',
           order: 3,
@@ -160,16 +160,16 @@ export const excelBasicsModule: Module = {
             editableCells: ['B2', 'C3'],
             hints: [
               'Click on cell B2 (column B, row 2) and type 80.',
-              'Cell C3 is column C, row 3 — type 77 there.',
+              'Cell C3 is column C, row 3: type 77 there.',
             ],
-            successMessage: 'Well done! You edited two cells correctly.',
+            successMessage: 'You edited two cells correctly.',
             incorrectMessage: 'Make sure B2 contains 80 and C3 contains 77.',
             xpValue: 10,
             bonusXp: 5,
           },
         },
 
-        // Step 4 — Instruction: How Excel Calculates
+        // Step 4: Instruction: How Excel Calculates
         {
           id: 'step-1-4',
           order: 4,
@@ -184,7 +184,7 @@ export const excelBasicsModule: Module = {
             '- **\\*** Multiplication\n' +
             '- **/** Division\n\n' +
             'Example: if A1 = 4 and B1 = 5, then **=A1+B1** shows **9**.',
-          whyItMatters: 'Formulas are what make spreadsheets powerful — they calculate results automatically and update when the data changes.',
+          whyItMatters: 'Formulas are what make spreadsheets useful: they calculate results automatically and update when the data changes.',
           initialSheetState: {
             name: 'Sheet1',
             row: 4,
@@ -200,7 +200,7 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 5 — Task: Your First Formula
+        // Step 5: Task: Your First Formula
         {
           id: 'step-1-5',
           order: 5,
@@ -255,7 +255,7 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 6 — Instruction: Using the Fill Handle
+        // Step 6: Instruction: Using the Fill Handle
         {
           id: 'step-1-6',
           order: 6,
@@ -267,10 +267,10 @@ export const excelBasicsModule: Module = {
             '2. Look for the small **square** in the bottom-right corner of the cell.\n' +
             '3. **Click and drag** it down to fill the cells below.\n\n' +
             'The spreadsheet automatically **adjusts the cell references**. For example, if D2 contains `=B2*C2`, dragging down to D3 creates `=B3*C3`.',
-          whyItMatters: 'The fill handle saves huge amounts of time — imagine a dataset with 1,000 rows!',
+          whyItMatters: 'The fill handle saves huge amounts of time, imagine a dataset with 1,000 rows!',
         },
 
-        // Step 7 — Task: Use Fill Down
+        // Step 7: Task: Use Fill Down
         {
           id: 'step-1-7',
           order: 7,
@@ -281,7 +281,7 @@ export const excelBasicsModule: Module = {
             '1. Click on **D2**.\n' +
             '2. Grab the fill handle (small square at the bottom-right) and **drag down** to **D4**.\n' +
             '3. Click **Check** to verify the formulas were copied correctly.',
-          whyItMatters: 'Using fill down is one of the most essential spreadsheet shortcuts.',
+          whyItMatters: 'Using fill down is one of the most useful spreadsheet shortcuts.',
           initialSheetState: {
             name: 'Sheet1',
             row: 6,
@@ -316,8 +316,8 @@ export const excelBasicsModule: Module = {
               'Drag the fill handle down from D2 to D4.',
               'If dragging doesn\'t work, you can type =B3*C3 in D3 and =B4*C4 in D4 manually.',
             ],
-            successMessage: 'Great work! The fill handle copied and adjusted the formulas automatically.',
-            almostCorrectMessage: 'Values are correct but check the formulas — they should reference the correct rows.',
+            successMessage: 'The fill handle copied and adjusted the formulas automatically.',
+            almostCorrectMessage: 'Values are correct but check the formulas: they should reference the correct rows.',
             incorrectMessage: 'D3 should contain =B3*C3 (value 15) and D4 should contain =B4*C4 (value 6).',
             xpValue: 15,
             bonusXp: 5,
@@ -327,7 +327,7 @@ export const excelBasicsModule: Module = {
     },
 
     // ──────────────────────────────────────────────
-    // LESSON 2: Built-in Functions (5 steps) — MOVED BEFORE FORMATTING
+    // LESSON 2: Built-in Functions (5 steps): MOVED BEFORE FORMATTING
     // ──────────────────────────────────────────────
     {
       id: 'lesson-2',
@@ -335,7 +335,7 @@ export const excelBasicsModule: Module = {
       title: 'Built-in Functions',
       description: 'Use SUM, AVERAGE, MIN, MAX, and COUNT to analyse data.',
       steps: [
-        // Step 1 — Instruction: SUM and AVERAGE
+        // Step 1: Instruction: SUM and AVERAGE
         {
           id: 'step-2-1',
           order: 1,
@@ -351,7 +351,7 @@ export const excelBasicsModule: Module = {
           whyItMatters: 'SUM and AVERAGE are the two most-used functions in the world. They save time and reduce errors.',
         },
 
-        // Quiz — Formula symbol
+        // Quiz: Formula symbol
         {
           id: 'step-2-1q',
           order: 2,
@@ -373,12 +373,12 @@ export const excelBasicsModule: Module = {
               'You\'ve seen it in formulas like =SUM(B2:B5).',
             ],
             successMessage: 'Correct! Every formula starts with = (equals sign).',
-            incorrectMessage: 'Not quite — look at the start of any formula like =SUM(...).',
+            incorrectMessage: 'Not quite. Look at the start of any formula like =SUM(...).',
             xpValue: 5,
           },
         },
 
-        // Step 2 — Task: Sports Day Totals (replaces "Total Sales")
+        // Step 2: Task: Sports Day Totals (replaces "Total Sales")
         {
           id: 'step-2-2',
           order: 2,
@@ -421,7 +421,7 @@ export const excelBasicsModule: Module = {
               'In B7, type =AVERAGE(B2:B5) to calculate the mean.',
               'Make sure you include the colon : between B2 and B5.',
             ],
-            successMessage: 'Total is 164 and average is 41 points per event — nice work!',
+            successMessage: 'Total is 164 and average is 41 points per event.',
             almostCorrectMessage: 'Values look right but check you used the SUM and AVERAGE functions.',
             incorrectMessage: 'Use =SUM(B2:B5) in B6 and =AVERAGE(B2:B5) in B7.',
             xpValue: 20,
@@ -429,7 +429,7 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 3 — Instruction: MIN, MAX, and COUNT
+        // Step 3: Instruction: MIN, MAX, and COUNT
         {
           id: 'step-2-3',
           order: 3,
@@ -446,7 +446,7 @@ export const excelBasicsModule: Module = {
           whyItMatters: 'MIN, MAX, and COUNT help you quickly understand the shape of your data without scrolling through it.',
         },
 
-        // Step 4 — Task: Sports Day Extremes (replaces "Find the Extremes")
+        // Step 4: Task: Sports Day Extremes (replaces "Find the Extremes")
         {
           id: 'step-2-4',
           order: 4,
@@ -498,7 +498,7 @@ export const excelBasicsModule: Module = {
               'B9 should use =MIN(B2:B5) to find the lowest score.',
               'B10 should use =COUNT(B2:B5) to count how many events there are.',
             ],
-            successMessage: 'Highest is 52 (Relay Race), lowest is 29 (Shot Put), and there are 4 events — well done!',
+            successMessage: 'Highest is 52 (Relay Race), lowest is 29 (Shot Put), and there are 4 events.',
             almostCorrectMessage: 'Values are correct but make sure you used the MAX, MIN, and COUNT functions.',
             incorrectMessage: 'Use =MAX(B2:B5) in B8, =MIN(B2:B5) in B9, and =COUNT(B2:B5) in B10.',
             xpValue: 20,
@@ -506,7 +506,7 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 5 — Challenge: Gaming High Scores Analysis (replaces "School Canteen Analysis")
+        // Step 5: Challenge: Gaming High Scores Analysis (replaces "School Canteen Analysis")
         {
           id: 'step-2-5',
           order: 5,
@@ -521,8 +521,8 @@ export const excelBasicsModule: Module = {
             '   - **E5**: `=SUM(B5:D5)`\n\n' +
             '2. In **B7**, find the **highest** score in Game 1 using MAX.\n' +
             '3. In **E7**, calculate the **average** total score using AVERAGE.\n\n' +
-            '💡 **Reflection:** Who is the best all-round gamer?',
-          whyItMatters: 'Combining formulas and functions to answer real questions is what makes spreadsheets so powerful.',
+            '**Reflection:** Who is the best all-round gamer?',
+          whyItMatters: 'Combining formulas and functions to answer real questions is what makes spreadsheets so useful.',
           initialSheetState: {
             name: 'Sheet1',
             row: 9,
@@ -572,8 +572,8 @@ export const excelBasicsModule: Module = {
               'For best Game 1 score, use =MAX(B2:B5) in B7.',
               'Average total uses =AVERAGE(E2:E5) in E7.',
             ],
-            successMessage: '🎉 Analysis complete! Zoe has the highest total (3,900) — she\'s the best all-round gamer!',
-            almostCorrectMessage: 'Values look right — double-check that you used formulas and functions, not typed numbers.',
+            successMessage: 'Analysis complete! Zoe has the highest total (3,900).',
+            almostCorrectMessage: 'Values look right: double-check that you used formulas and functions, not typed numbers.',
             incorrectMessage: 'Calculate each total with =SUM(B:D), best Game 1 with =MAX(B2:B5), and avg total with =AVERAGE(E2:E5).',
             xpValue: 40,
             bonusXp: 20,
@@ -583,15 +583,15 @@ export const excelBasicsModule: Module = {
     },
 
     // ──────────────────────────────────────────────
-    // LESSON 3: Cell Formatting & Number Types (6 steps) — MOVED AFTER FUNCTIONS
+    // LESSON 3: Cell Formatting & Number Types (6 steps): MOVED AFTER FUNCTIONS
     // ──────────────────────────────────────────────
     {
       id: 'lesson-formatting',
       order: 3,
       title: 'Cell Formatting & Number Types',
-      description: 'Learn how to format numbers as currency, percentages, and decimals — and understand date formats.',
+      description: 'Learn how to format numbers as currency, percentages, and decimals, and understand date formats.',
       steps: [
-        // Step 1 — Instruction: Why Formatting Matters
+        // Step 1: Instruction: Why Formatting Matters
         {
           id: 'step-fmt-1',
           order: 1,
@@ -602,12 +602,12 @@ export const excelBasicsModule: Module = {
             '- **3.5** could be a price (£3.50), a percentage (3.5%), or just a number.\n' +
             '- **0.85** could mean 85% on a test.\n' +
             '- **45000** could be a date!\n\n' +
-            'Formatting tells Excel **how to display** a number — the stored value stays the same, but it *looks* different.\n\n' +
+            'Formatting tells Excel **how to display** a number: the stored value stays the same, but it *looks* different.\n\n' +
             'Common formats include:\n' +
-            '- **Currency** — £3.50, $12.00\n' +
-            '- **Percentage** — 85%, 42.5%\n' +
-            '- **Number** — controlling decimal places (3.1 vs 3.14 vs 3.142)\n' +
-            '- **Date** — 14/02/2026, Feb 14, 2026',
+            '- **Currency**: £3.50, $12.00\n' +
+            '- **Percentage**: 85%, 42.5%\n' +
+            '- **Number**: controlling decimal places (3.1 vs 3.14 vs 3.142)\n' +
+            '- **Date**: 14/02/2026, Feb 14, 2026',
           whyItMatters: 'Without formatting, your data can be confusing or misleading. A well-formatted spreadsheet is easier to read and less likely to cause mistakes.',
           initialSheetState: {
             name: 'Sheet1',
@@ -634,7 +634,7 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 2 — Quiz: Percentage conversion
+        // Step 2: Quiz: Percentage conversion
         {
           id: 'step-fmt-2',
           order: 2,
@@ -661,7 +661,7 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 3 — Task: Canteen Price List (Currency)
+        // Step 3: Task: Canteen Price List (Currency)
         {
           id: 'step-fmt-3',
           order: 3,
@@ -673,7 +673,7 @@ export const excelBasicsModule: Module = {
             '1. In **B6**, use `=SUM(B2:B5)` to calculate the total.\n' +
             '2. In **C6**, type the total as a currency value with **£** and **two decimal places** (e.g. £6.50).\n' +
             '3. Click **Check**.',
-          whyItMatters: 'Currency values should always show two decimal places so £3 displays as £3.00 — this avoids confusion.',
+          whyItMatters: 'Currency values should always show two decimal places so £3 displays as £3.00: this avoids confusion.',
           initialSheetState: {
             name: 'Sheet1',
             row: 8,
@@ -709,7 +709,7 @@ export const excelBasicsModule: Module = {
               'In C6, type the total with a £ sign and two decimal places: £5.00.',
               'The total of 2.5 + 1.2 + 0.8 + 0.5 = 5.00.',
             ],
-            successMessage: 'Well done! The total is £5.00. Notice how "5" and "£5.00" mean the same thing but the formatted version is much clearer.',
+            successMessage: 'The total is £5.00. Notice how "5" and "£5.00" mean the same thing but the formatted version is much clearer.',
             almostCorrectMessage: 'Check that C6 has the £ sign and two decimal places (e.g. £5.00).',
             incorrectMessage: 'Use =SUM(B2:B5) in B6. In C6, type £5.00 (with the pound sign and two decimal places).',
             xpValue: 15,
@@ -717,7 +717,7 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 4 — Task: Test Score Percentages
+        // Step 4: Task: Test Score Percentages
         {
           id: 'step-fmt-4',
           order: 4,
@@ -731,7 +731,7 @@ export const excelBasicsModule: Module = {
             '3. In **C4**, type `=B4/40*100`\n' +
             '4. In **C5**, type `=B5/40*100`\n' +
             '5. Click **Check**.',
-          whyItMatters: 'Converting raw scores to percentages lets you compare results fairly — even when tests have different totals.',
+          whyItMatters: 'Converting raw scores to percentages lets you compare results fairly, even when tests have different totals.',
           initialSheetState: {
             name: 'Sheet1',
             row: 7,
@@ -760,19 +760,19 @@ export const excelBasicsModule: Module = {
             ],
             editableCells: ['C2', 'C3', 'C4', 'C5'],
             hints: [
-              'The formula is =B2/40*100 — divide the score by the total, then multiply by 100.',
+              'The formula is =B2/40*100. Divide the score by the total, then multiply by 100.',
               'Ava scored 34/40 = 85%.',
               'C2 = 85, C3 = 70, C4 = 92.5, C5 = 55.',
             ],
-            successMessage: '🎉 Great work! Ava got 85%, Liam 70%, Zoe 92.5%, and Noah 55%. Percentages make comparison easy!',
-            almostCorrectMessage: 'Values look right — make sure you used formulas (=B2/40*100) not typed numbers.',
+            successMessage: 'Ava got 85%, Liam 70%, Zoe 92.5%, and Noah 55%. Percentages make comparison easy!',
+            almostCorrectMessage: 'Values look right: make sure you used formulas (=B2/40*100) not typed numbers.',
             incorrectMessage: 'Use =B2/40*100 in C2, =B3/40*100 in C3, and so on for each student.',
             xpValue: 20,
             bonusXp: 10,
           },
         },
 
-        // Step 5 — Instruction: Decimal Places & ROUND
+        // Step 5: Instruction: Decimal Places & ROUND
         {
           id: 'step-fmt-5',
           order: 5,
@@ -788,7 +788,7 @@ export const excelBasicsModule: Module = {
             '- `=ROUND(3.333, 0)` → **3** (no decimal places)\n\n' +
             'You can also **nest** formulas:\n' +
             '`=ROUND(B2/3, 2)` calculates B2 ÷ 3 and rounds to 2 decimal places.',
-          whyItMatters: 'Rounding makes numbers easier to read and more appropriate — you wouldn\'t say a sandwich costs £2.333333!',
+          whyItMatters: 'Rounding makes numbers easier to read and more appropriate. You wouldn\'t say a sandwich costs £2.333333!',
           initialSheetState: {
             name: 'Sheet1',
             row: 4,
@@ -810,7 +810,7 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 6 — Challenge: Splitting a Bill
+        // Step 6: Challenge: Splitting a Bill
         {
           id: 'step-fmt-6',
           order: 6,
@@ -823,8 +823,8 @@ export const excelBasicsModule: Module = {
             '   Use `=B5/3`.\n' +
             '3. In **B7**, round each person\'s share to **2 decimal places** using ROUND.\n' +
             '   Use `=ROUND(B5/3, 2)`.\n\n' +
-            '💡 **Reflection:** Why is the rounded answer better for money than the unrounded one?',
-          whyItMatters: 'When dealing with money, you must round to 2 decimal places — you can\'t pay £2.833333!',
+            '**Reflection:** Why is the rounded answer better for money than the unrounded one?',
+          whyItMatters: 'When dealing with money, you must round to 2 decimal places. You can\'t pay £2.833333!',
           initialSheetState: {
             name: 'Sheet1',
             row: 9,
@@ -856,7 +856,7 @@ export const excelBasicsModule: Module = {
               'In B6, type =B5/3 to divide the total by 3 friends.',
               'In B7, use =ROUND(B5/3, 2) to round to 2 decimal places.',
             ],
-            successMessage: '🎉 Each person pays £2.83! The ROUND function makes it a proper money amount instead of £2.8333…',
+            successMessage: 'Each person pays £2.83! The ROUND function makes it a proper money amount instead of £2.8333…',
             almostCorrectMessage: 'Check that B7 uses ROUND with 2 decimal places.',
             incorrectMessage: 'B5 = =SUM(B2:B4), B6 = =B5/3, B7 = =ROUND(B5/3, 2).',
             xpValue: 30,
@@ -867,15 +867,15 @@ export const excelBasicsModule: Module = {
     },
 
     // ──────────────────────────────────────────────
-    // LESSON 4: IF Functions (5 steps) — NEW LESSON
+    // LESSON 4: IF Functions (5 steps): NEW LESSON
     // ──────────────────────────────────────────────
     {
       id: 'lesson-if',
       order: 4,
       title: 'IF Functions & Logic',
-      description: 'Use the IF function to make decisions in your spreadsheet — from simple pass/fail to grade boundaries.',
+      description: 'Use the IF function to make decisions in your spreadsheet: from simple pass/fail to grade boundaries.',
       steps: [
-        // Step 1 — Instruction: What is IF?
+        // Step 1: Instruction: What is IF?
         {
           id: 'step-if-1',
           order: 1,
@@ -891,7 +891,7 @@ export const excelBasicsModule: Module = {
             '- If **yes** → shows **"Pass"**\n' +
             '- If **no** → shows **"Fail"**\n\n' +
             'The condition can use: **>** (greater than), **<** (less than), **>=** (greater than or equal), **<=** (less than or equal), **=** (equals).',
-          whyItMatters: 'IF is one of the most powerful functions in any spreadsheet. It lets you automate decisions instead of doing them manually.',
+          whyItMatters: 'IF is one of the most useful functions in any spreadsheet. It lets you automate decisions instead of doing them manually.',
           initialSheetState: {
             name: 'Sheet1',
             row: 5,
@@ -913,7 +913,7 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 2 — Task: Pass or Fail
+        // Step 2: Task: Pass or Fail
         {
           id: 'step-if-2',
           order: 2,
@@ -927,7 +927,7 @@ export const excelBasicsModule: Module = {
             '3. In **C4**, type `=IF(B4>=50,"Pass","Fail")`\n' +
             '4. In **C5**, type `=IF(B5>=50,"Pass","Fail")`\n' +
             '5. Click **Check**.',
-          whyItMatters: 'Automating pass/fail decisions saves time and avoids human error — imagine marking 200 students!',
+          whyItMatters: 'Automating pass/fail decisions saves time and avoids human error, imagine marking 200 students!',
           initialSheetState: {
             name: 'Sheet1',
             row: 7,
@@ -956,34 +956,34 @@ export const excelBasicsModule: Module = {
             ],
             editableCells: ['C2', 'C3', 'C4', 'C5'],
             hints: [
-              'The formula is =IF(B2>=50,"Pass","Fail") — make sure to include the quote marks around Pass and Fail.',
+              'The formula is =IF(B2>=50,"Pass","Fail"): make sure to include the quote marks around Pass and Fail.',
               'Ava scored 65 which is ≥ 50, so she passes.',
               'Noah scored 49 which is < 50, so he fails.',
             ],
-            successMessage: '🎉 Well done! Ava and Zoe pass, Liam and Noah fail. The IF function checked each score automatically.',
-            almostCorrectMessage: 'The results look right — make sure you used the IF formula, not typed text.',
+            successMessage: 'Ava and Zoe pass, Liam and Noah fail. The IF function checked each score automatically.',
+            almostCorrectMessage: 'The results look right: make sure you used the IF formula, not typed text.',
             incorrectMessage: 'Use =IF(B2>=50,"Pass","Fail") in C2 and the same pattern for each row.',
             xpValue: 20,
             bonusXp: 10,
           },
         },
 
-        // Step 3 — Instruction: Nested IF
+        // Step 3: Instruction: Nested IF
         {
           id: 'step-if-3',
           order: 3,
           type: 'instruction',
           title: 'Nested IF: Multiple Outcomes',
           instruction:
-            'Sometimes you need **more than two outcomes**. You can put an IF inside another IF — this is called **nesting**.\n\n' +
-            'Example — grade boundaries:\n' +
+            'Sometimes you need **more than two outcomes**. You can put an IF inside another IF: this is called **nesting**.\n\n' +
+            'Example: grade boundaries:\n' +
             '`=IF(B2>=70, "Distinction", IF(B2>=50, "Merit", "Fail"))`\n\n' +
             'How it works:\n' +
             '1. Is the score **70 or more**? → "Distinction"\n' +
             '2. Otherwise, is it **50 or more**? → "Merit"\n' +
             '3. Otherwise → "Fail"\n\n' +
             '⚠️ **Important:** Always check the **highest boundary first** and work downwards. Each IF has its own set of brackets.',
-          whyItMatters: 'Nested IFs let you create grade scales, pricing tiers, and any multi-level decision — a skill used in schools, businesses, and beyond.',
+          whyItMatters: 'Nested IFs let you create grade scales, pricing tiers, and any multi-level decision: a skill used in schools, businesses, and beyond.',
           initialSheetState: {
             name: 'Sheet1',
             row: 5,
@@ -1001,7 +1001,7 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Step 4 — Challenge: Grade Boundaries
+        // Step 4: Challenge: Grade Boundaries
         {
           id: 'step-if-4',
           order: 4,
@@ -1046,15 +1046,15 @@ export const excelBasicsModule: Module = {
               'Inside the first IF\'s false branch, add another IF for Merit: IF(B2>=50,"Merit", ...)',
               'The full formula is: =IF(B2>=70,"Distinction",IF(B2>=50,"Merit",IF(B2>=40,"Pass","Fail")))',
             ],
-            successMessage: '🎉 Excellent! Ava gets Distinction, Liam gets Merit, Zoe gets Pass, Noah gets Fail. You\'ve mastered nested IFs!',
-            almostCorrectMessage: 'The grades look right — make sure you used the nested IF formula, not typed text.',
+            successMessage: 'Excellent! Ava gets Distinction, Liam gets Merit, Zoe gets Pass, Noah gets Fail. You\'ve mastered nested IFs!',
+            almostCorrectMessage: 'The grades look right: make sure you used the nested IF formula, not typed text.',
             incorrectMessage: 'Use =IF(B2>=70,"Distinction",IF(B2>=50,"Merit",IF(B2>=40,"Pass","Fail"))) in each cell.',
             xpValue: 35,
             bonusXp: 15,
           },
         },
 
-        // Step 5 — Quiz: IF concepts
+        // Step 5: Quiz: IF concepts
         {
           id: 'step-if-5',
           order: 5,
@@ -1072,7 +1072,7 @@ export const excelBasicsModule: Module = {
             expectations: [],
             editableCells: [],
             hints: [
-              'Pay attention to the >= symbol — it means "greater than or equal to".',
+              'Pay attention to the >= symbol: it means "greater than or equal to".',
               '50 is equal to 50, so >= is TRUE.',
             ],
             successMessage: 'Correct! >= means "greater than or equal to", so 50 meets the condition.',
@@ -1084,7 +1084,7 @@ export const excelBasicsModule: Module = {
     },
 
     // ──────────────────────────────────────────────
-    // LESSON 5: Sorting and Filtering (8 steps) — EXPANDED
+    // LESSON 5: Sorting and Filtering (8 steps): EXPANDED
     // ──────────────────────────────────────────────
     {
       id: 'lesson-3',
@@ -1092,7 +1092,7 @@ export const excelBasicsModule: Module = {
       title: 'Sorting and Filtering',
       description: 'Learn how to sort data in order and filter to show only what you need.',
       steps: [
-        // Step 1 — Instruction: Sorting Data
+        // Step 1: Instruction: Sorting Data
         {
           id: 'step-3-1',
           order: 1,
@@ -1100,15 +1100,15 @@ export const excelBasicsModule: Module = {
           title: 'Sorting Data',
           instruction:
             '**Sorting** rearranges your data into a specific order:\n\n' +
-            '- **Smallest to largest** (ascending) — e.g. 1, 2, 3\n' +
-            '- **Largest to smallest** (descending) — e.g. 3, 2, 1\n' +
+            '- **Smallest to largest** (ascending): e.g. 1, 2, 3\n' +
+            '- **Largest to smallest** (descending): e.g. 3, 2, 1\n' +
             '- **A–Z** or **Z–A** for text\n\n' +
-            'Sorting helps you spot patterns quickly — like who scored highest or which product sold the most.\n\n' +
+            'Sorting helps you spot patterns quickly, like who scored highest or which product sold the most.\n\n' +
             '**Before sorting:**\n' +
             '| Student | Score |\n|---|---|\n| Ava | 75 |\n| Liam | 68 |\n| Zoe | 91 |\n| Noah | 82 |\n\n' +
             '**After sorting (highest to lowest):**\n' +
             '| Student | Score |\n|---|---|\n| Zoe | 91 |\n| Noah | 82 |\n| Ava | 75 |\n| Liam | 68 |',
-          whyItMatters: 'Sorting is one of the most common things you do with data — it turns messy lists into useful information.',
+          whyItMatters: 'Sorting is one of the most common things you do with data: it turns messy lists into useful information.',
           initialSheetState: {
             name: 'Sheet1',
             row: 6,
@@ -1128,7 +1128,7 @@ export const excelBasicsModule: Module = {
           },
         },
 
-        // Quiz — Sorting vocabulary
+        // Quiz: Sorting vocabulary
         {
           id: 'step-3-1q',
           order: 2,
@@ -1147,15 +1147,15 @@ export const excelBasicsModule: Module = {
             editableCells: [],
             hints: [
               'Think about going "down" from the top.',
-              '"Descend" means to go down — from high to low.',
+              '"Descend" means to go down: from high to low.',
             ],
             successMessage: 'Correct! Descending = largest to smallest.',
-            incorrectMessage: 'Not quite — "descending" means going down, from high to low.',
+            incorrectMessage: 'Not quite. "descending" means going down, from high to low.',
             xpValue: 5,
           },
         },
 
-        // Step 2 — Table Task: Sort by Age, find the oldest
+        // Step 2: Table Task: Sort by Age, find the oldest
         {
           id: 'step-3-2',
           order: 2,
@@ -1197,27 +1197,27 @@ export const excelBasicsModule: Module = {
               'Click it again to switch between ascending and descending.',
               'Look at the top of the list when sorted from highest to lowest.',
             ],
-            successMessage: '🎉 Correct! Ethan is the oldest at 17.',
-            incorrectMessage: 'Try sorting the Age column from highest to lowest — who appears at the top?',
+            successMessage: 'Correct! Ethan is the oldest at 17.',
+            incorrectMessage: 'Try sorting the Age column from highest to lowest. Who appears at the top?',
             xpValue: 10,
             bonusXp: 5,
           },
         },
 
-        // Step 3 — Instruction: Filtering Data
+        // Step 3: Instruction: Filtering Data
         {
           id: 'step-3-3',
           order: 3,
           type: 'instruction',
           title: 'What is Filtering?',
           instruction:
-            '**Filtering** lets you see only the rows that match a condition — everything else is hidden, not deleted.\n\n' +
+            '**Filtering** lets you see only the rows that match a condition: everything else is hidden, not deleted.\n\n' +
             'For example, you could filter a student list to show only students aged 14, or only those taller than 170 cm.\n\n' +
             'In spreadsheets and databases, filtering is one of the most common operations. Next, you\'ll practise sorting and filtering on the same table.',
           whyItMatters: 'Filtering helps you focus on exactly the data you need, without being distracted by irrelevant rows.',
         },
 
-        // Step 4 — Table Task: Sort by Height, find the shortest
+        // Step 4: Table Task: Sort by Height, find the shortest
         {
           id: 'step-3-4',
           order: 4,
@@ -1258,14 +1258,14 @@ export const excelBasicsModule: Module = {
               'Sort from lowest to highest (ascending).',
               'The student at the top of the ascending list is the shortest.',
             ],
-            successMessage: '🎉 Correct! Zoe is the shortest at 149 cm.',
-            incorrectMessage: 'Try sorting the Height column from lowest to highest — who appears first?',
+            successMessage: 'Correct! Zoe is the shortest at 149 cm.',
+            incorrectMessage: 'Try sorting the Height column from lowest to highest. Who appears first?',
             xpValue: 10,
             bonusXp: 5,
           },
         },
 
-        // Step 5 — Table Task: Filter by age 14
+        // Step 5: Table Task: Filter by age 14
         {
           id: 'step-3-5',
           order: 5,
@@ -1274,7 +1274,7 @@ export const excelBasicsModule: Module = {
           instruction:
             'Now try **filtering**! Use the filter controls above the table to show only students who are **14 years old**.\n\n' +
             'Click the **Age** filter button and type **14**, then answer the question below.',
-          whyItMatters: 'Filtering narrows your data to just the rows that match — a fundamental skill for working with any dataset.',
+          whyItMatters: 'Filtering narrows your data to just the rows that match: a core skill for working with any dataset.',
           tableTask: {
             columns: [
               { key: 'name', label: 'Name', type: 'text' },
@@ -1307,14 +1307,14 @@ export const excelBasicsModule: Module = {
               'Count how many rows remain after filtering.',
               'Ava and Mia are both 14.',
             ],
-            successMessage: '🎉 Correct! Ava and Mia are both 14 — filtering made it easy to see!',
+            successMessage: 'Correct! Ava and Mia are both 14.',
             incorrectMessage: 'Try filtering the Age column to 14 and count the remaining rows.',
             xpValue: 10,
             bonusXp: 5,
           },
         },
 
-        // Step 6 — Table Task: Combined Sort + Filter Challenge (NEW)
+        // Step 6: Table Task: Combined Sort + Filter Challenge (NEW)
         {
           id: 'step-3-6-combo',
           order: 6,
@@ -1325,7 +1325,7 @@ export const excelBasicsModule: Module = {
             '1. **Filter** the Year Group column to show only **Year 9** students.\n' +
             '2. Then **sort** the Score column from **highest to lowest**.\n' +
             '3. Who scored the highest among Year 9 students?',
-          whyItMatters: 'In real life you often need to combine sorting and filtering — for example, finding the top performer in a specific group.',
+          whyItMatters: 'In real life you often need to combine sorting and filtering, for example, finding the top performer in a specific group.',
           tableTask: {
             columns: [
               { key: 'name', label: 'Name', type: 'text' },
@@ -1361,14 +1361,14 @@ export const excelBasicsModule: Module = {
               'Then sort the Score column from highest to lowest.',
               'The student at the top after filtering and sorting is the answer.',
             ],
-            successMessage: '🎉 Correct! Zoe scored 91, the highest among Year 9 students. Great use of filter + sort!',
-            incorrectMessage: 'Filter to Year 9 first, then sort Score from highest to lowest — who\'s at the top?',
+            successMessage: 'Correct! Zoe scored 91, the highest among Year 9 students. Great use of filter + sort!',
+            incorrectMessage: 'Filter to Year 9 first, then sort Score from highest to lowest. Who\'s at the top?',
             xpValue: 15,
             bonusXp: 10,
           },
         },
 
-        // Step 7 — Table Task: Dietary Requirements Filter (NEW)
+        // Step 7: Table Task: Dietary Requirements Filter (NEW)
         {
           id: 'step-3-7-diet',
           order: 7,
@@ -1377,7 +1377,7 @@ export const excelBasicsModule: Module = {
           instruction:
             'The school trip organiser needs to know how many students have **special dietary requirements** (anything other than "None").\n\n' +
             'Use the **Dietary Req.** filter to explore the data, then answer the question.',
-          whyItMatters: 'Filtering text columns is just as useful as filtering numbers — it helps you find specific groups quickly.',
+          whyItMatters: 'Filtering text columns is just as useful as filtering numbers. It helps you find specific groups quickly.',
           tableTask: {
             columns: [
               { key: 'name', label: 'Name', type: 'text' },
@@ -1400,7 +1400,7 @@ export const excelBasicsModule: Module = {
             question: 'How many students have a special dietary requirement (not "None")?',
             correctAnswer: '4',
             acceptableAnswers: ['four', '4'],
-            explanation: 'Liam (Vegetarian), Mia (Gluten-free), Olivia (Halal), and Sophie (Vegan) — 4 students have special dietary needs.',
+            explanation: 'Liam (Vegetarian), Mia (Gluten-free), Olivia (Halal), and Sophie (Vegan). 4 students have special dietary needs.',
             enableSort: true,
             enableFilter: true,
           },
@@ -1409,18 +1409,18 @@ export const excelBasicsModule: Module = {
             expectations: [],
             editableCells: [],
             hints: [
-              'Try filtering the Dietary Req. column to different values.',
+              'Try filtering the Dietary Req. Column to different values.',
               'Count all students whose dietary requirement is NOT "None".',
               'Liam, Mia, Olivia, and Sophie each have a different dietary need.',
             ],
-            successMessage: '🎉 Correct! 4 students need special meals. Filtering makes trip planning much easier!',
-            incorrectMessage: 'Look through the Dietary Req. column — count everyone who isn\'t "None".',
+            successMessage: 'Correct! 4 students need special meals. Filtering makes trip planning much easier!',
+            incorrectMessage: 'Look through the Dietary Req. Column. Count everyone who isn\'t "None".',
             xpValue: 10,
             bonusXp: 5,
           },
         },
 
-        // Step 8 — Quiz: Sort vs Filter (NEW)
+        // Step 8: Quiz: Sort vs Filter (NEW)
         {
           id: 'step-3-8-reflection',
           order: 8,
@@ -1436,23 +1436,23 @@ export const excelBasicsModule: Module = {
               'There is no difference',
             ],
             correctAnswer: 'Sorting rearranges all rows; filtering hides some rows',
-            explanation: 'Sorting changes the order of all rows (nothing is hidden). Filtering hides rows that don\'t match your condition — the data is still there, just not visible.',
+            explanation: 'Sorting changes the order of all rows (nothing is hidden). Filtering hides rows that don\'t match your condition: the data is still there, just not visible.',
           },
           task: {
             id: 'task-3-8-reflection',
             expectations: [],
             editableCells: [],
             hints: [
-              'Think about what happens to rows you can\'t see — are they rearranged or hidden?',
+              'Think about what happens to rows you can\'t see, are they rearranged or hidden?',
               'Sorting keeps all rows visible; filtering hides some.',
             ],
-            successMessage: 'Correct! Sorting = rearrange, Filtering = hide. Both are non-destructive — your data is always safe.',
+            successMessage: 'Correct! Sorting = rearrange, Filtering = hide. Both are non-destructive: your data is always safe.',
             incorrectMessage: 'Think carefully: sorting changes the order of ALL rows, while filtering HIDES rows that don\'t match.',
             xpValue: 5,
           },
         },
 
-        // Step 9 — Quiz: Filtering Concept (original)
+        // Step 9: Quiz: Filtering Concept (original)
         {
           id: 'step-3-6',
           order: 9,
@@ -1463,18 +1463,18 @@ export const excelBasicsModule: Module = {
             type: 'multiple-choice',
             options: ['It is deleted', 'It is hidden temporarily', 'It turns red', 'It moves to another sheet'],
             correctAnswer: 'It is hidden temporarily',
-            explanation: 'Filtering only hides rows that don\'t match — the data is still there and reappears when you remove the filter.',
+            explanation: 'Filtering only hides rows that don\'t match: the data is still there and reappears when you remove the filter.',
           },
           task: {
             id: 'task-3-6',
             expectations: [],
             editableCells: [],
             hints: [
-              'Think about what happens when you remove a filter — does the data come back?',
-              'Filters are non-destructive — they hide, not delete.',
+              'Think about what happens when you remove a filter: does the data come back?',
+              'Filters are non-destructive: they hide, not delete.',
             ],
-            successMessage: 'Correct! Filtering hides data temporarily — nothing is deleted.',
-            incorrectMessage: 'Not quite — filtering doesn\'t delete or move data, it just hides it temporarily.',
+            successMessage: 'Correct! Filtering hides data temporarily. Nothing is deleted.',
+            incorrectMessage: 'Not quite. Filtering doesn\'t delete or move data, it just hides it temporarily.',
             xpValue: 5,
           },
         },

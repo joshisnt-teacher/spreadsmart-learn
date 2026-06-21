@@ -70,7 +70,7 @@ const FeedbackBar: React.FC<FeedbackBarProps> = ({
             className="flex-1 min-w-0 flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-sm bg-warning/10 text-warning border border-warning/20"
           >
             <Trophy className="w-4 h-4 shrink-0" />
-            <span className="truncate">Assessment — no hints available. Show what you know!</span>
+            <span className="truncate">This is an assessment, so hints are off.</span>
           </motion.div>
         )}
 
@@ -82,7 +82,7 @@ const FeedbackBar: React.FC<FeedbackBarProps> = ({
             className="flex-1 min-w-0 flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-sm bg-warning/10 text-warning border border-warning/20"
           >
             <HandHelping className="w-4 h-4 shrink-0" />
-            <span className="truncate">No worries — check the hint above and take your time.</span>
+            <span className="truncate">No worries. Check the hint above and take your time.</span>
           </motion.div>
         )}
 

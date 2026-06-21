@@ -74,7 +74,7 @@ const ModulePlayer: React.FC = () => {
   const handleLessonComplete = useCallback(async (xpEarned: number) => {
     if (activeLessonId) {
       await markLessonComplete(activeLessonId, xpEarned);
-      toast({ title: '🎉 Lesson Complete!', description: `You earned ${xpEarned} XP. Great work!` });
+      toast({ title: 'Lesson complete', description: `You earned ${xpEarned} XP.` });
       setActiveLessonId(null);
     }
   }, [activeLessonId, markLessonComplete]);

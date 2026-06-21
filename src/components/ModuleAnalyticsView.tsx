@@ -141,7 +141,7 @@ const ModuleAnalyticsView: React.FC<ModuleAnalyticsViewProps> = ({ classId, cust
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">{avgTimePerStep > 0 ? formatTime(avgTimePerStep) : '—'}</p>
+                <p className="text-2xl font-bold">{avgTimePerStep > 0 ? formatTime(avgTimePerStep) : 'No data'}</p>
               </CardContent>
             </Card>
             <Card>
@@ -151,7 +151,7 @@ const ModuleAnalyticsView: React.FC<ModuleAnalyticsViewProps> = ({ classId, cust
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">{avgAttemptsPerStep > 0 ? avgAttemptsPerStep : '—'}</p>
+                <p className="text-2xl font-bold">{avgAttemptsPerStep > 0 ? avgAttemptsPerStep : 'No data'}</p>
               </CardContent>
             </Card>
           </div>
@@ -204,9 +204,9 @@ const ModuleAnalyticsView: React.FC<ModuleAnalyticsViewProps> = ({ classId, cust
                         <TableCell className="font-medium">{s.stepTitle}</TableCell>
                         <TableCell className="text-muted-foreground">{s.lessonTitle}</TableCell>
                         <TableCell className="text-right text-destructive font-semibold">{s.fails}</TableCell>
-                        <TableCell className="text-right">{s.stuckCount > 0 ? <span className="text-warning font-semibold">{s.stuckCount}</span> : '—'}</TableCell>
-                        <TableCell className="text-right">{s.avgAttempts || '—'}</TableCell>
-                        <TableCell className="text-right">{s.avgTimeSeconds > 0 ? formatTime(s.avgTimeSeconds) : '—'}</TableCell>
+                        <TableCell className="text-right">{s.stuckCount > 0 ? <span className="text-warning font-semibold">{s.stuckCount}</span> : 'None'}</TableCell>
+                        <TableCell className="text-right">{s.avgAttempts || 'No data'}</TableCell>
+                        <TableCell className="text-right">{s.avgTimeSeconds > 0 ? formatTime(s.avgTimeSeconds) : 'No data'}</TableCell>
                         <TableCell className="text-right">{s.hintUsagePercent}%</TableCell>
                       </TableRow>
                     ))}

@@ -1,0 +1,249 @@
+<style>
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; }
+  .block-card {
+    border: 2px solid var(--border, #e2e8f0);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: var(--card, #fff);
+  }
+  .block-card:hover { border-color: var(--accent, #6366f1); box-shadow: 0 4px 16px rgba(99,102,241,0.12); }
+  .block-card.selected { border-color: var(--accent, #6366f1); box-shadow: 0 0 0 3px rgba(99,102,241,0.18); }
+  .block-preview {
+    background: #f8fafc;
+    padding: 14px;
+    min-height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 12px;
+  }
+  .block-meta { padding: 10px 12px; }
+  .block-name { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+  .block-desc { font-size: 11px; color: #64748b; line-height: 1.4; }
+
+  /* Fill in the blank preview */
+  .blank-preview { font-size: 11px; color: #374151; line-height: 2; text-align: center; }
+  .blank { display: inline-block; width: 64px; height: 20px; border-bottom: 2px solid #6366f1; background: #eef2ff; border-radius: 3px; vertical-align: middle; margin: 0 3px; }
+  .blank.filled { background: #dcfce7; border-color: #22c55e; }
+
+  /* Word match preview */
+  .match-row { display: flex; align-items: center; gap: 6px; margin: 3px 0; font-size: 10px; }
+  .match-term { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 6px; }
+  .match-def { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 6px; }
+  .match-line { flex: 1; border-top: 1.5px dashed #94a3b8; }
+  .match-line.connected { border-color: #6366f1; border-style: solid; }
+
+  /* Drag sort preview */
+  .sort-item { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 10px; display: flex; align-items: center; gap: 4px; margin: 3px 0; cursor: grab; }
+  .sort-item.correct { background: #dcfce7; border-color: #22c55e; }
+  .sort-grip { color: #94a3b8; font-size: 10px; }
+
+  /* Hotspot preview */
+  .hotspot-img { position: relative; width: 120px; height: 80px; background: #e2e8f0; border-radius: 6px; }
+  .hotspot-dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 700; color: white; }
+
+  /* Flashcard preview */
+  .flashcard { width: 120px; height: 70px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; text-align: center; padding: 8px; position: relative; box-shadow: 2px 2px 0 #cbd5e1; }
+  .flashcard-front { background: #6366f1; color: white; }
+  .flashcard-back { background: #dcfce7; color: #166534; border: 1px solid #86efac; position: absolute; top: 6px; left: 6px; opacity: 0.6; }
+
+  /* Crossword preview */
+  .crossword-grid { display: grid; grid-template-columns: repeat(5, 18px); grid-template-rows: repeat(4, 18px); gap: 1px; }
+  .cw-cell { width: 18px; height: 18px; background: #fff; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 600; color: #374151; }
+  .cw-cell.black { background: #1e293b; border-color: #1e293b; }
+  .cw-cell.highlight { background: #eef2ff; }
+
+  /* True/False preview */
+  .tf-card { display: flex; gap: 8px; }
+  .tf-btn { flex: 1; padding: 8px 4px; border-radius: 8px; font-size: 10px; font-weight: 700; text-align: center; border: 2px solid; }
+  .tf-true { background: #dcfce7; border-color: #22c55e; color: #166534; }
+  .tf-false { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+  .tf-statement { font-size: 10px; text-align: center; color: #374151; margin-bottom: 8px; line-height: 1.3; }
+
+  /* Label diagram preview */
+  .label-diagram { position: relative; width: 130px; height: 80px; }
+  .label-body { position: absolute; left: 30px; top: 15px; width: 70px; height: 55px; border: 2px solid #94a3b8; border-radius: 50% 50% 40% 40%; background: #f1f5f9; }
+  .label-tag { position: absolute; background: #6366f1; color: white; font-size: 8px; padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
+  .label-line { position: absolute; border-top: 1px dashed #6366f1; }
+
+  /* Sequence preview */
+  .seq-item { display: flex; align-items: center; gap: 6px; font-size: 10px; margin: 3px 0; }
+  .seq-num { width: 18px; height: 18px; border-radius: 50%; background: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; flex-shrink: 0; }
+  .seq-text { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 6px; flex: 1; }
+
+  .badge { display: inline-block; font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 10px; margin-left: 4px; vertical-align: middle; }
+  .badge-new { background: #fef9c3; color: #854d0e; }
+  .badge-easy { background: #dcfce7; color: #166534; }
+</style>
+
+<h2>New Block Ideas for Circuit</h2>
+<p class="subtitle">Click any blocks you'd like to include — you can select multiple. These are concepts, not final designs.</p>
+
+<div class="options grid" data-multiselect>
+
+  <!-- Fill in the Blank -->
+  <div class="option block-card" data-choice="fill-blank" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="block-preview">
+      <div class="blank-preview">
+        Revenue is calculated by<br>
+        multiplying <span class="blank"></span> by<br>
+        <span class="blank filled">Price</span> per unit.
+      </div>
+    </div>
+    <div class="block-meta">
+      <div class="block-name">Fill in the Blank <span class="badge badge-easy">Easy to author</span></div>
+      <div class="block-desc">Students type missing words into gaps in a sentence or paragraph. Great for vocabulary, definitions, and key concepts.</div>
+    </div>
+  </div>
+
+  <!-- Word Match -->
+  <div class="option block-card" data-choice="word-match" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="block-preview">
+      <div style="width:100%">
+        <div class="match-row"><span class="match-term">Revenue</span><span class="match-line connected"></span><span class="match-def">Total sales income</span></div>
+        <div class="match-row"><span class="match-term">Profit</span><span class="match-line"></span><span class="match-def">Cost of goods sold</span></div>
+        <div class="match-row"><span class="match-term">COGS</span><span class="match-line"></span><span class="match-def">Income minus expenses</span></div>
+      </div>
+    </div>
+    <div class="block-meta">
+      <div class="block-name">Word Match <span class="badge badge-new">Requested</span></div>
+      <div class="block-desc">Click a term then click its matching definition to connect them. Perfect for vocabulary, formulas, or cause-and-effect.</div>
+    </div>
+  </div>
+
+  <!-- Drag to Sort -->
+  <div class="option block-card" data-choice="drag-sort" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="block-preview">
+      <div style="width:100%">
+        <div style="font-size:9px;color:#64748b;margin-bottom:4px;">Drag into the correct order:</div>
+        <div class="sort-item correct"><span class="sort-grip">⠿</span> 1. Identify the problem</div>
+        <div class="sort-item"><span class="sort-grip">⠿</span> 3. Analyse data</div>
+        <div class="sort-item"><span class="sort-grip">⠿</span> 2. Research solutions</div>
+      </div>
+    </div>
+    <div class="block-meta">
+      <div class="block-name">Drag to Sort</div>
+      <div class="block-desc">Drag items into the correct sequence or group. Ideal for processes, timelines, and ranking tasks.</div>
+    </div>
+  </div>
+
+  <!-- Image Hotspot -->
+  <div class="option block-card" data-choice="image-hotspot" onclick="toggleSelect(this)">
+    <div class="letter">D</div>
+    <div class="block-preview">
+      <div class="hotspot-img" style="background: linear-gradient(135deg,#e0e7ff,#f1f5f9);">
+        <div class="hotspot-dot" style="background:#6366f1;top:12px;left:20px;">1</div>
+        <div class="hotspot-dot" style="background:#22c55e;top:35px;left:60px;">2</div>
+        <div class="hotspot-dot" style="background:#f59e0b;top:55px;left:90px;">3</div>
+        <div style="position:absolute;bottom:4px;right:4px;font-size:8px;color:#94a3b8;">Click a dot →</div>
+      </div>
+    </div>
+    <div class="block-meta">
+      <div class="block-name">Image Hotspot</div>
+      <div class="block-desc">Add clickable dots to a diagram or image. Students click each hotspot to reveal labels, questions, or explanations.</div>
+    </div>
+  </div>
+
+  <!-- Flashcards -->
+  <div class="option block-card" data-choice="flashcard" onclick="toggleSelect(this)">
+    <div class="letter">E</div>
+    <div class="block-preview">
+      <div style="position:relative;width:130px;height:80px;">
+        <div class="flashcard" style="position:absolute;top:8px;left:8px;background:#e0e7ff;color:#4338ca;border:1px solid #a5b4fc;opacity:0.5;font-size:10px;">
+          What is GDP?
+        </div>
+        <div class="flashcard" style="position:absolute;top:0;left:0;background:#6366f1;color:white;font-size:10px;width:120px;height:70px;border-radius:8px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;">
+          Gross Domestic<br>Product — total<br>value of output
+        </div>
+      </div>
+    </div>
+    <div class="block-meta">
+      <div class="block-name">Flashcard Deck</div>
+      <div class="block-desc">Students flip through cards to self-test. Term on the front, definition or answer on the back. Great for revision.</div>
+    </div>
+  </div>
+
+  <!-- True / False -->
+  <div class="option block-card" data-choice="true-false" onclick="toggleSelect(this)">
+    <div class="letter">F</div>
+    <div class="block-preview">
+      <div style="width:130px;">
+        <div class="tf-statement">"A business with high revenue always makes a profit."</div>
+        <div class="tf-card">
+          <div class="tf-btn tf-true">✓ True</div>
+          <div class="tf-btn tf-false">✗ False</div>
+        </div>
+      </div>
+    </div>
+    <div class="block-meta">
+      <div class="block-name">True / False</div>
+      <div class="block-desc">A quick binary-choice statement with instant feedback and an explanation revealed after the answer. Fast and engaging.</div>
+    </div>
+  </div>
+
+  <!-- Label the Diagram -->
+  <div class="option block-card" data-choice="label-diagram" onclick="toggleSelect(this)">
+    <div class="letter">G</div>
+    <div class="block-preview">
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div class="label-diagram">
+          <div style="position:absolute;left:25px;top:10px;width:80px;height:60px;border:2px solid #94a3b8;border-radius:40%;background:#f1f5f9;"></div>
+          <div class="label-tag" style="top:5px;left:0;">Input</div>
+          <div class="label-tag" style="top:45px;right:0;">Output</div>
+          <div class="label-tag" style="top:25px;left:2px;background:#22c55e;">Process</div>
+        </div>
+        <div style="font-size:9px;color:#64748b;line-height:1.5;">Drag labels<br>onto the<br>diagram</div>
+      </div>
+    </div>
+    <div class="block-meta">
+      <div class="block-name">Label the Diagram <span class="badge badge-new">Requested</span></div>
+      <div class="block-desc">Drag text labels onto the correct part of an image or diagram. Perfect for science, geography, and systems thinking.</div>
+    </div>
+  </div>
+
+  <!-- Sequence Ordering -->
+  <div class="option block-card" data-choice="sequence" onclick="toggleSelect(this)">
+    <div class="letter">H</div>
+    <div class="block-preview">
+      <div style="width:100%;">
+        <div style="font-size:9px;color:#64748b;margin-bottom:4px;">Put these steps in order:</div>
+        <div class="seq-item"><div class="seq-num">1</div><div class="seq-text">Market research</div></div>
+        <div class="seq-item"><div class="seq-num" style="background:#94a3b8;">?</div><div class="seq-text" style="background:#fef9c3;border-color:#fbbf24;">Product launch</div></div>
+        <div class="seq-item"><div class="seq-num">3</div><div class="seq-text">Prototype testing</div></div>
+      </div>
+    </div>
+    <div class="block-meta">
+      <div class="block-name">Sequence / Timeline</div>
+      <div class="block-desc">Students arrange events or steps into the correct order. Works well for business processes, historical events, and scientific methods.</div>
+    </div>
+  </div>
+
+  <!-- Crossword -->
+  <div class="option block-card" data-choice="crossword" onclick="toggleSelect(this)">
+    <div class="letter">I</div>
+    <div class="block-preview">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="crossword-grid">
+          <div class="cw-cell black"></div><div class="cw-cell highlight">R</div><div class="cw-cell black"></div><div class="cw-cell black"></div><div class="cw-cell black"></div>
+          <div class="cw-cell">P</div><div class="cw-cell highlight">E</div><div class="cw-cell">V</div><div class="cw-cell">E</div><div class="cw-cell">N</div>
+          <div class="cw-cell black"></div><div class="cw-cell highlight">V</div><div class="cw-cell black"></div><div class="cw-cell black"></div><div class="cw-cell black"></div>
+          <div class="cw-cell black"></div><div class="cw-cell highlight">S</div><div class="cw-cell black"></div><div class="cw-cell black"></div><div class="cw-cell black"></div>
+        </div>
+        <div style="font-size:9px;color:#64748b;">1 Across: Total income earned</div>
+      </div>
+    </div>
+    <div class="block-meta">
+      <div class="block-name">Mini Crossword</div>
+      <div class="block-desc">A small crossword built from module vocabulary. Students type answers into the grid. Best for 5–10 terms at the end of a lesson.</div>
+    </div>
+  </div>
+
+</div>
+
+<p style="font-size:12px;color:#64748b;margin-top:16px;">Select as many as appeal to you — we'll narrow down and design the best ones together.</p>

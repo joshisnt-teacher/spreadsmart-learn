@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -235,6 +236,72 @@ serve(async (req) => {
   try {
     const AI_API_KEY = Deno.env.get("AI_API_KEY");
     if (!AI_API_KEY) throw new Error("AI_API_KEY is not configured");
+
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    const centralAdmin = createClient(
+      Deno.env.get("CENTRAL_SUPABASE_URL")!,
+      Deno.env.get("CENTRAL_SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: profile } = await supabaseAdmin
+      .from("teacher_profiles")
+      .select("central_teacher_id")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.central_teacher_id) {
+      return new Response(JSON.stringify({ error: "no_central_id", message: "Teacher has not completed SSO setup." }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: quota, error: quotaError } = await centralAdmin.rpc("check_and_record_ai_action", {
+      p_teacher_id: profile.central_teacher_id,
+      p_app_slug: "circuit",
+      p_action_type: "module_assist",
+    });
+
+    if (quotaError || !quota) {
+      return new Response(
+        JSON.stringify({ error: "quota_check_failed", message: quotaError?.message || "Unable to verify AI quota." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!quota.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: "quota_exceeded",
+          message: `AI limit reached (${quota.used}/${quota.cap} actions this month). Upgrade to Pro for more.`,
+          used: quota.used,
+          cap: quota.cap,
+          plan: quota.plan,
+        }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const { action, prompt, context } = await req.json();
 

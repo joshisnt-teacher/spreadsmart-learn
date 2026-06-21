@@ -25,9 +25,9 @@ export const chartsModule: Module = {
             'Before you can create a chart, your data needs to be **well organised**.\n\n' +
             'Good data for charting has:\n' +
             '- **Headers** in the first row describing each column\n' +
-            '- **Consistent data types** — numbers in one column, text labels in another\n' +
+            '- **Consistent data types**: numbers in one column, text labels in another\n' +
             '- **No blank rows** in the middle of your data\n\n' +
-            'Look at the example below — it has clear headers (Month, Sales) and consistent numeric values.',
+            'Look at the example below: it has clear headers (Month, Sales) and consistent numeric values.',
           whyItMatters: 'Charts are only as good as the data behind them. Messy data creates misleading or broken charts.',
           initialSheetState: {
             name: 'Sheet1',
@@ -81,8 +81,8 @@ export const chartsModule: Module = {
             ],
             editableCells: ['A1', 'B4'],
             hints: [
-              'A1 needs a header — type "Product".',
-              'B4 is the Units Sold for Widget C — it should be 85.',
+              'A1 needs a header: type "Product".',
+              'B4 is the Units Sold for Widget C: it should be 85.',
             ],
             successMessage: 'Data is now clean and ready for charting!',
             incorrectMessage: 'Make sure A1 says "Product" and B4 contains 85.',
@@ -102,7 +102,7 @@ export const chartsModule: Module = {
             '2. In **E3**, type **=SUM(B3:D3)**\n' +
             '3. In **E4**, type **=SUM(B4:D4)**\n' +
             '4. Click **Check**.',
-          whyItMatters: 'Summary totals are often what you chart — not the raw daily data.',
+          whyItMatters: 'Summary totals are often what you chart: not the raw daily data.',
           initialSheetState: {
             name: 'Sheet1',
             row: 6,
@@ -153,9 +153,9 @@ export const chartsModule: Module = {
           title: 'What Makes a Good Chart?',
           instruction:
             'Now that you know how to prepare data, let\'s learn what makes a chart effective:\n\n' +
-            '- **Bar charts** compare **categories** — e.g. sales by product\n' +
-            '- **Line charts** show **trends over time** — e.g. monthly revenue\n' +
-            '- **Pie charts** show **proportions** — e.g. market share\n' +
+            '- **Bar charts** compare **categories**: e.g. sales by product\n' +
+            '- **Line charts** show **trends over time**: e.g. monthly revenue\n' +
+            '- **Pie charts** show **proportions**: e.g. market share\n' +
             '- **Area charts** are like line charts but emphasise **volume**\n\n' +
             '**Rule of thumb:**\n' +
             '- Comparing items? → **Bar chart**\n' +
@@ -164,7 +164,7 @@ export const chartsModule: Module = {
           whyItMatters: 'Choosing the right chart type makes your data story clear and convincing.',
         },
 
-        // Quiz — Chart types
+        // Quiz: Chart types
         {
           id: 'charts-1-4q',
           order: 5,
@@ -186,7 +186,7 @@ export const chartsModule: Module = {
               'Each slice represents a proportion of the whole.',
             ],
             successMessage: 'Correct! Pie charts show parts of a whole.',
-            incorrectMessage: 'Not quite — think about which chart uses slices to show proportions.',
+            incorrectMessage: 'Not quite. Think about which chart uses slices to show proportions.',
             xpValue: 5,
           },
         },
@@ -205,8 +205,8 @@ export const chartsModule: Module = {
             '   - **F5**: =SUM(B5:E5)\n\n' +
             '2. Which chart type would best compare departments?\n' +
             '   Type your answer in **A8**: either **bar**, **line**, **pie**, or **area**.\n\n' +
-            '💡 Think: are you comparing categories or showing a trend?',
-          whyItMatters: 'Preparing data AND choosing the right chart are both essential skills.',
+            'Think: are you comparing categories or showing a trend?',
+          whyItMatters: 'Preparing data AND choosing the right chart are both useful skills.',
           initialSheetState: {
             name: 'Sheet1',
             row: 10,
@@ -253,10 +253,10 @@ export const chartsModule: Module = {
             editableCells: ['F2', 'F3', 'F4', 'F5', 'A8'],
             hints: [
               'Use =SUM(B2:E2) for each department\'s total.',
-              'You\'re comparing different departments — which chart type compares categories?',
+              'You\'re comparing different departments: which chart type compares categories?',
               'A bar chart is best for comparing categories side by side.',
             ],
-            successMessage: '🎉 Data prepared and bar chart correctly identified! Bar charts are perfect for comparing categories.',
+            successMessage: 'Data prepared and bar chart correctly identified!',
             incorrectMessage: 'Calculate totals with =SUM(B2:E2) etc., and type "bar" in A8.',
             xpValue: 30,
             bonusXp: 15,
@@ -274,7 +274,7 @@ export const chartsModule: Module = {
       title: 'Reading Charts',
       description: 'Interpret bar, line, and pie charts to answer questions about data.',
       steps: [
-        // Quiz — Axis vocabulary
+        // Quiz: Axis vocabulary
         {
           id: 'charts-2-0q',
           order: 1,
@@ -296,7 +296,7 @@ export const chartsModule: Module = {
               'X goes left-to-right, Y goes up-and-down.',
             ],
             successMessage: 'Correct! The X-axis runs horizontally along the bottom of a chart.',
-            incorrectMessage: 'Not quite — it\'s called the X-axis (horizontal).',
+            incorrectMessage: 'Not quite. It\'s called the X-axis (horizontal).',
             xpValue: 5,
           },
         },
@@ -348,7 +348,7 @@ export const chartsModule: Module = {
             ],
             editableCells: ['B7', 'B8', 'B9'],
             hints: [
-              'Look at the tallest bar — that\'s the most sold fruit.',
+              'Look at the tallest bar. That\'s the most sold fruit.',
               'The shortest bar shows the least sold fruit.',
               'Use =SUM(B2:B5) for the total.',
             ],
@@ -368,7 +368,7 @@ export const chartsModule: Module = {
             'Answer:\n' +
             '1. In **B8**, type the month with the **highest** visitors.\n' +
             '2. In **B9**, type the **difference** between the highest and lowest months (use a formula: =MAX(B2:B6)-MIN(B2:B6)).',
-          whyItMatters: 'Line charts reveal trends — understanding them helps you predict what might happen next.',
+          whyItMatters: 'Line charts reveal trends: understanding them helps you predict what might happen next.',
           chartConfig: {
             type: 'line',
             dataSource: 'sheet',
@@ -405,10 +405,10 @@ export const chartsModule: Module = {
             ],
             editableCells: ['B8', 'B9'],
             hints: [
-              'The peak of the line chart is the highest point — which month is that?',
+              'The peak of the line chart is the highest point: which month is that?',
               'Range = MAX - MIN. Use =MAX(B2:B6)-MIN(B2:B6).',
             ],
-            successMessage: 'Apr had the most visitors (1,800) with a range of 700. Nice analysis!',
+            successMessage: 'Apr had the most visitors (1,800) with a range of 700.',
             incorrectMessage: 'Type "Apr" in B8 and =MAX(B2:B6)-MIN(B2:B6) in B9.',
             xpValue: 15,
             bonusXp: 5,
@@ -424,7 +424,7 @@ export const chartsModule: Module = {
             'Answer:\n' +
             '1. In **B7**, type the **most common** way to get to school.\n' +
             '2. In **B8**, type the **percentage** that walk (calculate: =B3/SUM(B2:B5)*100).',
-          whyItMatters: 'Pie charts show proportions — understanding them helps you see the "big picture" of how a total breaks down.',
+          whyItMatters: 'Pie charts show proportions: understanding them helps you see the "big picture" of how a total breaks down.',
           chartConfig: {
             type: 'pie',
             dataSource: 'sheet',
@@ -480,7 +480,7 @@ export const chartsModule: Module = {
             '2. In **B9**, find the **average** sales using AVERAGE.\n' +
             '3. In **B10**, type the name of the item with the **highest** sales.\n' +
             '4. In **B11**, type the **best chart type** to show these items\' share of total sales.\n\n' +
-            '💡 Hint: which chart shows parts of a whole?',
+            'Hint: which chart shows parts of a whole?',
           whyItMatters: 'Combining data analysis with chart interpretation is a key business skill.',
           chartConfig: {
             type: 'bar',
@@ -523,10 +523,10 @@ export const chartsModule: Module = {
             editableCells: ['B8', 'B9', 'B10', 'B11'],
             hints: [
               'Use =SUM(B2:B6) for total, =AVERAGE(B2:B6) for average.',
-              'Look at the chart — the tallest bar is the top seller.',
+              'Look at the chart: the tallest bar is the top seller.',
               'To show each item\'s share of the whole, use a pie chart.',
             ],
-            successMessage: '🎉 Running Shoes lead with 120 sales, and a pie chart would best show proportions!',
+            successMessage: 'Running Shoes lead with 120 sales, and a pie chart would best show proportions!',
             incorrectMessage: 'Total=SUM(B2:B6), Average=AVERAGE(B2:B6), top item="Running Shoes", share chart="pie".',
             xpValue: 35,
             bonusXp: 15,
@@ -551,9 +551,9 @@ export const chartsModule: Module = {
           title: 'How to Build a Chart',
           instruction:
             'To create a chart you need three things:\n\n' +
-            '1. **Chart type** — bar, line, pie, or area\n' +
-            '2. **X-axis** — the categories (usually text labels)\n' +
-            '3. **Y-axis** — the values (usually numbers)\n\n' +
+            '1. **Chart type**: bar, line, pie, or area\n' +
+            '2. **X-axis**: the categories (usually text labels)\n' +
+            '3. **Y-axis**: the values (usually numbers)\n\n' +
             'In the next steps, you\'ll use the **Chart Builder** panel to select these options and see the chart update live.\n\n' +
             '**Example:**\n' +
             '- Data: Month (Jan, Feb, Mar) and Sales (100, 150, 120)\n' +
@@ -669,7 +669,7 @@ export const chartsModule: Module = {
               'Select "Pie Chart" from the dropdown.',
               'X-Axis = Activity (the labels), Y-Axis = Hours (the values).',
             ],
-            successMessage: '🎉 Your pie chart shows Sleep takes the biggest slice! Great job building charts.',
+            successMessage: 'Your pie chart shows Sleep takes the biggest slice!',
             incorrectMessage: 'Select Pie Chart, X-Axis = Activity, Y-Axis = Hours.',
             xpValue: 20,
             bonusXp: 10,
@@ -687,7 +687,7 @@ export const chartsModule: Module = {
             '- Is this about comparing categories or showing a **trend**?\n' +
             '- Which column has the labels? Which has the values?\n\n' +
             'Use the **Chart Builder** to set the chart type, X-axis, and Y-axis, then click **Check**.',
-          whyItMatters: 'Choosing the right chart type on your own — without being told — is the real skill.',
+          whyItMatters: 'Choosing the right chart type on your own, without being told, is the real skill.',
           chartConfig: {
             type: 'line',
             dataSource: 'sheet',
@@ -726,11 +726,11 @@ export const chartsModule: Module = {
             expectations: [],
             editableCells: [],
             hints: [
-              'The data shows values changing over time — which chart type shows trends?',
+              'The data shows values changing over time: which chart type shows trends?',
               'A line chart is best for showing change over time.',
               'X-Axis = Month (the time labels), Y-Axis = Rainfall (mm) (the values).',
             ],
-            successMessage: 'A line chart is perfect here — it clearly shows rainfall decreasing from January to June!',
+            successMessage: 'A line chart is perfect here: it clearly shows rainfall decreasing from January to June!',
             incorrectMessage: 'This data shows a trend over time. Try a Line Chart with X = Month, Y = Rainfall (mm).',
             xpValue: 25,
             bonusXp: 10,
@@ -748,7 +748,7 @@ export const chartsModule: Module = {
             '- Are you comparing separate items, or showing **parts of a whole**?\n' +
             '- Which column contains the category names? Which has the amounts?\n\n' +
             'Set up the Chart Builder and click **Check**.',
-          whyItMatters: 'Understanding when to use a pie chart vs a bar chart is a common real-world decision.',
+          whyItMatters: 'Understanding when to use a pie chart vs a bar chart is a common practical decision.',
           chartConfig: {
             type: 'pie',
             dataSource: 'sheet',
@@ -785,11 +785,11 @@ export const chartsModule: Module = {
             expectations: [],
             editableCells: [],
             hints: [
-              'You want to show how each category contributes to the total — which chart shows parts of a whole?',
+              'You want to show how each category contributes to the total: which chart shows parts of a whole?',
               'A pie chart shows proportions of a total.',
               'X-Axis = Category, Y-Axis = Amount (£).',
             ],
-            successMessage: 'A pie chart is ideal here — Savings takes the biggest slice at £30!',
+            successMessage: 'A pie chart is ideal here: Savings takes the biggest slice at £30!',
             incorrectMessage: 'You\'re showing parts of a whole. Try a Pie Chart with X = Category, Y = Amount (£).',
             xpValue: 25,
             bonusXp: 10,
@@ -805,8 +805,8 @@ export const chartsModule: Module = {
             '**Challenge:** Look at the data and decide for yourself:\n' +
             '- What is the best chart type to **show how downloads changed over the weeks**?\n' +
             '- Which column should go on each axis?\n\n' +
-            'There\'s no instruction this time — use what you\'ve learnt! Set up the Chart Builder and click **Check**.',
-          whyItMatters: 'In the real world, nobody tells you which chart to use — you need to figure it out from the data.',
+            'There\'s no instruction this time: use what you\'ve learnt! Set up the Chart Builder and click **Check**.',
+          whyItMatters: 'In the real world, nobody tells you which chart to use: you need to figure it out from the data.',
           chartConfig: {
             type: 'area',
             dataSource: 'sheet',
@@ -848,11 +848,11 @@ export const chartsModule: Module = {
             expectations: [],
             editableCells: [],
             hints: [
-              'The data shows growth over time — and the volume of downloads matters.',
+              'The data shows growth over time, and the volume of downloads matters.',
               'An area chart is like a line chart but emphasises the volume underneath.',
               'X-Axis = Week, Y-Axis = Downloads.',
             ],
-            successMessage: '🎉 An area chart perfectly shows the growing volume of downloads over time! You\'ve mastered chart building.',
+            successMessage: 'An area chart perfectly shows the growing volume of downloads over time.',
             incorrectMessage: 'This data shows growing volume over time. Try an Area Chart with X = Week, Y = Downloads.',
             xpValue: 35,
             bonusXp: 15,
@@ -868,7 +868,7 @@ export const chartsModule: Module = {
       id: 'charts-lesson-4',
       order: 4,
       title: 'Data Summary Tables',
-      description: 'Learn to create summary tables that group and summarise raw data — the concept behind pivot tables.',
+      description: 'Learn to create summary tables that group and summarise raw data: the concept behind pivot tables.',
       steps: [
         {
           id: 'charts-4-1',
@@ -896,7 +896,7 @@ export const chartsModule: Module = {
             '2. In **E3**, calculate Liam\'s total: **=SUMIF(A2:A7,"Liam",B2:B7)**\n' +
             '3. In **E4**, calculate Zoe\'s total: **=SUMIF(A2:A7,"Zoe",B2:B7)**\n' +
             '4. Click **Check**.',
-          whyItMatters: 'SUMIF is one of the most powerful functions for creating summaries from raw data.',
+          whyItMatters: 'SUMIF is one of the most useful functions for creating summaries from raw data.',
           initialSheetState: {
             name: 'Sheet1',
             row: 9,
@@ -934,11 +934,11 @@ export const chartsModule: Module = {
             ],
             editableCells: ['E2', 'E3', 'E4'],
             hints: [
-              'SUMIF(range, criteria, sum_range) — range is where the names are, criteria is the name, sum_range is the amounts.',
+              'SUMIF(range, criteria, sum_range): range is where the names are, criteria is the name, sum_range is the amounts.',
               'For Ava: =SUMIF(A2:A7,"Ava",B2:B7)',
               'Change "Ava" to "Liam" or "Zoe" for the other rows.',
             ],
-            successMessage: 'Ava: 90, Liam: 90, Zoe: 80 — your first summary table is complete!',
+            successMessage: 'Ava: 90, Liam: 90, Zoe: 80.',
             almostCorrectMessage: 'Values look right but make sure you used SUMIF formulas.',
             incorrectMessage: 'Use =SUMIF(A2:A7,"Name",B2:B7) for each salesperson.',
             xpValue: 25,
@@ -946,7 +946,7 @@ export const chartsModule: Module = {
           },
         },
 
-        // Quiz — SUMIF vocabulary
+        // Quiz: SUMIF vocabulary
         {
           id: 'charts-4-1q',
           order: 2,
@@ -957,7 +957,7 @@ export const chartsModule: Module = {
             type: 'multiple-choice',
             options: ['SUM', 'AVERAGE', 'SUMIF', 'COUNT'],
             correctAnswer: 'SUMIF',
-            explanation: 'SUMIF adds up values only for rows that match a condition — e.g. =SUMIF(A:A,"Ava",B:B) totals only Ava\'s amounts.',
+            explanation: 'SUMIF adds up values only for rows that match a condition: e.g. =SUMIF(A:A,"Ava",B:B) totals only Ava\'s amounts.',
           },
           task: {
             id: 'task-charts-4-1q',
@@ -968,7 +968,7 @@ export const chartsModule: Module = {
               'The function name literally says what it does: SUM + IF.',
             ],
             successMessage: 'Correct! SUMIF adds values conditionally.',
-            incorrectMessage: 'Not quite — look for a function that combines adding with a condition.',
+            incorrectMessage: 'Not quite. Look for a function that combines adding with a condition.',
             xpValue: 5,
           },
         },
@@ -986,7 +986,7 @@ export const chartsModule: Module = {
             '2. In **F3**, count Liam\'s sales: **=COUNTIF(A2:A7,"Liam")**\n' +
             '3. In **F4**, count Zoe\'s sales: **=COUNTIF(A2:A7,"Zoe")**\n' +
             '4. Click **Check**.',
-          whyItMatters: 'COUNTIF lets you count how many times something appears — essential for grouping data.',
+          whyItMatters: 'COUNTIF lets you count how many times something appears: useful for grouping data.',
           initialSheetState: {
             name: 'Sheet1',
             row: 9,
@@ -1051,7 +1051,7 @@ export const chartsModule: Module = {
             '5. In **G2**, average for 8A: =E2/F2\n' +
             '6. In **G3**, average for 8B: =E3/F3\n' +
             '7. Click **Check**.\n\n' +
-            '💡 This is exactly what a pivot table does automatically!',
+            'This is exactly what a pivot table does automatically!',
           whyItMatters: 'Building a summary table manually teaches you the logic that pivot tables automate.',
           initialSheetState: {
             name: 'Sheet1',
@@ -1101,8 +1101,8 @@ export const chartsModule: Module = {
               'Average = Total / Count, so G2 = =E2/F2.',
               '8A total: 72+85+91+66 = 314. 8B total: 68+79+74+82 = 303.',
             ],
-            successMessage: '🎉 Summary table complete! 8A averages 78.5 vs 8B\'s 75.75. This is exactly what a pivot table does!',
-            almostCorrectMessage: 'Values look right — check that all formulas use SUMIF, COUNTIF, and division.',
+            successMessage: 'Summary table complete! 8A averages 78.5 vs 8B\'s 75.75. This is exactly what a pivot table does!',
+            almostCorrectMessage: 'Values look right. Check that all formulas use SUMIF, COUNTIF, and division.',
             incorrectMessage: 'SUMIF for totals, COUNTIF for counts, =E/F for averages.',
             xpValue: 40,
             bonusXp: 20,

@@ -29,7 +29,7 @@ export const StepLayoutEngine: React.FC<Props> = ({ step, context, isMobile = fa
       {workspaceBlocks.map((block, i) => renderBlock(block, context, `ws-${i}`))}
       {workspaceBlocks.length === 0 && (
         <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
-          Nothing to do here — just read and continue.
+          Nothing to do here. Just read and continue.
         </div>
       )}
     </div>

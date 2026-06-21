@@ -21,7 +21,7 @@ const lesson1: Lesson = {
           content:
             '## What Is Email?\n\n' +
             'Email (short for **electronic mail**) is a way to send messages to people over the internet. ' +
-            'Unlike a text message, emails are used in more **formal** situations — like communicating with your teacher, a business, or a future employer.\n\n' +
+            'Unlike a text message, emails are used in more **formal** situations, like communicating with your teacher, a business, or a future employer.\n\n' +
             '### Why use email instead of texting?\n\n' +
             '| Texting | Email |\n' +
             '|---|---|\n' +
@@ -35,7 +35,7 @@ const lesson1: Lesson = {
           variant: 'why-it-matters',
           content:
             'Your teachers, future employers, and businesses all communicate by email. ' +
-            'Learning to write a good one is an important life skill — and it starts here.',
+            'Learning to write a good one is an important life skill, and it starts here.',
         },
       ],
     },
@@ -51,20 +51,20 @@ const lesson1: Lesson = {
           content:
             '## The Outlook Interface\n\n' +
             'Microsoft Outlook is an email program. Here are the key areas you need to know:\n\n' +
-            '- **New Email button** — Click this to start writing a new email\n' +
-            '- **Inbox** — Where emails you receive are stored\n' +
-            '- **Sent Items** — A folder that shows emails you have already sent\n' +
-            '- **To field** — Where you type the email address of the person you are writing to\n' +
-            '- **CC field** — Where you add people who should receive a copy of the email\n' +
-            '- **Subject field** — A short title for your email\n' +
-            '- **Body** — The main area where you write your message\n' +
-            '- **Send button** — Click this when you are ready to send your email',
+            '- **New Email button**: Click this to start writing a new email\n' +
+            '- **Inbox**: Where emails you receive are stored\n' +
+            '- **Sent Items**: A folder that shows emails you have already sent\n' +
+            '- **To field**: Where you type the email address of the person you are writing to\n' +
+            '- **CC field**: Where you add people who should receive a copy of the email\n' +
+            '- **Subject field**: A short title for your email\n' +
+            '- **Body**: The main area where you write your message\n' +
+            '- **Send button**: Click this when you are ready to send your email',
         },
         {
           type: 'callout',
           variant: 'tip',
           content:
-            '**CC** stands for **Carbon Copy**. It means you are sending a copy of the email to someone else so they can read it — ' +
+            '**CC** stands for **Carbon Copy**. It means you are sending a copy of the email to someone else so they can read it, ' +
             'but they do not have to reply. For example, you might CC your parent when emailing a teacher.',
         },
       ],
@@ -136,7 +136,7 @@ const lesson1: Lesson = {
       scoring: {
         xpValue: 10,
         hints: [],
-        successMessage: 'Great work! You know how to send an email in Outlook.',
+        successMessage: 'You know how to send an email in Outlook.',
       },
       blocks: [
         {
@@ -191,11 +191,11 @@ const lesson2: Lesson = {
             '**Signature:** Ava Johnson\n\n' +
             '---\n\n' +
             '### The 5 Parts:\n' +
-            '1. **Subject Line** — A short title that tells the reader what the email is about\n' +
-            '2. **Greeting** — The opening line that addresses the reader by name\n' +
-            '3. **Body** — The main message explaining why you are writing\n' +
-            '4. **Closing** — A polite sign-off before your name\n' +
-            '5. **Signature** — Your full name at the bottom',
+            '1. **Subject Line**: A short title that tells the reader what the email is about\n' +
+            '2. **Greeting**: The opening line that addresses the reader by name\n' +
+            '3. **Body**: The main message explaining why you are writing\n' +
+            '4. **Closing**: A polite sign-off before your name\n' +
+            '5. **Signature**: Your full name at the bottom',
         },
       ],
     },
@@ -211,11 +211,11 @@ const lesson2: Lesson = {
           content:
             '## Writing a Good Subject Line\n\n' +
             'The subject line is the first thing your teacher sees. A good subject line is **short, specific, and clear**.\n\n' +
-            '### Good examples ✅\n' +
+            '### Good examples \n' +
             '- "Question about the science homework"\n' +
-            '- "Absent on Monday — catching up on work"\n' +
+            '- "Absent on Monday. Catching up on work"\n' +
             '- "Permission for sport excursion"\n\n' +
-            '### Bad examples ❌\n' +
+            '### Bad examples \n' +
             '- "hey"\n' +
             '- (leaving it blank)\n' +
             '- "important!!!"\n' +
@@ -373,13 +373,13 @@ const lesson3: Lesson = {
             '## A Worked Example\n\n' +
             'Read the email below carefully. Each part is labelled so you can see exactly how a good email to a teacher looks.\n\n' +
             '---\n\n' +
-            '📌 **Subject:** Absent on Thursday — missed work\n\n' +
-            '👋 **Greeting:** Dear Ms Williams,\n\n' +
-            '📝 **Body:** I am writing to let you know that I was absent from school on Thursday due to illness. ' +
+            '**Subject:** Absent on Thursday. Missed work\n\n' +
+            '**Greeting:** Dear Ms Williams,\n\n' +
+            '**Body:** I am writing to let you know that I was absent from school on Thursday due to illness. ' +
             'I understand that I missed the class on persuasive writing. ' +
             'Could you please let me know what we covered so that I can catch up before next week?\n\n' +
-            '✉️ **Closing:** Thank you,\n\n' +
-            '🖊️ **Signature:** Liam Nguyen\n\n' +
+            '️ **Closing:** Thank you,\n\n' +
+            '️ **Signature:** Liam Nguyen\n\n' +
             '---\n\n' +
             '### Why is this email good?\n' +
             '- The subject line is **clear and specific**\n' +
@@ -409,14 +409,14 @@ const lesson3: Lesson = {
           content:
             '## Good vs Bad Email\n\n' +
             'Can you spot what is wrong with the bad email before reading the explanation?\n\n' +
-            '### ❌ Bad Email\n\n' +
+            '### Bad Email\n\n' +
             '**Subject:** (blank)\n\n' +
             'hey\n\n' +
-            'i wasnt at school thursday. what did we do??\n\n' +
+            'i wasnt at school thursday. What did we do??\n\n' +
             'Liam\n\n' +
             '---\n\n' +
-            '### ✅ Good Email\n\n' +
-            '**Subject:** Absent on Thursday — missed work\n\n' +
+            '### Good Email\n\n' +
+            '**Subject:** Absent on Thursday. Missed work\n\n' +
             'Dear Ms Williams,\n\n' +
             'I am writing to let you know that I was absent on Thursday. ' +
             'Could you please tell me what we covered in class?\n\n' +
@@ -424,10 +424,10 @@ const lesson3: Lesson = {
             'Liam Nguyen\n\n' +
             '---\n\n' +
             '### What was wrong with the bad email?\n' +
-            '1. **No subject line** — the teacher does not know what it is about\n' +
-            '2. **"hey"** — too casual for a teacher email\n' +
-            '3. **No closing** — the email ends abruptly without a polite sign-off\n' +
-            '4. **No full name** — the teacher may not know which "Liam" sent this',
+            '1. **No subject line**: the teacher does not know what it is about\n' +
+            '2. **"hey"**: too casual for a teacher email\n' +
+            '3. **No closing**: the email ends abruptly without a polite sign-off\n' +
+            '4. **No full name**: the teacher may not know which "Liam" sent this',
         },
         {
           type: 'callout',
@@ -515,13 +515,13 @@ const lesson3: Lesson = {
         {
           type: 'fill-blank',
           blockId: 'oe-l3-s5-fb',
-          // Written as a single inline sentence — FillInBlankRenderer renders parts inline,
+          // Written as a single inline sentence: FillInBlankRenderer renders parts inline,
           // so newlines would not display. The meaning is preserved without line breaks.
           text: 'Dear {{blank}}, I am writing to ask about the {{blank}} task from last week. I was absent on Thursday and I am not sure what I need to do. Could you please {{blank}} me know what I missed? Thank you, {{blank}}',
           blanks: [
             {
               id: 'oe-l3-s5-fb-b1',
-              // Accept common teacher titles/names — students type their actual teacher's name
+              // Accept common teacher titles/names: students type their actual teacher's name
               accepted: ['Mr Smith', 'Ms Jones', 'Mr Johnson', 'Ms Williams', 'Sir', 'Miss', 'Mr', 'Ms', 'Mrs'],
             },
             {
@@ -533,7 +533,7 @@ const lesson3: Lesson = {
               accepted: ['let', 'tell', 'inform', 'show'],
             },
             {
-              // Blank 4 is the student's own name — any answer passes.
+              // Blank 4 is the student's own name: any answer passes.
               // The fill-blank block marks the step complete on Check regardless of correctness;
               // this blank will always show red but does not block progression.
               id: 'oe-l3-s5-fb-b4',
@@ -577,7 +577,7 @@ const lesson3: Lesson = {
             {
               id: 'oe-l3-s6-fc-c3',
               front: 'Body',
-              back: 'The main message of the email — explains why you are writing.',
+              back: 'The main message of the email: explains why you are writing.',
             },
             {
               id: 'oe-l3-s6-fc-c4',
@@ -592,7 +592,7 @@ const lesson3: Lesson = {
             {
               id: 'oe-l3-s6-fc-c6',
               front: 'CC',
-              back: 'Carbon Copy — sends a copy of the email to someone else who does not need to reply.',
+              back: 'Carbon Copy: sends a copy of the email to someone else who does not need to reply.',
             },
           ],
         },

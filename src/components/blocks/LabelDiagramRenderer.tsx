@@ -49,7 +49,7 @@ export const LabelDiagramRenderer: React.FC<Props> = ({ block, context }) => {
   return (
     <div className="flex flex-col gap-4 p-4 max-w-2xl mx-auto w-full">
       <p className="text-xs text-muted-foreground">
-        {submitted ? 'Results shown below.' : selectedLabel ? `Placing: "${labelMap[selectedLabel]}" — click a slot on the diagram` : 'Select a label, then click its position on the diagram.'}
+        {submitted ? 'Results shown below.' : selectedLabel ? `Placing "${labelMap[selectedLabel]}": click a slot on the diagram.` : 'Select a label, then click its position on the diagram.'}
       </p>
 
       <div className="relative w-full rounded-xl overflow-hidden border bg-muted">

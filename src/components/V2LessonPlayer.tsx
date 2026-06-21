@@ -90,7 +90,7 @@ export const V2LessonPlayer: React.FC<Props> = ({ lesson, moduleId, onComplete, 
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold truncate">{lesson.title}</p>
           <p className="text-xs text-muted-foreground">
-            Step {currentStepIndex + 1} of {lesson.steps.length} — {currentStep.title}
+            Step {currentStepIndex + 1} of {lesson.steps.length}: {currentStep.title}
           </p>
         </div>
       </header>
