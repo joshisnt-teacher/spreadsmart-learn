@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { EdufiedLogo } from "@/components/EdufiedLogo";
+import { AiUsageIndicator } from "@/components/AiUsageIndicator";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -73,6 +74,11 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border/50 p-4">
+        {!collapsed && (
+          <div className="mb-3">
+            <AiUsageIndicator />
+          </div>
+        )}
         <div className="flex items-center gap-3 px-3 py-2">
           <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
             <span className="text-sm font-medium text-primary">{initials}</span>
