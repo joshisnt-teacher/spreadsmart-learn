@@ -59,7 +59,7 @@ const TeacherDashboard: React.FC = () => {
 
 
   const fetchClasses = useCallback(async () => {
-    const { data } = await supabase.from('classes').select('*').order('created_at', { ascending: false });
+    const { data } = await supabase.from('classes').select('*').is('archived_at', null).order('created_at', { ascending: false });
     if (data) setClasses(data);
   }, []);
 

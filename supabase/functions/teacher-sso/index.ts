@@ -108,7 +108,14 @@ Deno.serve(async (req) => {
       console.warn('teacher_profiles upsert skipped:', profileErr)
     }
 
-    // 5. Generate a one-time magic link token for the client to establish a session
+    // 5. Sync classes from the central hub into Circuit (non-fatal if it fails)
+    try {
+      await syncClasses(central, local, localUserId, teacher.id)
+    } catch (syncErr) {
+      console.error('class sync failed (non-fatal):', syncErr)
+    }
+
+    // 6. Generate a one-time magic link token for the client to establish a session
     const { data: linkData, error: linkError } = await local.auth.admin.generateLink({
       type: 'magiclink',
       email: teacher.email,
@@ -132,4 +139,71 @@ function json(body: object, status = 200) {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
+}
+
+// ---------------------------------------------------------------------------
+// syncClasses — mirrors hub classes into Circuit's local classes table.
+// Previously only student-sso created local classes, lazily, the first time
+// a student happened to log in. Teachers now see an assigned class immediately.
+// ---------------------------------------------------------------------------
+async function syncClasses(
+  central: ReturnType<typeof createClient>,
+  local: ReturnType<typeof createClient>,
+  localUserId: string,
+  hubTeacherId: string,
+) {
+  const { data: assignments } = await central
+    .from('app_assignments')
+    .select('class_id')
+    .eq('app_slug', 'circuit')
+    .eq('is_active', true)
+  const activeAssignedIds = (assignments ?? []).map(a => a.class_id as string)
+
+  let hubClasses: { id: string; name: string }[] = []
+  if (activeAssignedIds.length > 0) {
+    const { data, error } = await central
+      .from('classes')
+      .select('id, name')
+      .eq('teacher_id', hubTeacherId)
+      .in('id', activeAssignedIds)
+    if (error) console.error('hub classes fetch failed', error)
+    hubClasses = data ?? []
+  }
+
+  for (const hubClass of hubClasses) {
+    const { error: upsertErr } = await local
+      .from('classes')
+      .upsert(
+        {
+          central_class_id: hubClass.id,
+          teacher_id: localUserId,
+          name: hubClass.name,
+          archived_at: null,
+        },
+        { onConflict: 'central_class_id' },
+      )
+    if (upsertErr) console.error('class upsert failed', hubClass.id, upsertErr)
+  }
+
+  // Archive local classes no longer actively assigned to Circuit. Never delete —
+  // class_students, lesson_progress, module_progress, and badges hang off class_id.
+  const activeIdSet = new Set(hubClasses.map(c => c.id))
+  const { data: locallySynced } = await local
+    .from('classes')
+    .select('id, central_class_id')
+    .eq('teacher_id', localUserId)
+    .not('central_class_id', 'is', null)
+    .is('archived_at', null)
+
+  const staleIds = (locallySynced ?? [])
+    .filter(c => !activeIdSet.has(c.central_class_id as string))
+    .map(c => c.id as string)
+
+  if (staleIds.length > 0) {
+    const { error: archiveErr } = await local
+      .from('classes')
+      .update({ archived_at: new Date().toISOString() })
+      .in('id', staleIds)
+    if (archiveErr) console.error('class archive failed', staleIds, archiveErr)
+  }
 }
