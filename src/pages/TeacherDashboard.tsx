@@ -15,7 +15,10 @@ interface ClassData {
   name: string;
   join_code: string;
   created_at: string;
+  central_class_id: string | null;
 }
+
+const HUB_CLASSES_URL = 'https://edufied.com.au/account/classes';
 
 interface StudentData {
   id: string;
@@ -169,8 +172,18 @@ const TeacherDashboard: React.FC = () => {
             students={students}
             copiedCode={copiedCode}
             onCopyCode={copyJoinCode}
-            onAddStudent={() => setShowAddStudent(true)}
-            onBulkImport={() => { setShowBulkUpload(true); setBulkResults(null); setBulkText(''); }}
+            onAddStudent={() => window.open(
+              selectedClass.central_class_id
+                ? `${HUB_CLASSES_URL}/${selectedClass.central_class_id}`
+                : HUB_CLASSES_URL,
+              '_blank',
+            )}
+            onBulkImport={() => window.open(
+              selectedClass.central_class_id
+                ? `${HUB_CLASSES_URL}/${selectedClass.central_class_id}`
+                : HUB_CLASSES_URL,
+              '_blank',
+            )}
             onStudentDeleted={() => fetchStudents(selectedClass.id)}
           />
         )}

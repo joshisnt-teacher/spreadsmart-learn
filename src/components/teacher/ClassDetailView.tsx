@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Check, UserPlus, Upload } from 'lucide-react';
+import { Copy, Check, UserPlus, Upload, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import StudentProgressView from '@/components/StudentProgressView';
@@ -51,10 +51,10 @@ const ClassDetailView: React.FC<ClassDetailViewProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={onBulkImport}>
-              <Upload className="w-4 h-4 mr-2" /> Bulk Import
+              <Upload className="w-4 h-4 mr-2" /> Bulk Import <ExternalLink className="w-3 h-3 ml-2 opacity-60" />
             </Button>
             <Button onClick={onAddStudent}>
-              <UserPlus className="w-4 h-4 mr-2" /> Add Student
+              <UserPlus className="w-4 h-4 mr-2" /> Add Student on Edufied <ExternalLink className="w-3 h-3 ml-2 opacity-60" />
             </Button>
           </div>
         </div>

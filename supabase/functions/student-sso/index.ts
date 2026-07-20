@@ -214,6 +214,80 @@ Deno.serve(async (req) => {
       console.warn('Auto-enrolment warning (non-fatal):', enrolErr)
     }
 
+    // 5b. Prune students who no longer appear in the hub's Circuit-active
+    // roster for their enrolled teacher(s). Mirrors delete-student/index.ts's
+    // cleanup list exactly, since no FK cascade is confirmed for these tables.
+    try {
+      const { data: localEnrolments } = await local
+        .from('class_students')
+        .select('class_id, student_user_id, classes!inner(central_class_id, teacher_id)')
+
+      const centralTeacherIds = [...new Set(
+        (localEnrolments ?? [])
+          // @ts-ignore — joined relation
+          .map(e => e.classes?.teacher_id)
+          .filter(Boolean)
+      )]
+
+      for (const localTeacherId of centralTeacherIds) {
+        const { data: teacherProfile } = await local
+          .from('teacher_profiles')
+          .select('central_teacher_id')
+          .eq('id', localTeacherId)
+          .maybeSingle()
+        if (!teacherProfile?.central_teacher_id) continue
+
+        const { data: assignments } = await central
+          .from('app_assignments')
+          .select('class_id')
+          .eq('app_slug', 'circuit')
+          .eq('is_active', true)
+        const activeAssignedIds = (assignments ?? []).map(a => a.class_id as string)
+
+        let activeCentralClassIds: string[] = []
+        if (activeAssignedIds.length > 0) {
+          const { data: hubClasses } = await central
+            .from('classes')
+            .select('id')
+            .eq('teacher_id', teacherProfile.central_teacher_id)
+            .in('id', activeAssignedIds)
+          activeCentralClassIds = (hubClasses ?? []).map(c => c.id as string)
+        }
+
+        let validCentralStudentIds = new Set<string>()
+        if (activeCentralClassIds.length > 0) {
+          const { data: centralEnrol } = await central
+            .from('student_classes')
+            .select('student_id')
+            .in('class_id', activeCentralClassIds)
+          validCentralStudentIds = new Set((centralEnrol ?? []).map(e => e.student_id as string))
+        }
+
+        const thisTeacherLocalEnrolments = (localEnrolments ?? []).filter(
+          // @ts-ignore — joined relation
+          e => e.classes?.teacher_id === localTeacherId
+        )
+
+        for (const enrol of thisTeacherLocalEnrolments) {
+          const { data: authUser } = await local.auth.admin.getUserById(enrol.student_user_id as string)
+          const centralId = authUser?.user?.user_metadata?.central_student_id as string | undefined
+          if (!centralId || validCentralStudentIds.has(centralId)) continue
+
+          await Promise.all([
+            local.from('class_students').delete().eq('student_user_id', enrol.student_user_id),
+            local.from('lesson_progress').delete().eq('user_id', enrol.student_user_id),
+            local.from('module_progress').delete().eq('user_id', enrol.student_user_id),
+            local.from('badges').delete().eq('user_id', enrol.student_user_id),
+            local.from('profiles').delete().eq('user_id', enrol.student_user_id),
+            local.from('user_roles').delete().eq('user_id', enrol.student_user_id),
+          ])
+          await local.auth.admin.deleteUser(enrol.student_user_id as string)
+        }
+      }
+    } catch (pruneErr) {
+      console.warn('student prune warning (non-fatal):', pruneErr)
+    }
+
     // 6. Generate a one-time magic link token for the client to establish a session
     const { data: linkData, error: linkError } = await local.auth.admin.generateLink({
       type: 'magiclink',
