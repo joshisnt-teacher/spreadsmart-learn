@@ -49,13 +49,7 @@ Deno.serve(async (req) => {
       return json({ error: 'Invalid or expired token' }, 401)
     }
 
-    // 2. Mark token as used immediately to prevent replay
-    await central
-      .from('sso_tokens')
-      .update({ used: true })
-      .eq('id', tokenRow.id)
-
-    // 3. Fetch student details from central DB
+    // 2. Fetch student details from central DB
     const { data: centralStudent, error: studentError } = await central
       .from('students')
       .select('id, first_name, last_name, username, year_level')
@@ -67,47 +61,49 @@ Deno.serve(async (req) => {
       return json({ error: 'Student not found in central database' }, 401)
     }
 
-    // 4. Find or create shadow auth account for this student
-    const studentEmail = `student-${centralStudent.id}@circuit.internal`
+    // 3. Mark token as used now that we know the token resolves to a real
+    // student — burning it any earlier meant a mid-flight failure below
+    // forced the student back through the hub for a fresh SSO link.
+    await central
+      .from('sso_tokens')
+      .update({ used: true })
+      .eq('id', tokenRow.id)
 
-    const listResult = await local.auth.admin.listUsers({ perPage: 1000 })
-    const existingUser = listResult.data?.users?.find(u => u.email === studentEmail) ?? null
+    // 4. Find or create shadow auth account for this student.
+    // Email is deterministic from centralStudent.id, so try creating directly
+    // first and only fall back to a full listUsers scan on a duplicate-email
+    // conflict — avoids an O(n) scan on every single login.
+    const studentEmail = `student-${centralStudent.id}@circuit.internal`
+    const studentMetadata = {
+      central_student_id: centralStudent.id,
+      first_name: centralStudent.first_name,
+      last_name: centralStudent.last_name,
+      username: centralStudent.username,
+      year_level: centralStudent.year_level,
+      role: 'student',
+    }
 
     let localUserId: string
 
-    if (existingUser) {
-      localUserId = existingUser.id
-      // Update metadata in case names changed
-      await local.auth.admin.updateUserById(localUserId, {
-        user_metadata: {
-          central_student_id: centralStudent.id,
-          first_name: centralStudent.first_name,
-          last_name: centralStudent.last_name,
-          username: centralStudent.username,
-          year_level: centralStudent.year_level,
-          role: 'student',
-        },
-      })
-    } else {
-      const { data: newUser, error: createError } = await local.auth.admin.createUser({
-        email: studentEmail,
-        email_confirm: true,
-        user_metadata: {
-          central_student_id: centralStudent.id,
-          first_name: centralStudent.first_name,
-          last_name: centralStudent.last_name,
-          username: centralStudent.username,
-          year_level: centralStudent.year_level,
-          role: 'student',
-        },
-      })
+    const { data: newUser, error: createError } = await local.auth.admin.createUser({
+      email: studentEmail,
+      email_confirm: true,
+      user_metadata: studentMetadata,
+    })
 
-      if (createError || !newUser?.user) {
+    if (newUser?.user) {
+      localUserId = newUser.user.id
+    } else {
+      // perPage:1000 avoids pagination — default 50 would miss users past page 1
+      const listResult = await local.auth.admin.listUsers({ perPage: 1000 })
+      const existingUser = listResult.data?.users?.find(u => u.email === studentEmail) ?? null
+      if (!existingUser) {
         console.error('Create student auth user error:', JSON.stringify(createError))
         return json({ error: 'Failed to create student account' }, 500)
       }
-
-      localUserId = newUser.user.id
+      localUserId = existingUser.id
+      // Update metadata in case names changed
+      await local.auth.admin.updateUserById(localUserId, { user_metadata: studentMetadata })
     }
 
     // Ensure user_roles has 'student' for this user
@@ -237,29 +233,45 @@ Deno.serve(async (req) => {
           .maybeSingle()
         if (!teacherProfile?.central_teacher_id) continue
 
-        const { data: assignments } = await central
+        // Any failure below is treated as "roster unknown" rather than "roster
+        // empty" — skipping this teacher's prune avoids a transient fetch
+        // failure being mistaken for every student having left, which would
+        // otherwise delete their progress/badges/profile/auth account below.
+        const { data: assignments, error: assignmentsErr } = await central
           .from('app_assignments')
           .select('class_id')
           .eq('app_slug', 'circuit')
           .eq('is_active', true)
+        if (assignmentsErr) {
+          console.error('app_assignments fetch failed, skipping prune for this teacher', assignmentsErr)
+          continue
+        }
         const activeAssignedIds = (assignments ?? []).map(a => a.class_id as string)
 
         let activeCentralClassIds: string[] = []
         if (activeAssignedIds.length > 0) {
-          const { data: hubClasses } = await central
+          const { data: hubClasses, error: hubClassesErr } = await central
             .from('classes')
             .select('id')
             .eq('teacher_id', teacherProfile.central_teacher_id)
             .in('id', activeAssignedIds)
+          if (hubClassesErr) {
+            console.error('hub classes fetch failed, skipping prune for this teacher', hubClassesErr)
+            continue
+          }
           activeCentralClassIds = (hubClasses ?? []).map(c => c.id as string)
         }
 
         let validCentralStudentIds = new Set<string>()
         if (activeCentralClassIds.length > 0) {
-          const { data: centralEnrol } = await central
+          const { data: centralEnrol, error: centralEnrolErr } = await central
             .from('student_classes')
             .select('student_id')
             .in('class_id', activeCentralClassIds)
+          if (centralEnrolErr) {
+            console.error('student_classes fetch failed, skipping prune for this teacher', centralEnrolErr)
+            continue
+          }
           validCentralStudentIds = new Set((centralEnrol ?? []).map(e => e.student_id as string))
         }
 
@@ -309,9 +321,11 @@ Deno.serve(async (req) => {
 
 function generateJoinCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  const bytes = new Uint32Array(6)
+  crypto.getRandomValues(bytes)
   let code = ''
   for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length))
+    code += chars.charAt(bytes[i] % chars.length)
   }
   return code
 }

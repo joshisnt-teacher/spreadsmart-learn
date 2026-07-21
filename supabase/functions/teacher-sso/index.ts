@@ -49,13 +49,7 @@ Deno.serve(async (req) => {
       return json({ error: 'Invalid or expired token' }, 401)
     }
 
-    // 2. Mark token as used immediately to prevent replay
-    await central
-      .from('sso_tokens')
-      .update({ used: true })
-      .eq('id', tokenRow.id)
-
-    // 3. Fetch teacher details from central DB
+    // 2. Fetch teacher details from central DB
     const { data: teacher, error: teacherError } = await central
       .from('teachers')
       .select('id, email, first_name, last_name')
@@ -66,16 +60,27 @@ Deno.serve(async (req) => {
       return json({ error: 'Teacher not found' }, 401)
     }
 
-    // 4. Find or create local auth account for this teacher
+    // 3. Mark token as used now that we know the token resolves to a real
+    // teacher — burning it any earlier meant a mid-flight failure below
+    // forced the teacher back through the hub for a fresh SSO link.
+    await central
+      .from('sso_tokens')
+      .update({ used: true })
+      .eq('id', tokenRow.id)
+
+    // 4. Find or create local auth account for this teacher.
+    // Fast path: we've synced this central teacher before, so teacher_profiles
+    // already has the local auth user id — skip scanning every auth user.
     let localUserId: string
 
-    // Look for an existing auth user by email (handles previous direct logins)
-    // perPage:1000 avoids pagination — default 50 would miss users past page 1
-    const listResult = await local.auth.admin.listUsers({ perPage: 1000 })
-    const existingAuthUser = listResult.data?.users?.find(u => u.email === teacher.email) ?? null
+    const { data: existingProfile } = await local
+      .from('teacher_profiles')
+      .select('id')
+      .eq('central_teacher_id', teacher.id)
+      .maybeSingle()
 
-    if (existingAuthUser) {
-      localUserId = existingAuthUser.id
+    if (existingProfile?.id) {
+      localUserId = existingProfile.id
     } else {
       const { data: newUser, error: createError } = await local.auth.admin.createUser({
         email: teacher.email,
@@ -87,12 +92,21 @@ Deno.serve(async (req) => {
         },
       })
 
-      if (createError || !newUser?.user) {
-        console.error('Create user error:', JSON.stringify(createError))
-        return json({ error: 'Failed to create account' }, 500)
+      if (newUser?.user) {
+        localUserId = newUser.user.id
+      } else {
+        // First time seeing this central teacher locally, and createUser failed —
+        // almost certainly a legacy direct-login account with the same email that
+        // predates SSO. Only now fall back to a full scan to find it.
+        // perPage:1000 avoids pagination — default 50 would miss users past page 1.
+        const listResult = await local.auth.admin.listUsers({ perPage: 1000 })
+        const existingAuthUser = listResult.data?.users?.find(u => u.email === teacher.email) ?? null
+        if (!existingAuthUser) {
+          console.error('Create user error:', JSON.stringify(createError))
+          return json({ error: 'Failed to create account' }, 500)
+        }
+        localUserId = existingAuthUser.id
       }
-
-      localUserId = newUser.user.id
     }
 
     // Upsert teacher_profiles bridge record (non-fatal — don't block SSO if table is missing)
