@@ -180,7 +180,13 @@ async function syncClasses(
       .select('id, name')
       .eq('teacher_id', hubTeacherId)
       .in('id', activeAssignedIds)
-    if (error) console.error('hub classes fetch failed', error)
+      .is('archived_at', null)
+    if (error) {
+      // Bail out rather than treating a fetch failure as "no active classes" —
+      // that would archive every synced class below.
+      console.error('hub classes fetch failed, skipping sync this run', error)
+      return
+    }
     hubClasses = data ?? []
   }
 
