@@ -48,9 +48,7 @@ const TeacherDashboard: React.FC = () => {
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
   const [students, setStudents] = useState<StudentData[]>([]);
-  const [showNewClass, setShowNewClass] = useState(false);
   const [showAddStudent, setShowAddStudent] = useState(false);
-  const [newClassName, setNewClassName] = useState('');
   const [newUsername, setNewUsername] = useState('');
   const [newPin, setNewPin] = useState('');
   const [loading, setLoading] = useState(false);
@@ -73,15 +71,6 @@ const TeacherDashboard: React.FC = () => {
 
   useEffect(() => { fetchClasses(); }, [fetchClasses]);
   useEffect(() => { if (selectedClass) fetchStudents(selectedClass.id); }, [selectedClass, fetchStudents]);
-
-  const handleCreateClass = async () => {
-    if (!newClassName.trim() || !user) return;
-    setLoading(true);
-    const { error } = await supabase.from('classes').insert({ name: newClassName.trim(), teacher_id: user.id });
-    if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); }
-    else { toast({ title: 'Class created' }); setNewClassName(''); setShowNewClass(false); fetchClasses(); }
-    setLoading(false);
-  };
 
   const handleAddStudent = async () => {
     if (!selectedClass || !newUsername.trim() || !newPin.trim()) return;
@@ -163,7 +152,6 @@ const TeacherDashboard: React.FC = () => {
             classes={classes}
             copiedCode={copiedCode}
             onSelectClass={setSelectedClass}
-            onNewClass={() => setShowNewClass(true)}
             onCopyCode={copyJoinCode}
           />
         ) : (
@@ -190,9 +178,6 @@ const TeacherDashboard: React.FC = () => {
       </main>
 
       <TeacherDialogs
-        showNewClass={showNewClass} setShowNewClass={setShowNewClass}
-        newClassName={newClassName} setNewClassName={setNewClassName}
-        onCreateClass={handleCreateClass}
         showAddStudent={showAddStudent} setShowAddStudent={setShowAddStudent}
         newUsername={newUsername} setNewUsername={setNewUsername}
         newPin={newPin} setNewPin={setNewPin}

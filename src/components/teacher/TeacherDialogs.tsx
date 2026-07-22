@@ -13,12 +13,6 @@ interface BulkResult {
 }
 
 interface TeacherDialogsProps {
-  // New class
-  showNewClass: boolean;
-  setShowNewClass: (v: boolean) => void;
-  newClassName: string;
-  setNewClassName: (v: string) => void;
-  onCreateClass: () => void;
   // Add student
   showAddStudent: boolean;
   setShowAddStudent: (v: boolean) => void;
@@ -41,39 +35,12 @@ interface TeacherDialogsProps {
 }
 
 const TeacherDialogs: React.FC<TeacherDialogsProps> = ({
-  showNewClass, setShowNewClass, newClassName, setNewClassName, onCreateClass,
   showAddStudent, setShowAddStudent, newUsername, setNewUsername, newPin, setNewPin, onAddStudent,
   showBulkUpload, setShowBulkUpload, bulkText, setBulkText, bulkResults, bulkLoading, onBulkCreate, parseBulkCount,
   loading,
 }) => {
   return (
     <>
-      {/* New Class Dialog */}
-      <Dialog open={showNewClass} onOpenChange={setShowNewClass}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Class</DialogTitle>
-            <DialogDescription>Give your class a name. A join code will be generated automatically.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <Label htmlFor="class-name">Class Name</Label>
-            <Input
-              id="class-name"
-              placeholder="e.g. Year 9 ICT"
-              value={newClassName}
-              onChange={(e) => setNewClassName(e.target.value)}
-              maxLength={50}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewClass(false)}>Cancel</Button>
-            <Button onClick={onCreateClass} disabled={loading || !newClassName.trim()}>
-              {loading ? 'Creating...' : 'Create Class'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Add Student Dialog */}
       <Dialog open={showAddStudent} onOpenChange={setShowAddStudent}>
         <DialogContent>

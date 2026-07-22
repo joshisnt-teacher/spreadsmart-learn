@@ -1,11 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Users, Copy, Check, BookOpen, Clock, Eye } from 'lucide-react';
+import { ExternalLink, Users, Copy, Check, BookOpen, Clock, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { allModules } from '@/data/module-registry';
+
+const HUB_CLASSES_URL = 'https://edufied.com.au/account/classes';
 
 interface ClassData {
   id: string;
@@ -27,13 +29,12 @@ interface ClassListViewProps {
   classes: ClassData[];
   copiedCode: string | null;
   onSelectClass: (cls: ClassData) => void;
-  onNewClass: () => void;
   onCopyCode: (code: string) => void;
 }
 
 const ClassListView: React.FC<ClassListViewProps> = ({
   classes, copiedCode,
-  onSelectClass, onNewClass, onCopyCode,
+  onSelectClass, onCopyCode,
 }) => {
   const navigate = useNavigate();
 
@@ -43,18 +44,28 @@ const ClassListView: React.FC<ClassListViewProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold">Your Classes</h2>
-          <p className="text-sm text-muted-foreground">Create classes and add students</p>
+          <p className="text-sm text-muted-foreground">Managed on the Edufied hub, synced here automatically</p>
         </div>
-        <Button onClick={onNewClass}>
-          <Plus className="w-4 h-4 mr-2" /> New Class
+        <Button asChild variant="outline">
+          <a href={HUB_CLASSES_URL} target="_blank" rel="noopener noreferrer">
+            <ExternalLink className="w-4 h-4 mr-2" /> Manage classes
+          </a>
         </Button>
       </div>
 
       {classes.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center">
+          <CardContent className="py-12 text-center space-y-3">
             <Users className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">No classes yet. Create your first class to get started.</p>
+            <p className="text-muted-foreground">
+              No classes yet. Classes are created on the Edufied hub — once you assign Circuit to
+              a class there, it will appear here automatically next time you sign in.
+            </p>
+            <Button asChild variant="outline">
+              <a href={HUB_CLASSES_URL} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="w-4 h-4 mr-2" /> Go to Edufied to create a class
+              </a>
+            </Button>
           </CardContent>
         </Card>
       ) : (

@@ -10,6 +10,13 @@ const LANDING_ROUTE = '/dashboard';
 // Fast-switch entry point for the Edufied toolbar. If this app already has a
 // saved session we go straight in; otherwise we bounce through the hub's
 // silent SSO flow, which lands on /auth/teacher/sso as usual.
+//
+// The "already have a session" branch skips teacher-sso entirely, which is
+// the only place classes normally sync from the hub — so without an explicit
+// resync here, a class assigned/archived on the hub would never propagate to
+// an already-logged-in Circuit session. Circuit's dashboard fetches classes
+// with plain useState/useEffect (no query cache to invalidate), so we await
+// the resync before navigating rather than firing it in the background.
 const AuthSwitch = () => {
   const navigate = useNavigate();
 
@@ -21,6 +28,16 @@ const AuthSwitch = () => {
       if (cancelled) return;
 
       if (data.session) {
+        const accessToken = data.session.access_token;
+        try {
+          const { error } = await supabase.functions.invoke('sync-classes', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+          if (error) console.error('fast-switch resync failed (non-fatal)', error);
+        } catch (err) {
+          console.error('fast-switch resync failed (non-fatal)', err);
+        }
+        if (cancelled) return;
         navigate(LANDING_ROUTE, { replace: true });
       } else {
         const redirectUri = `${window.location.origin}/auth/teacher/sso`;
