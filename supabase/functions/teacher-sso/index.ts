@@ -430,9 +430,17 @@ async function syncStudents(
   const staleUserIds = new Set<string>()
 
   for (const enrol of localEnrolments ?? []) {
-    const { data: authUser } = await local.auth.admin.getUserById(enrol.student_user_id as string)
+    const { data: authUser, error: getUserErr } = await local.auth.admin.getUserById(enrol.student_user_id as string)
+    if (getUserErr) {
+      // Unknown, not confirmed-stale — treating a failed lookup as "gone"
+      // would delete a valid student's account and progress on a transient
+      // error. Skip them this run; they'll be re-checked next sync.
+      console.error('getUserById failed during student prune check, skipping this student this run', enrol.student_user_id, getUserErr)
+      continue
+    }
     const centralId = authUser?.user?.user_metadata?.central_student_id as string | undefined
-    if (!centralId || !validCentralStudentIds.has(centralId)) {
+    if (!centralId) continue // unknown — don't touch, matches student-sso's own prune step
+    if (!validCentralStudentIds.has(centralId)) {
       staleUserIds.add(enrol.student_user_id as string)
     }
   }
