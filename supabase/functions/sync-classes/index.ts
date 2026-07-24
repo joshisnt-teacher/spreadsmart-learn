@@ -249,6 +249,19 @@ async function syncStudents(
       return
     }
 
+    // One lookup for the whole run, instead of one per student — the old code
+    // tried createUser first and fell back to a full listUsers scan on every
+    // already-existing student (i.e. every returning student, every login),
+    // which was slow enough to time out a class-sized sync and take the whole
+    // login down with it.
+    // NOTE: caps at 1000 local auth users (perPage max). If this school's
+    // Circuit accounts ever exceed that, students past the first 1000 won't
+    // be found here and will hit the createUser-fails-as-duplicate branch
+    // below with no recovery — revisit with real pagination if that happens.
+    const { data: existingUsersPage, error: listError } = await local.auth.admin.listUsers({ perPage: 1000 })
+    if (listError) console.error('listUsers failed, student sync may mis-handle existing accounts this run', listError)
+    const existingByEmail = new Map((existingUsersPage?.users ?? []).map(u => [u.email, u]))
+
     for (const cs of centralStudents ?? []) {
       const studentEmail = `student-${cs.id}@circuit.internal`
       const studentMetadata = {
@@ -261,33 +274,31 @@ async function syncStudents(
       }
 
       let localUserId: string
-      const { data: newUser, error: createError } = await local.auth.admin.createUser({
-        email: studentEmail,
-        email_confirm: true,
-        user_metadata: studentMetadata,
-      })
+      const existingUser = existingByEmail.get(studentEmail)
 
-      if (newUser?.user) {
-        localUserId = newUser.user.id
+      if (existingUser) {
+        localUserId = existingUser.id
+        const meta = existingUser.user_metadata ?? {}
+        const metadataChanged = Object.entries(studentMetadata).some(([k, v]) => meta[k] !== v)
+        if (metadataChanged) {
+          await local.auth.admin.updateUserById(localUserId, { user_metadata: studentMetadata })
+        }
       } else {
-        // perPage:1000 avoids pagination — default 50 would miss users past page 1.
-        // NOTE: if total local auth users ever exceeds 1000 this fallback can still
-        // miss a match on page 2+ — watch for that if lookups keep failing at scale.
-        const { data: listResult, error: listError } = await local.auth.admin.listUsers({ perPage: 1000 })
-        if (listError) console.error('listUsers failed during student lookup', cs.id, listError)
-        const existingUser = listResult?.users?.find(u => u.email === studentEmail) ?? null
-        if (!existingUser) {
-          console.error('student account create/lookup failed', {
+        const { data: newUser, error: createError } = await local.auth.admin.createUser({
+          email: studentEmail,
+          email_confirm: true,
+          user_metadata: studentMetadata,
+        })
+        if (!newUser?.user) {
+          console.error('student account creation failed', {
             centralStudentId: cs.id,
             username: cs.username,
             email: studentEmail,
             createError,
-            totalUsersScanned: listResult?.users?.length ?? 0,
           })
           continue
         }
-        localUserId = existingUser.id
-        await local.auth.admin.updateUserById(localUserId, { user_metadata: studentMetadata })
+        localUserId = newUser.user.id
       }
 
       try {
