@@ -289,16 +289,29 @@ async function syncStudents(
           email_confirm: true,
           user_metadata: studentMetadata,
         })
-        if (!newUser?.user) {
-          console.error('student account creation failed', {
-            centralStudentId: cs.id,
-            username: cs.username,
-            email: studentEmail,
-            createError,
-          })
-          continue
+        if (newUser?.user) {
+          localUserId = newUser.user.id
+        } else {
+          // Falls through here if the account actually already existed but
+          // wasn't in the upfront listUsers snapshot (e.g. it was created
+          // moments earlier and hadn't propagated yet, or the snapshot missed
+          // a page). Re-check just this one student before giving up, rather
+          // than the old code's full-list rescan on every already-existing one.
+          const { data: retryList, error: retryListError } = await local.auth.admin.listUsers({ perPage: 1000 })
+          const foundOnRetry = retryList?.users?.find(u => u.email === studentEmail) ?? null
+          if (!foundOnRetry) {
+            console.error('student account creation failed', {
+              centralStudentId: cs.id,
+              username: cs.username,
+              email: studentEmail,
+              createError,
+              retryListError,
+            })
+            continue
+          }
+          localUserId = foundOnRetry.id
+          await local.auth.admin.updateUserById(localUserId, { user_metadata: studentMetadata })
         }
-        localUserId = newUser.user.id
       }
 
       try {
