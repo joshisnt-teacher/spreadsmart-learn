@@ -329,7 +329,7 @@ async function syncStudents(
       }
 
       let localUserId: string
-      const { data: newUser } = await local.auth.admin.createUser({
+      const { data: newUser, error: createError } = await local.auth.admin.createUser({
         email: studentEmail,
         email_confirm: true,
         user_metadata: studentMetadata,
@@ -338,11 +338,20 @@ async function syncStudents(
       if (newUser?.user) {
         localUserId = newUser.user.id
       } else {
-        // perPage:1000 avoids pagination — default 50 would miss users past page 1
-        const listResult = await local.auth.admin.listUsers({ perPage: 1000 })
-        const existingUser = listResult.data?.users?.find(u => u.email === studentEmail) ?? null
+        // perPage:1000 avoids pagination — default 50 would miss users past page 1.
+        // NOTE: if total local auth users ever exceeds 1000 this fallback can still
+        // miss a match on page 2+ — watch for that if lookups keep failing at scale.
+        const { data: listResult, error: listError } = await local.auth.admin.listUsers({ perPage: 1000 })
+        if (listError) console.error('listUsers failed during student lookup', cs.id, listError)
+        const existingUser = listResult?.users?.find(u => u.email === studentEmail) ?? null
         if (!existingUser) {
-          console.error('student account create/lookup failed', cs.id)
+          console.error('student account create/lookup failed', {
+            centralStudentId: cs.id,
+            username: cs.username,
+            email: studentEmail,
+            createError,
+            totalUsersScanned: listResult?.users?.length ?? 0,
+          })
           continue
         }
         localUserId = existingUser.id
