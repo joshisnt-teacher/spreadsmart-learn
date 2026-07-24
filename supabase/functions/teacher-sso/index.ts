@@ -129,6 +129,13 @@ Deno.serve(async (req) => {
       console.error('class sync failed (non-fatal):', syncErr)
     }
 
+    // 5b. Sync students from the central hub into Circuit (non-fatal if it fails)
+    try {
+      await syncStudents(central, local, teacher.id)
+    } catch (syncErr) {
+      console.error('student sync failed (non-fatal):', syncErr)
+    }
+
     // 6. Generate a one-time magic link token for the client to establish a session
     const { data: linkData, error: linkError } = await local.auth.admin.generateLink({
       type: 'magiclink',
@@ -166,11 +173,17 @@ async function syncClasses(
   localUserId: string,
   hubTeacherId: string,
 ) {
-  const { data: assignments } = await central
+  const { data: assignments, error: assignmentsError } = await central
     .from('app_assignments')
     .select('class_id')
     .eq('app_slug', 'circuit')
     .eq('is_active', true)
+  if (assignmentsError) {
+    // Bail out rather than treating a fetch failure as "no assignments" —
+    // that would archive every synced class below.
+    console.error('hub app_assignments fetch failed, skipping sync this run', assignmentsError)
+    return
+  }
   const activeAssignedIds = (assignments ?? []).map(a => a.class_id as string)
 
   let hubClasses: { id: string; name: string }[] = []
@@ -225,5 +238,181 @@ async function syncClasses(
       .update({ archived_at: new Date().toISOString() })
       .in('id', staleIds)
     if (archiveErr) console.error('class archive failed', staleIds, archiveErr)
+  }
+}
+
+// ---------------------------------------------------------------------------
+// syncStudents — auto-provisions a local shadow account (real Supabase Auth
+// user, matching student-sso's own account-creation logic) for every student
+// on the hub roster across the teacher's active Circuit classes, and enrols
+// them in class_students. Runs for the whole roster at once instead of
+// waiting for each student to sign into Circuit themselves.
+// ---------------------------------------------------------------------------
+async function syncStudents(
+  central: ReturnType<typeof createClient>,
+  local: ReturnType<typeof createClient>,
+  hubTeacherId: string,
+) {
+  const { data: assignments, error: assignmentsError } = await central
+    .from('app_assignments')
+    .select('class_id')
+    .eq('app_slug', 'circuit')
+    .eq('is_active', true)
+  if (assignmentsError) {
+    console.error('app_assignments fetch failed, skipping student sync this run', assignmentsError)
+    return
+  }
+  const activeAssignedIds = (assignments ?? []).map(a => a.class_id as string)
+
+  let teacherActiveClassIds: string[] = []
+  if (activeAssignedIds.length > 0) {
+    const { data: hubClasses, error: hubClassesErr } = await central
+      .from('classes')
+      .select('id')
+      .eq('teacher_id', hubTeacherId)
+      .in('id', activeAssignedIds)
+      .is('archived_at', null)
+    if (hubClassesErr) {
+      console.error('hub classes fetch failed, skipping student sync this run', hubClassesErr)
+      return
+    }
+    teacherActiveClassIds = (hubClasses ?? []).map(c => c.id as string)
+  }
+
+  let enrolments: { student_id: string; class_id: string }[] = []
+  if (teacherActiveClassIds.length > 0) {
+    const { data, error: enrolErr } = await central
+      .from('student_classes')
+      .select('student_id, class_id')
+      .in('class_id', teacherActiveClassIds)
+    if (enrolErr) {
+      console.error('student_classes fetch failed, skipping student sync this run', enrolErr)
+      return
+    }
+    enrolments = data ?? []
+  }
+
+  const localClassIdByCentral = new Map<string, string>()
+  if (teacherActiveClassIds.length > 0) {
+    const { data: localClasses } = await local
+      .from('classes')
+      .select('id, central_class_id')
+      .in('central_class_id', teacherActiveClassIds)
+    for (const c of localClasses ?? []) {
+      if (c.central_class_id) localClassIdByCentral.set(c.central_class_id as string, c.id as string)
+    }
+  }
+
+  const centralStudentIds = [...new Set(enrolments.map(e => e.student_id))]
+
+  if (centralStudentIds.length > 0) {
+    const { data: centralStudents, error: centralStudentsErr } = await central
+      .from('students')
+      .select('id, first_name, last_name, username, year_level')
+      .in('id', centralStudentIds)
+    if (centralStudentsErr) {
+      console.error('central students fetch failed, skipping student sync this run', centralStudentsErr)
+      return
+    }
+
+    for (const cs of centralStudents ?? []) {
+      // Email is deterministic from the central student id — matches
+      // student-sso's own scheme so both entry points resolve to one account.
+      const studentEmail = `student-${cs.id}@circuit.internal`
+      const studentMetadata = {
+        central_student_id: cs.id,
+        first_name: cs.first_name,
+        last_name: cs.last_name,
+        username: cs.username,
+        year_level: cs.year_level,
+        role: 'student',
+      }
+
+      let localUserId: string
+      const { data: newUser } = await local.auth.admin.createUser({
+        email: studentEmail,
+        email_confirm: true,
+        user_metadata: studentMetadata,
+      })
+
+      if (newUser?.user) {
+        localUserId = newUser.user.id
+      } else {
+        // perPage:1000 avoids pagination — default 50 would miss users past page 1
+        const listResult = await local.auth.admin.listUsers({ perPage: 1000 })
+        const existingUser = listResult.data?.users?.find(u => u.email === studentEmail) ?? null
+        if (!existingUser) {
+          console.error('student account create/lookup failed', cs.id)
+          continue
+        }
+        localUserId = existingUser.id
+        await local.auth.admin.updateUserById(localUserId, { user_metadata: studentMetadata })
+      }
+
+      try {
+        const { data: existingRole } = await local
+          .from('user_roles')
+          .select('id')
+          .eq('user_id', localUserId)
+          .eq('role', 'student')
+          .maybeSingle()
+        if (!existingRole) {
+          await local.from('user_roles').insert({ user_id: localUserId, role: 'student' })
+        }
+      } catch (roleErr) {
+        console.warn('user_roles upsert skipped:', roleErr)
+      }
+
+      const classIdsForStudent = enrolments
+        .filter(e => e.student_id === cs.id)
+        .map(e => localClassIdByCentral.get(e.class_id))
+        .filter((id): id is string => !!id)
+
+      for (const classId of classIdsForStudent) {
+        const { error: enrolUpsertErr } = await local
+          .from('class_students')
+          .upsert(
+            { class_id: classId, student_user_id: localUserId, username: cs.username },
+            { onConflict: 'class_id,student_user_id' },
+          )
+        if (enrolUpsertErr) console.error('class_students upsert failed', cs.id, classId, enrolUpsertErr)
+      }
+    }
+  }
+
+  // Prune students no longer on the hub roster for this teacher's active
+  // Circuit classes. Mirrors student-sso's own prune step — hard-deletes the
+  // shadow account and dependent rows since no FK cascade is confirmed for
+  // these tables. Skipped entirely if nothing synced this run (localClassIdByCentral
+  // empty), same "unknown roster, not empty roster" reasoning as the classes sync above.
+  if (localClassIdByCentral.size === 0) return
+
+  const localClassIds = [...localClassIdByCentral.values()]
+  const { data: localEnrolments } = await local
+    .from('class_students')
+    .select('student_user_id, class_id')
+    .in('class_id', localClassIds)
+
+  const validCentralStudentIds = new Set(centralStudentIds)
+  const staleUserIds = new Set<string>()
+
+  for (const enrol of localEnrolments ?? []) {
+    const { data: authUser } = await local.auth.admin.getUserById(enrol.student_user_id as string)
+    const centralId = authUser?.user?.user_metadata?.central_student_id as string | undefined
+    if (!centralId || !validCentralStudentIds.has(centralId)) {
+      staleUserIds.add(enrol.student_user_id as string)
+    }
+  }
+
+  for (const staleId of staleUserIds) {
+    await Promise.all([
+      local.from('class_students').delete().eq('student_user_id', staleId),
+      local.from('lesson_progress').delete().eq('user_id', staleId),
+      local.from('module_progress').delete().eq('user_id', staleId),
+      local.from('badges').delete().eq('user_id', staleId),
+      local.from('profiles').delete().eq('user_id', staleId),
+      local.from('user_roles').delete().eq('user_id', staleId),
+    ])
+    await local.auth.admin.deleteUser(staleId)
   }
 }

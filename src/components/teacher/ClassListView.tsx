@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, Users, Copy, Check, BookOpen, Clock, Eye } from 'lucide-react';
+import { ExternalLink, Users, Copy, Check, BookOpen, Clock, Eye, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useNavigate } from 'react-router-dom';
 import { allModules } from '@/data/module-registry';
 
@@ -14,6 +18,7 @@ interface ClassData {
   name: string;
   join_code: string;
   created_at: string;
+  central_class_id?: string | null;
 }
 
 interface CustomModule {
@@ -30,13 +35,15 @@ interface ClassListViewProps {
   copiedCode: string | null;
   onSelectClass: (cls: ClassData) => void;
   onCopyCode: (code: string) => void;
+  onArchiveClass: (classId: string) => void;
 }
 
 const ClassListView: React.FC<ClassListViewProps> = ({
   classes, copiedCode,
-  onSelectClass, onCopyCode,
+  onSelectClass, onCopyCode, onArchiveClass,
 }) => {
   const navigate = useNavigate();
+  const [classToArchive, setClassToArchive] = useState<ClassData | null>(null);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
@@ -77,7 +84,20 @@ const ClassListView: React.FC<ClassListViewProps> = ({
               onClick={() => onSelectClass(cls)}
             >
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">{cls.name}</CardTitle>
+                <div className="flex items-start justify-between gap-2">
+                  <CardTitle className="text-base">{cls.name}</CardTitle>
+                  {!cls.central_class_id && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 shrink-0 text-muted-foreground hover:text-destructive"
+                      title="Archive this class"
+                      onClick={(e) => { e.stopPropagation(); setClassToArchive(cls); }}
+                    >
+                      <Archive className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
+                </div>
                 <CardDescription>
                   Created {new Date(cls.created_at).toLocaleDateString()}
                 </CardDescription>
@@ -146,6 +166,27 @@ const ClassListView: React.FC<ClassListViewProps> = ({
           ))}
         </div>
       </div>
+
+      <AlertDialog open={!!classToArchive} onOpenChange={(open) => { if (!open) setClassToArchive(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive "{classToArchive?.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes it from your class list. Student data and progress are kept, not deleted,
+              and this can be undone from the database if needed. This class isn't linked to the
+              Edufied hub, so archiving it here has no effect there.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { if (classToArchive) onArchiveClass(classToArchive.id); setClassToArchive(null); }}
+            >
+              Archive
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 };

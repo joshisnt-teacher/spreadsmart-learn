@@ -118,6 +118,16 @@ const TeacherDashboard: React.FC = () => {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+  const handleArchiveClass = async (classId: string) => {
+    const { error } = await supabase.from('classes').update({ archived_at: new Date().toISOString() }).eq('id', classId);
+    if (error) {
+      toast({ title: 'Error', description: 'Could not archive class', variant: 'destructive' });
+    } else {
+      toast({ title: 'Class archived' });
+      fetchClasses();
+    }
+  };
+
 
 
   return (
@@ -153,6 +163,7 @@ const TeacherDashboard: React.FC = () => {
             copiedCode={copiedCode}
             onSelectClass={setSelectedClass}
             onCopyCode={copyJoinCode}
+            onArchiveClass={handleArchiveClass}
           />
         ) : (
           <ClassDetailView

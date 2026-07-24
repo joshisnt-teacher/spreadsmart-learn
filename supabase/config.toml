@@ -28,3 +28,6 @@ verify_jwt = false
 
 [functions.get-ai-usage]
 verify_jwt = false
+
+[functions.sync-classes]
+verify_jwt = false
