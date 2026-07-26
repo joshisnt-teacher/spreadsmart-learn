@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BookOpen, Clock, Star, Zap, ChevronRight, ChevronDown, CalendarClock, LogOut, Trophy, Target, RotateCcw, CheckCircle2, User } from 'lucide-react';
+import { BookOpen, Clock, Star, Zap, ChevronRight, ChevronDown, CalendarClock, LogOut, Trophy, Target, RotateCcw, CheckCircle2, User, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -210,6 +210,9 @@ const StudentDashboard: React.FC = () => {
                   {profile.avatar_url && <AvatarImage src={profile.avatar_url} alt="Avatar" />}
                   <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                 </Avatar>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => { window.location.href = 'https://student.edufied.com.au/choose-app'; }}>
+                <LayoutGrid className="w-4 h-4 mr-1" /> Back to Edufied
               </Button>
               <Button variant="ghost" size="sm" onClick={async () => {
                 if (isStudent && studentSession) {
