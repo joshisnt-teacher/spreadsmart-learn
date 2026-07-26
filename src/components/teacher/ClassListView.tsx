@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, Users, Copy, Check, BookOpen, Clock, Eye, Archive } from 'lucide-react';
+import { ExternalLink, Users, Copy, Check, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useNavigate } from 'react-router-dom';
-import { allModules } from '@/data/module-registry';
 
 const HUB_CLASSES_URL = 'https://edufied.com.au/account/classes';
 
@@ -42,7 +39,6 @@ const ClassListView: React.FC<ClassListViewProps> = ({
   classes, copiedCode,
   onSelectClass, onCopyCode, onArchiveClass,
 }) => {
-  const navigate = useNavigate();
   const [classToArchive, setClassToArchive] = useState<ClassData | null>(null);
 
   return (
@@ -122,50 +118,6 @@ const ClassListView: React.FC<ClassListViewProps> = ({
           ))}
         </div>
       )}
-
-      {/* Built-in Modules */}
-      <div className="pt-4">
-        <h2 className="text-xl font-semibold mb-1">Built-in Modules</h2>
-        <p className="text-sm text-muted-foreground mb-4">Pre-built training modules included with the platform</p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {allModules.map((mod) => (
-            <Card key={mod.id} className="overflow-hidden">
-              {mod.bannerUrl && (
-                <div className="h-32 overflow-hidden">
-                  <img src={mod.bannerUrl} alt="" className="w-full h-full object-cover" />
-                </div>
-              )}
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-primary" />
-                      {mod.title}
-                    </CardTitle>
-                    <CardDescription className="mt-1">{mod.description}</CardDescription>
-                  </div>
-                  <Button variant="outline" size="sm" className="shrink-0" onClick={() => navigate(`/module/${mod.id}`)}>
-                    <Eye className="w-3.5 h-3.5 mr-1.5" /> Preview
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  <span>{mod.lessons.length} lessons</span>
-                  <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> ~{mod.estimatedMinutes} min</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-3">
-                  {mod.lessons.map((lesson) => (
-                    <Badge key={lesson.id} variant="outline" className="text-xs font-normal">
-                      {lesson.title}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
 
       <AlertDialog open={!!classToArchive} onOpenChange={(open) => { if (!open) setClassToArchive(null); }}>
         <AlertDialogContent>

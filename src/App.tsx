@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import TeacherDashboard from "./pages/TeacherDashboard";
+import TeacherModules from "./pages/TeacherModules";
 import StudentDashboard from "./pages/StudentDashboard";
 import ModulePlayer from "./pages/ModulePlayer";
 import TeacherSettings from "./pages/TeacherSettings";
@@ -31,6 +32,7 @@ function PageTitle() {
     const path = location.pathname;
     let label = "circuit";
     if (path === "/dashboard") label = "Dashboard";
+    else if (path === "/dashboard/modules") label = "Modules";
     else if (path === "/dashboard/settings") label = "Settings";
     else if (path === "/dashboard/compression-test") label = "Compression Test";
     else if (path === "/auth") label = "Auth";
@@ -65,6 +67,14 @@ const App = () => (
                 element={
                   <TeacherLayout>
                     <TeacherDashboard />
+                  </TeacherLayout>
+                }
+              />
+              <Route
+                path="/dashboard/modules"
+                element={
+                  <TeacherLayout>
+                    <TeacherModules />
                   </TeacherLayout>
                 }
               />

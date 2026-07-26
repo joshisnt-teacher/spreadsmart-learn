@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
+  BookOpen,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -21,6 +22,7 @@ import { AiUsageIndicator } from "@/components/AiUsageIndicator";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Modules", url: "/dashboard/modules", icon: BookOpen },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 
