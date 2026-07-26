@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Settings, Database, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -133,26 +133,15 @@ const TeacherDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-background pb-12">
       <header className="border-b border-border bg-card">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {selectedClass && (
-              <Button variant="ghost" size="icon" onClick={() => setSelectedClass(null)}>
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            )}
-            <h1 className="font-bold text-lg">
-              {selectedClass ? selectedClass.name : 'Teacher Dashboard'}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/compression-test')}>
-              <Database className="w-4 h-4 mr-2" />
-              Compression Test
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+          {selectedClass && (
+            <Button variant="ghost" size="icon" onClick={() => setSelectedClass(null)}>
+              <ArrowLeft className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard/settings')}>
-              <Settings className="w-4 h-4" />
-            </Button>
-          </div>
+          )}
+          <h1 className="font-bold text-lg">
+            {selectedClass ? selectedClass.name : 'Teacher Dashboard'}
+          </h1>
         </div>
       </header>
 
