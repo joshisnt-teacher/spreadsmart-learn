@@ -22,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import ToolSwitcher from "@/components/ToolSwitcher";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { TeacherLayout } from "@/components/TeacherLayout";
+import { useStudentSession } from "@/hooks/useStudentSession";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,16 @@ function PageTitle() {
   }, [location.pathname]);
 
   return null;
+}
+
+function AppChrome() {
+  const { isStudent } = useStudentSession();
+  return (
+    <>
+      <ToolSwitcher currentSlug="circuit" />
+      {!isStudent && <FeedbackWidget app="circuit" />}
+    </>
+  );
 }
 
 const App = () => (
@@ -103,8 +114,7 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <ToolSwitcher currentSlug="circuit" />
-            <FeedbackWidget app="circuit" />
+            <AppChrome />
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
